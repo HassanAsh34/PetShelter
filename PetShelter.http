@@ -1,0 +1,6 @@
+@PetShelter_HostAddress = http://localhost:5291
+
+GET {{PetShelter_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
