@@ -21,7 +21,7 @@ namespace PetShelter.Controllers
 			var adminType = User.FindFirst("AdminType")?.Value;
 			if (adminType != null)
 			{
-				switch (op)
+				switch (op) // authorization for different types of admins
 				{
 					case 1:
 						if (adminType == Admin.AdminTypes.SuperAdmin.ToString())
