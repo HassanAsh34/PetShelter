@@ -46,6 +46,7 @@ namespace PetShelter.Controllers
 			_adminServices = adminServices ?? throw new ArgumentNullException(nameof(adminServices));
 		}
 		//[Authorize()]
+		//User managing
 		[HttpGet("/List Users")]
 		public async Task<ActionResult<IEnumerable<UserDto>>> getUsers()
 		{
@@ -131,5 +132,9 @@ namespace PetShelter.Controllers
 			else
 				return Unauthorized();
 		}
+
+		//Shelter managing "creating categories within shelter"
+
+
 	}
 }

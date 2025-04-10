@@ -16,7 +16,7 @@ namespace PetShelter.Data
 
 		public DbSet<Adopter> Adopters { get; set; }
 
-		//protected override void OnModelCreating(ModelBuilder modelBuilder)
+		//protected override void OnModelCreating(ModelBuilder modelBuilder) //single table with descriminator
 		//{
 		//	modelBuilder.Entity<User>()
 		//		.HasDiscriminator<string>("Discriminator")
@@ -24,7 +24,7 @@ namespace PetShelter.Data
 		//		.HasValue<Adopter>("Adopter")
 		//		.HasValue<Admin>("Admin");
 		//}
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		protected override void OnModelCreating(ModelBuilder modelBuilder) //using tbt
 		{
 			modelBuilder.Entity<User>()
 				.ToTable("Users");
