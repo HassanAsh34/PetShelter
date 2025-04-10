@@ -16,6 +16,10 @@ namespace PetShelter.Data
 
 		public DbSet<Adopter> Adopters { get; set; }
 
+		public DbSet<Animal> Animals { get; set; }
+
+		public DbSet<ShelterCategories> Shelters { get; set; }
+
 		//protected override void OnModelCreating(ModelBuilder modelBuilder) //single table with descriminator
 		//{
 		//	modelBuilder.Entity<User>()
@@ -34,6 +38,11 @@ namespace PetShelter.Data
 
 			modelBuilder.Entity<Admin>()
 				.ToTable("Admins");
+
+			modelBuilder.Entity<Animal>().HasOne(C => C.ShelterCategories).WithMany(A => A.Animal).HasForeignKey(A=>A.ShelterCategories.CategoryId);
+
+			modelBuilder.Entity<ShelterCategories>().ToTable("ShelterCategory");
+
 		}
 
 	}
