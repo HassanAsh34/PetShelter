@@ -20,7 +20,7 @@ namespace PetShelter.MiddleWare
 			var claims = new List<Claim>
 			{
 				new Claim(ClaimTypes.NameIdentifier, userDetails.Id.ToString()),
-				new Claim(ClaimTypes.Name, userDetails.Name),
+				new Claim(ClaimTypes.Name, userDetails.Uname),
 				new Claim(ClaimTypes.Email, userDetails.Email),
 				new Claim(ClaimTypes.Role, userDetails.Role.ToString()),
 			};

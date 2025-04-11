@@ -48,6 +48,9 @@ namespace PetShelter.Controllers
 		//[Authorize()]
 		//User managing
 		[HttpGet("/List Users")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<ActionResult<IEnumerable<UserDto>>> getUsers()
 		{
 			if(Authorize(2))
@@ -60,6 +63,9 @@ namespace PetShelter.Controllers
 		}
 
 		[HttpGet("/UserDetails/{id}")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<ActionResult<UserDto>> getUserDetails(int id)
 		{
 			if (Authorize(2))
@@ -96,6 +102,9 @@ namespace PetShelter.Controllers
 		}
 
 		[HttpGet("/Add Admin Account")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status201Created)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<ActionResult<AdminDto>> AddAdmin(Admin admin)
 		{
 			if (Authorize(2))
@@ -115,6 +124,9 @@ namespace PetShelter.Controllers
 		}
 
 		[HttpDelete("/Delete User")]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public async Task<ActionResult<bool>> DeleteUser(UserDto U)
 		{
 			if (Authorize(2))
@@ -135,6 +147,25 @@ namespace PetShelter.Controllers
 
 		//Shelter managing "creating categories within shelter"
 
+		
+		[HttpPost("/Add Category")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status201Created)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public ActionResult<ShelterCategories> AddCategory([FromBody]ShelterCategories Cat)
+		{
+			if (Authorize(3))
+			{
+				return null;
+			}
+			else
+			{
+				return Unauthorized();
+			}
+
+
+		}
+		
 
 	}
 }

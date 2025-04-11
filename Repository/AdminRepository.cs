@@ -30,7 +30,7 @@ namespace PetShelter.Repository
 							new AdminDto
 							{
 								Id = user.Id,
-								Name = user.Uname,
+								Uname = user.Uname,
 								Email = user.Email,
 								Role = (User.UserType)user.Role,
 								Activated = user.Activated,
@@ -42,7 +42,7 @@ namespace PetShelter.Repository
 							new AdopterDto
 							{
 								Id = user.Id,
-								Name = user.Uname,
+								Uname = user.Uname,
 								Email = user.Email,
 								Role = (User.UserType)user.Role,
 								Activated = user.Activated,
@@ -69,7 +69,7 @@ namespace PetShelter.Repository
 					return new AdminDto
 					{
 						Id = admin.Id,
-						Name = admin.Uname,
+						Uname = admin.Uname,
 						Email = admin.Email,
 						Activated = admin.Activated,
 						adminType = (Admin.AdminTypes)admin.AdminType,
@@ -81,7 +81,7 @@ namespace PetShelter.Repository
 					return new AdopterDto
 					{
 						Id = adopter.Id,
-						Name = adopter.Uname,
+						Uname = adopter.Uname,
 						Email = adopter.Email,
 						Activated= adopter.Activated,
 						Role = User.UserType.Adopter,

@@ -41,7 +41,7 @@ namespace PetShelter.Services
 						{
 							Id = user.Id,
 							Email = user.Email,
-							Name = user.Uname,
+							Uname = user.Uname,
 							Role = (Models.User.UserType)user.Role
 						};
 				}
@@ -59,7 +59,7 @@ namespace PetShelter.Services
 				return new AdminDto
 				{
 					Id = admin.Id,
-					Name = admin.Uname,
+					Uname = admin.Uname,
 					Email = admin.Email,
 					Role = User.UserType.Admin,
 					adminType = (Admin.AdminTypes)admin.AdminType

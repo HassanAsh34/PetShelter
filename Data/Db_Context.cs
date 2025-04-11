@@ -39,7 +39,7 @@ namespace PetShelter.Data
 			modelBuilder.Entity<Admin>()
 				.ToTable("Admins");
 
-			modelBuilder.Entity<Animal>().HasOne(C => C.ShelterCategories).WithMany(A => A.Animal).HasForeignKey(A=>A.ShelterCategories.CategoryId);
+			modelBuilder.Entity<Animal>().HasOne(C => C.ShelterCategories).WithMany(A => A.Animal).HasForeignKey(A=>A.category_id);
 
 			modelBuilder.Entity<ShelterCategories>().ToTable("ShelterCategory");
 

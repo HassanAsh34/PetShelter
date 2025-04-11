@@ -65,24 +65,9 @@ namespace PetShelter.Repository
             //switch (user.Role)
 			switch (user)
 			{
-				////case (int)User.UserType.Admin:
-				//case Admin admin:
-				//	{
-				//        //var admin = user as Admin;
-    //                    if (admin != null)
-    //                    {
-    //                        admin.Activated = true;
-    //                        admin.ActivatedAt = DateTime.Now;
-    //                        await _context.Users.AddAsync(admin);
-    //                        await _context.SaveChangesAsync();
-    //                        return admin;
-    //                    }
-    //                    break;
-    //                }
-                //case (int)User.UserType.Adopter:
 				case Adopter adopter:
 					{
-						//var adopter = user as Adopter;
+                        //var adopter = user as Adopter;
                         if (adopter != null)
                         {
                             adopter.Activated = true;

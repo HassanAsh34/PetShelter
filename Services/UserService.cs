@@ -25,26 +25,27 @@ namespace PetShelter.Services
 					switch(User)
 					{
 						case Admin admin:
-						//case (int)User.UserType.Admin:
+							//case (int)User.UserType.Admin:
 							//admin = User as Admin;
-							AdminDto adminDto = new AdminDto
+							return new AdminDto
 							{
 								Id = admin.Id,
 								Email = admin.Email,
-								Name = admin.Uname,
+								Uname = admin.Uname,
 								Role = (Models.User.UserType)admin.Role,
 								Activated = admin.Activated,
 								adminType = (Admin.AdminTypes)admin.AdminType
-							};
-							return adminDto;//handle token generation for admin and adopter
-						default:
-							return new UserDto
+							};//handle token generation for admin and adopter
+						case Adopter adopter:
+							return new AdopterDto
 							{
-								Id = User.Id,
-								Email = User.Email,
-								Name = User.Uname,
-								Role = (Models.User.UserType)User.Role,
-								Activated = User.Activated
+								Id = adopter.Id,
+								Email = adopter.Email,
+								Uname = adopter.Uname,
+								Role = (Models.User.UserType)adopter.Role,
+								Activated = adopter.Activated,
+								Address = adopter.Address,
+								Phone = adopter.Phone
 							};
 					}
 				}
@@ -61,14 +62,28 @@ namespace PetShelter.Services
 			if (await _userRepositroy.UserExistense(user.Email) == false)
 			{
 				user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-				await _userRepositroy.RegisterUser(user);
-				return new UserDto
+				switch(await _userRepositroy.RegisterUser(user))
 				{
-					Id = user.Id,
-					Email = user.Email,
-					Name = user.Uname,
-					Role = (Models.User.UserType)user.Role
-				};
+					case Adopter adopter:
+						return new AdopterDto
+						{
+							Id = adopter.Id,
+							Uname = adopter.Uname,
+							Email = adopter.Email,
+							Role = (User.UserType)adopter.Role,
+							Phone = adopter.Phone,
+							Address = adopter.Address,
+							Activated = adopter.Activated,
+
+						};
+					//case ShelterStaff staff:
+					//	return new 
+					default:
+						return new AdopterDto
+						{
+							
+						};
+				}
 			}
 			else
 				return null; //indicates that the user exists
