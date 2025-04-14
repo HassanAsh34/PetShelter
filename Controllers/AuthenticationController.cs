@@ -96,7 +96,7 @@ namespace PetShelter.Controllers
 		//}
 		//		public async Task<ActionResult<User>> Register([FromBody] User user) bec that one will require a custom deserializer
 		//		{
-		//			if (await _userRepository.UserExistense(user.Email) == true)
+		//			if (await _userRepository.UserExistence(user.Email) == true)
 		//			{
 		//				return BadRequest(new { message = "user already exists" });
 		//			}

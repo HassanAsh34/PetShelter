@@ -10,12 +10,12 @@ namespace PetShelter.Services
 	{
 		private readonly AdminRepository _adminRepository;
 
-		private readonly UserRepository _userRepository;
-		public AdminServices(AdminRepository adminRepository,UserRepository userRepository)
+		//private readonly UserRepository _userRepository;
+		public AdminServices(AdminRepository adminRepository)
 		{
 			_adminRepository = adminRepository ?? throw new ArgumentNullException(nameof(adminRepository));
 
-			_userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+			//_userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
 		}
 
 		public async Task<IEnumerable<UserDto>> ListUsers()
@@ -46,10 +46,10 @@ namespace PetShelter.Services
 
 		public async Task<UserDto> addUser(User user)
 		{
-			if (await _userRepository.UserExistense(user.Email) == false)
+			if (await _adminRepository.UserExistence(user) == false)
 			{
 				user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-				switch (await _userRepository.RegisterUser(user))
+				switch (await _adminRepository.AddUser(user))
 				{
 					case Adopter adopter:
 						return new AdopterDto
@@ -88,7 +88,7 @@ namespace PetShelter.Services
 
 		public async Task<AdminDto> addAdmin(Admin admin)
 		{
-			if (await _userRepository.UserExistense(admin.Email) == false)
+			if (await _adminRepository.UserExistence(admin) == false)
 			{
 				admin.Password = BCrypt.Net.BCrypt.HashPassword(admin.Password);
 				var Admin = await _adminRepository.AddAdmin(admin);

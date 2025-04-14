@@ -71,7 +71,7 @@ namespace PetShelter.Services
 
 		public async Task<UserDto> Register(User user)
 		{
-			if (await _userRepository.UserExistense(user.Email) == false)
+			if (await _userRepository.UserExistence(user.Email) == false)
 			{
 				user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 				switch(await _userRepository.RegisterUser(user))

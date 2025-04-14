@@ -10,9 +10,13 @@ namespace PetShelter.Repository
     public class AdminRepository
 	{
 		private readonly Db_Context _context;
-		public AdminRepository(Db_Context context)
+		private readonly UserRepository _userRepository;
+
+		public AdminRepository(Db_Context context, UserRepository userRepository)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
+			_userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+
 		}
 
 		public async Task<IEnumerable<UserDto>> GetUsers()
@@ -97,34 +101,17 @@ namespace PetShelter.Repository
 		}
 
 		// dont forget to ask michel about what to do in Add user function 
-		//public async Task<User> AddUser(User user)
-		//{
-		//	//switch (user.Role)
-		//	switch (user)
-		//	{
-		//		//case (int)User.UserType.Adopter:
-		//		case Adopter adopter:
-		//			{
-		//				//var adopter = user as Adopter;
-		//				if (adopter != null)
-		//				{
-		//					adopter.Activated = true;
-		//					adopter.ActivatedAt = DateTime.Now;
-		//					await _context.Adopters.AddAsync(adopter);
-		//					await _context.SaveChangesAsync();
-		//					return adopter;
-		//				}
-		//				break;
-		//			}
-		//		//case (int)User.UserType.ShelterStaff:
-		//		//    {
-		//		//        return null;
-		//		//    }
-		//		default:
-		//			throw new ArgumentException("Invalid user type.");
-		//	}
-		//	return null;
-		//}
+		public async Task<User> AddUser(User user)
+		{
+			//switch (user.Role)
+			return await _userRepository.RegisterUser(user, true);
+		}
+
+		public async Task<bool> UserExistence(User user) 
+		{
+			return await _userRepository.UserExistence(user.Email);
+		}
+
 		public async Task<User> AddAdmin(Admin admin)
 		{
 			if (admin != null)

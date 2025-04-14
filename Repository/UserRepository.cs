@@ -48,7 +48,7 @@ namespace PetShelter.Repository
             }
             return null;
         }
-        public async Task<bool> UserExistense(string email)
+        public async Task<bool> UserExistence(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
@@ -60,7 +60,7 @@ namespace PetShelter.Repository
                 return true;
             }
         }
-        public async Task<User> RegisterUser(User user)
+        public async Task<User> RegisterUser(User user,bool ? Admin = false)
         {
             //switch (user.Role)
 			switch (user)
@@ -82,7 +82,10 @@ namespace PetShelter.Repository
                     {
                         if(staff != null)
                         {
-                            staff.Activated = 0;
+                            if(Admin == true)
+                                staff.Activated = 1;
+                            else
+                                staff.Activated = 0;
 							await _context.Staff.AddAsync(staff);
 							await _context.SaveChangesAsync();
 							return staff;  
