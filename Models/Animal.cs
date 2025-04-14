@@ -7,7 +7,7 @@ namespace PetShelter.Models
 	public class Animal
 	{
 		[Key]
-		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		//[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 		public int id { get; set; }
 
 		[DisplayName("Pet'sName")]
@@ -17,30 +17,30 @@ namespace PetShelter.Models
 		public string name { get; set; }
 
 		[Required]
-		[MaxLength(int.MaxValue)]
+		//[MaxLength(int.MaxValue)]
 		public int age { get; set; }
 
-		[Required]
-		public int category_id { get; set; } //fk
+		//[Required]
+		//public int category_id { get; set; } //fk
 
 		[Required]
 		[MinLength(2,ErrorMessage ="Invalid breed")]
 		public string breed { get; set; }
 
-		[Required]
-		[MinLength(15, ErrorMessage = "Please write a brief description of the pet's medication history")]
-		[MaxLength(255)]
-		public string medication_history { get; set; }
 		public int Adoption_State { get; set; }
 
-		[ForeignKey("CategoryId")]
-		public ShelterCategory ShelterCategory { get; set; } // navigation property
-		private enum AdoptionState
+		//[ForeignKey("")]
+		public int CategoryID { get; set; } // navigation property
+		public enum AdoptionState
 		{
 			Adopted,
 			pending,
 			Available
 		}
+		[Required]
+		[MinLength(15, ErrorMessage = "Please write a brief description of the pet's medication history")]
+		[MaxLength(255)]
+		public string medication_history { get; set; }
 
 		public Animal()
 		{

@@ -11,9 +11,5 @@ namespace PetShelter.DTOs
 
         public int Activated { get; set; }
 
-        //public static string toString(Models.User.UserType type)
-        //{
-        //	return type.ToString();
-        //}
     }
 }

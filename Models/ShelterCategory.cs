@@ -1,13 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace PetShelter.Models
 {
+	[Index(nameof(CategoryName),IsUnique =true)]
 	public class ShelterCategory
 	{
 
 		[Key]
-		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		//[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 		public int CategoryId { get; set; }
 
 		[MaxLength(255)]

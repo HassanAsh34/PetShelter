@@ -66,12 +66,20 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task<ActionResult<UserDto>> getUserDetails(int id)
 		{
 			if (Authorize(2))
 			{
 				var user = await _adminServices.getUserDetails(id);
-				return Ok(user);
+				if(user != null)
+				{
+					return Ok(user);
+				}
+				else
+				{
+					return NotFound();
+				}
 			}
 			else
 				return Unauthorized();

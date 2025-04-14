@@ -83,7 +83,10 @@ namespace PetShelter.Repository
                         if(staff != null)
                         {
                             if(Admin == true)
+                            {
                                 staff.Activated = 1;
+                                staff.HiredDate = DateOnly.FromDateTime(DateTime.Now);
+                            }
                             else
                                 staff.Activated = 0;
 							await _context.Staff.AddAsync(staff);

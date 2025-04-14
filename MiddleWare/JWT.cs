@@ -35,7 +35,8 @@ namespace PetShelter.MiddleWare
 					//userDetails = userDetails as AdminDto;
 					break;
 				case User.UserType.ShelterStaff:
-					//userDetails = userDetails as AdminDto;
+					var StaffDetails = (StaffDto)userDetails;
+					claims.Add(new Claim("StaffType",StaffDetails.StaffType.ToString()));
 					break;
 
 			}

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PetShelter.Data;
@@ -55,6 +56,15 @@ namespace PetShelter.Repository
 							);
 						break;
 					case User.UserType.ShelterStaff:
+						userDtos.Add(
+						new StaffDto
+						{
+								Id = user.Id,
+								Uname = user.Uname,
+								Email = user.Email,
+								Role = (User.UserType)user.Role,
+								Activated = user.Activated
+							});
 						break;
 				}
 				
@@ -66,38 +76,57 @@ namespace PetShelter.Repository
 		public async Task<UserDto> GetUser(int id)
 		{
 			var user = await _context.Users.Where(user => user.Id == id).Select(user => new { user.Id, user.Role }).FirstOrDefaultAsync();
-			switch (user.Role)
+			if (user != null)
 			{
-				case (int)User.UserType.Admin:
-					Admin admin = await _context.Admins.Where(admin => admin.Id == user.Id).FirstOrDefaultAsync();
-					//admin.Password = "";
-					return new AdminDto
-					{
-						Id = admin.Id,
-						Uname = admin.Uname,
-						Email = admin.Email,
-						Activated = admin.Activated,
-						adminType = (Admin.AdminTypes)admin.AdminType,
-						Role = User.UserType.Admin,
-					};
-				case (int)User.UserType.Adopter:
-					Adopter adopter = await _context.Adopters.Where(adopter => adopter.Id == user.Id).FirstOrDefaultAsync();
-					//adopter.Password = "";
-					return new AdopterDto
-					{
-						Id = adopter.Id,
-						Uname = adopter.Uname,
-						Email = adopter.Email,
-						Activated= adopter.Activated,
-						Role = User.UserType.Adopter,
-						Address = adopter.Address,
-						Phone = adopter.Phone,
-					};
-				case (int)User.UserType.ShelterStaff:
-					return null;
-				default:
-					return null;
+				switch (user.Role)
+				{
+					case (int)User.UserType.Admin:
+						Admin admin = await _context.Admins.Where(admin => admin.Id == user.Id).FirstOrDefaultAsync();
+						//admin.Password = "";
+						return new AdminDto
+						{
+							Id = admin.Id,
+							Uname = admin.Uname,
+							Email = admin.Email,
+							Activated = admin.Activated,
+							adminType = (Admin.AdminTypes)admin.AdminType,
+							Role = User.UserType.Admin,
+						};
+					case (int)User.UserType.Adopter:
+						Adopter adopter = await _context.Adopters.Where(adopter => adopter.Id == user.Id).FirstOrDefaultAsync();
+						//adopter.Password = "";
+						return new AdopterDto
+						{
+							Id = adopter.Id,
+							Uname = adopter.Uname,
+							Email = adopter.Email,
+							Activated = adopter.Activated,
+							Role = User.UserType.Adopter,
+							Address = adopter.Address,
+							Phone = adopter.Phone,
+						};
+					case (int)User.UserType.ShelterStaff:
+						ShelterStaff staff = await _context.Staff.Where(adopter => adopter.Id == user.Id).FirstOrDefaultAsync();
+						return new StaffDto
+						{
+							Id = staff.Id,
+							Uname = staff.Uname,
+							Email = staff.Email,
+							Role = (User.UserType)staff.Role,
+							Phone = staff.Phone,
+							StaffType = (ShelterStaff.StaffTypes)staff.StaffType,
+							Activated = staff.Activated,
+							HiredDate = staff.HiredDate
+						};
+					default:
+						return null;
+						{
+
+						}
+				}
 			}
+			else
+				return null;
 		}
 
 		// dont forget to ask michel about what to do in Add user function 

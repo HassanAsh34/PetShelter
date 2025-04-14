@@ -7,7 +7,7 @@ namespace PetShelter.Models
 	public abstract class User
 	{
 		[Key]
-		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		//[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 		public int Id { set; get; }
 
 		[DisplayName("UserName")]
