@@ -12,8 +12,8 @@ using PetShelter.Data;
 namespace PetShelter.Migrations
 {
     [DbContext(typeof(Db_Context))]
-    [Migration("20250410233714_v5")]
-    partial class v5
+    [Migration("20250413204628_PetShelterFix")]
+    partial class PetShelterFix
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

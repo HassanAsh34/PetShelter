@@ -1,4 +1,5 @@
-﻿using PetShelter.Data;
+﻿using System.Runtime.InteropServices;
+using PetShelter.Data;
 using PetShelter.DTOs;
 using PetShelter.Models;
 using PetShelter.Repository;
@@ -27,27 +28,62 @@ namespace PetShelter.Services
 			return await _adminRepository.GetUser(id);
 		}
 
+		public async Task<string> ToggleUserActivation(UserDto user,bool ? Ban =false)
+		{
+			var res = await _adminRepository.ToggleUserActivation(user,Ban);
+			switch (res) 
+			{
+				case 0:
+					return "Account was deactivated successfully";
+				case 1:
+					return "Account is ready to use";
+				case 2:
+					return "Account was banned successfully";
+				default:
+					return "Something went wrong";
+			}
+		}
+
 		public async Task<UserDto> addUser(User user)
 		{
 			if (await _userRepository.UserExistense(user.Email) == false)
 			{
 				user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-				var User = await _adminRepository.AddUser(user);
-				switch (User) 
+				switch (await _userRepository.RegisterUser(user))
 				{
-					//case Adopter adopter:
-					default:
-						return new UserDto
+					case Adopter adopter:
+						return new AdopterDto
 						{
-							Id = user.Id,
-							Email = user.Email,
-							Uname = user.Uname,
-							Role = (Models.User.UserType)user.Role
+							Id = adopter.Id,
+							Uname = adopter.Uname,
+							Email = adopter.Email,
+							Role = (User.UserType)adopter.Role,
+							Phone = adopter.Phone,
+							Address = adopter.Address,
+							Activated = adopter.Activated,
+
+						};
+					case ShelterStaff staff:
+						return new StaffDto
+						{
+							Id = staff.Id,
+							Uname = staff.Uname,
+							Email = staff.Email,
+							Role = (User.UserType)staff.Role,
+							Phone = staff.Phone,
+							StaffType = (ShelterStaff.StaffTypes)staff.StaffType,
+							Activated = staff.Activated,
+							HiredDate = staff.HiredDate
+						};
+					default:
+						return new AdopterDto
+						{
+
 						};
 				}
 			}
 			else
-				return null; // user exists
+				return null; //indicates that the user exists
 		}
 
 		public async Task<AdminDto> addAdmin(Admin admin)
@@ -76,8 +112,38 @@ namespace PetShelter.Services
 		}
 		public async Task<bool> deleteUser(UserDto u)
 		{
-			return await _adminRepository.DeleteUser(u);
+			var res =  await _adminRepository.DeleteUser(u);
+			if(res>0)
+			{
+				return true;
+			}
+			return false;
 		}
+
+		//Activating and deactivating Account not implemented yet
+
+		//shelter services
+		public async Task<ShelterCategory> addCategory(ShelterCategory category)
+		{
+			return await _adminRepository.addCategory(category);
+		}
+
+		public async Task<IEnumerable<ShelterCategory>> ListCategories()
+		{
+			return await _adminRepository.ListShelterCategories();
+		}
+
+		public async Task<bool> deleteCategory(ShelterCategory category)
+		{
+			var res = await _adminRepository.deleteCategory(category);
+			if (res > 0)
+			{
+				return true;
+			}
+			return false;
+		}
+
+		//edit category need to be handled
 
 	}
 }

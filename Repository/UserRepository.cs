@@ -37,12 +37,12 @@ namespace PetShelter.Repository
                     case (int)User.UserType.Adopter:
                         {
                             var Adopter = await _context.Adopters.FirstOrDefaultAsync(a => a.Id == User.Id);
-
                             return Adopter;
                         }
                     case (int)User.UserType.ShelterStaff:
                         {
-                            return null;
+                            var Staff = await _context.Staff.FirstOrDefaultAsync(s => s.Id == User.Id);
+                            return Staff;
                         }
                 }
             }
@@ -70,7 +70,7 @@ namespace PetShelter.Repository
                         //var adopter = user as Adopter;
                         if (adopter != null)
                         {
-                            adopter.Activated = true;
+                            adopter.Activated = 1;
                             adopter.ActivatedAt = DateTime.Now;
                             await _context.Adopters.AddAsync(adopter);
                             await _context.SaveChangesAsync();
@@ -78,10 +78,17 @@ namespace PetShelter.Repository
                         }
                         break;
                     }
-                //case (int)User.UserType.ShelterStaff:
-                //    {
-                //        return null;
-                //    }
+                case ShelterStaff staff:
+                    {
+                        if(staff != null)
+                        {
+                            staff.Activated = 0;
+							await _context.Staff.AddAsync(staff);
+							await _context.SaveChangesAsync();
+							return staff;  
+                        }
+                        break;
+                    }
                 default:
                     throw new ArgumentException("Invalid user type.");
             }

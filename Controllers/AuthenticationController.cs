@@ -55,13 +55,19 @@ namespace PetShelter.Controllers
 			var res = await _userService.Login(login);
 			if (res != null)
 			{
-				if (res.Activated == true)
+				switch (res.Activated)
 				{
-					var token = _token.GenerateToken(res);
-					return Ok(new { Token = token, User = res });
-
+					case 0:
+						return BadRequest(new { message = "Your account is currently inactive" });
+					case 1:
+						var token = _token.GenerateToken(res);
+						return Ok(new { Token = token, User = res });
+					case 2:
+						return BadRequest(new { message = "Your account has been suspended" });
+					default:
+						//return StatusCodes.Status500InternalServerError;
+						return BadRequest("Something went wrong");
 				}
-				return BadRequest(new { Message = "Your account hasn't been activated at the moment, for more information contact the customer support" });
 			}
 			else
 			{

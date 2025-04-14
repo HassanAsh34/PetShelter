@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PetShelter.Models
 {
-	public class ShelterCategories
+	public class ShelterCategory
 	{
 
 		[Key]
@@ -21,6 +21,6 @@ namespace PetShelter.Models
 		[Required]
 		public string CategoryDescription { get; set; }
 
-		public List<Animal> Animal { get; set; } //navigation property
+		//public List<Animal> Animal { get; set; } //navigation property
 	}
 }

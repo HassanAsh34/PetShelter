@@ -12,8 +12,8 @@ using PetShelter.Data;
 namespace PetShelter.Migrations
 {
     [DbContext(typeof(Db_Context))]
-    [Migration("20250410233714_v5")]
-    partial class v5
+    [Migration("20250414001941_v8")]
+    partial class v8
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -98,11 +98,14 @@ namespace PetShelter.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("Activated")
-                        .HasColumnType("bit");
+                    b.Property<int>("Activated")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("ActivatedAt")
+                    b.Property<DateTime?>("ActivatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<DateOnly?>("Banned_At")
+                        .HasColumnType("date");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -161,10 +164,27 @@ namespace PetShelter.Migrations
                     b.ToTable("Adopters", (string)null);
                 });
 
+            modelBuilder.Entity("PetShelter.Models.ShelterStaff", b =>
+                {
+                    b.HasBaseType("PetShelter.Models.User");
+
+                    b.Property<DateOnly?>("HiredDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StaffType")
+                        .HasColumnType("int");
+
+                    b.ToTable("ShelterStaff", (string)null);
+                });
+
             modelBuilder.Entity("PetShelter.Models.Animal", b =>
                 {
                     b.HasOne("PetShelter.Models.ShelterCategory", "ShelterCategory")
-                        .WithMany("Animal")
+                        .WithMany()
                         .HasForeignKey("category_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -190,9 +210,13 @@ namespace PetShelter.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PetShelter.Models.ShelterCategory", b =>
+            modelBuilder.Entity("PetShelter.Models.ShelterStaff", b =>
                 {
-                    b.Navigation("Animal");
+                    b.HasOne("PetShelter.Models.User", null)
+                        .WithOne()
+                        .HasForeignKey("PetShelter.Models.ShelterStaff", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

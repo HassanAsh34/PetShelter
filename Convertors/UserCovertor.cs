@@ -19,6 +19,8 @@ namespace PetShelter.Convertors
 						return JsonSerializer.Deserialize<Adopter>(root.GetRawText(), options);
 					case (int)User.UserType.Admin:
 						return JsonSerializer.Deserialize<Admin>(root.GetRawText(), options);
+					case (int)User.UserType.ShelterStaff:
+						return JsonSerializer.Deserialize<ShelterStaff>(root.GetRawText(), options);
 					default:
 						return null;
 				}

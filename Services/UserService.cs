@@ -8,16 +8,16 @@ namespace PetShelter.Services
 {
     public class UserService
 	{
-		private readonly UserRepository _userRepositroy;
+		private readonly UserRepository _userRepository;
 
 		public UserService(UserRepository userRepository) 
 		{
-			_userRepositroy = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+			_userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
 		}
 
 		public async Task<UserDto> Login(LoginDto login)
 		{
-			var User = await _userRepositroy.GetUserDetails(login.Email);
+			var User = await _userRepository.GetUserDetails(login.Email);
 			if (User != null)
 			{
 				if (BCrypt.Net.BCrypt.Verify(login.Password, User.Password))
@@ -47,6 +47,18 @@ namespace PetShelter.Services
 								Address = adopter.Address,
 								Phone = adopter.Phone
 							};
+						case ShelterStaff staff:
+							return new StaffDto
+							{
+								Id = staff.Id,
+								Uname = staff.Uname,
+								Email = staff.Email,
+								Role = (User.UserType)staff.Role,
+								Phone = staff.Phone,
+								StaffType = (ShelterStaff.StaffTypes)staff.StaffType,
+								Activated = staff.Activated,
+								HiredDate = staff.HiredDate
+							};
 					}
 				}
 				return null;
@@ -59,10 +71,10 @@ namespace PetShelter.Services
 
 		public async Task<UserDto> Register(User user)
 		{
-			if (await _userRepositroy.UserExistense(user.Email) == false)
+			if (await _userRepository.UserExistense(user.Email) == false)
 			{
 				user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-				switch(await _userRepositroy.RegisterUser(user))
+				switch(await _userRepository.RegisterUser(user))
 				{
 					case Adopter adopter:
 						return new AdopterDto
@@ -76,8 +88,18 @@ namespace PetShelter.Services
 							Activated = adopter.Activated,
 
 						};
-					//case ShelterStaff staff:
-					//	return new 
+					case ShelterStaff staff:
+						return new StaffDto
+						{
+							Id = staff.Id,
+							Uname = staff.Uname,
+							Email = staff.Email,
+							Role = (User.UserType)staff.Role,
+							Phone = staff.Phone,
+							StaffType = (ShelterStaff.StaffTypes)staff.StaffType,
+							Activated = staff.Activated,
+							HiredDate = staff.HiredDate
+						};
 					default:
 						return new AdopterDto
 						{

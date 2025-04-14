@@ -64,7 +64,7 @@ namespace PetShelter.Migrations
                     b.ToTable("Animals");
                 });
 
-            modelBuilder.Entity("PetShelter.Models.ShelterCategories", b =>
+            modelBuilder.Entity("PetShelter.Models.ShelterCategory", b =>
                 {
                     b.Property<int>("CategoryId")
                         .ValueGeneratedOnAdd()
@@ -95,11 +95,14 @@ namespace PetShelter.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("Activated")
-                        .HasColumnType("bit");
+                    b.Property<int>("Activated")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("ActivatedAt")
+                    b.Property<DateTime?>("ActivatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<DateOnly?>("Banned_At")
+                        .HasColumnType("date");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -158,15 +161,32 @@ namespace PetShelter.Migrations
                     b.ToTable("Adopters", (string)null);
                 });
 
+            modelBuilder.Entity("PetShelter.Models.ShelterStaff", b =>
+                {
+                    b.HasBaseType("PetShelter.Models.User");
+
+                    b.Property<DateOnly?>("HiredDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StaffType")
+                        .HasColumnType("int");
+
+                    b.ToTable("ShelterStaff", (string)null);
+                });
+
             modelBuilder.Entity("PetShelter.Models.Animal", b =>
                 {
-                    b.HasOne("PetShelter.Models.ShelterCategories", "ShelterCategories")
-                        .WithMany("Animal")
+                    b.HasOne("PetShelter.Models.ShelterCategory", "ShelterCategory")
+                        .WithMany()
                         .HasForeignKey("category_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ShelterCategories");
+                    b.Navigation("ShelterCategory");
                 });
 
             modelBuilder.Entity("PetShelter.Models.Admin", b =>
@@ -187,9 +207,13 @@ namespace PetShelter.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("PetShelter.Models.ShelterCategories", b =>
+            modelBuilder.Entity("PetShelter.Models.ShelterStaff", b =>
                 {
-                    b.Navigation("Animal");
+                    b.HasOne("PetShelter.Models.User", null)
+                        .WithOne()
+                        .HasForeignKey("PetShelter.Models.ShelterStaff", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

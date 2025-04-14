@@ -34,7 +34,7 @@ namespace PetShelter.Models
 		public int Adoption_State { get; set; }
 
 		[ForeignKey("CategoryId")]
-		public ShelterCategories ShelterCategories { get; set; } // navigation property
+		public ShelterCategory ShelterCategory { get; set; } // navigation property
 		private enum AdoptionState
 		{
 			Adopted,
