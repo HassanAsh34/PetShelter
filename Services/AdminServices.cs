@@ -1,4 +1,5 @@
-﻿using PetShelter.Data;
+﻿using System.Runtime.InteropServices;
+using PetShelter.Data;
 using PetShelter.DTOs;
 using PetShelter.Models;
 using PetShelter.Repository;
@@ -9,12 +10,12 @@ namespace PetShelter.Services
 	{
 		private readonly AdminRepository _adminRepository;
 
-		private readonly UserRepository _userRepository;
-		public AdminServices(AdminRepository adminRepository,UserRepository userRepository)
+		//private readonly UserRepository _userRepository;
+		public AdminServices(AdminRepository adminRepository)
 		{
 			_adminRepository = adminRepository ?? throw new ArgumentNullException(nameof(adminRepository));
 
-			_userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+			//_userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
 		}
 
 		public async Task<IEnumerable<UserDto>> ListUsers()
@@ -27,39 +28,74 @@ namespace PetShelter.Services
 			return await _adminRepository.GetUser(id);
 		}
 
+		public async Task<string> ToggleUserActivation(UserDto user,bool ? Ban =false)
+		{
+			var res = await _adminRepository.ToggleUserActivation(user,Ban);
+			switch (res) 
+			{
+				case 0:
+					return "Account was deactivated successfully";
+				case 1:
+					return "Account is ready to use";
+				case 2:
+					return "Account was banned successfully";
+				default:
+					return "Something went wrong";
+			}
+		}
+
 		public async Task<UserDto> addUser(User user)
 		{
-			if (await _userRepository.UserExistense(user.Email) == false)
+			if (await _adminRepository.UserExistence(user) == false)
 			{
 				user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-				var User = await _adminRepository.AddUser(user);
-				switch (User) 
+				switch (await _adminRepository.AddUser(user))
 				{
-					//case Adopter adopter:
-					default:
-						return new UserDto
+					case Adopter adopter:
+						return new AdopterDto
 						{
-							Id = user.Id,
-							Email = user.Email,
-							Name = user.Uname,
-							Role = (Models.User.UserType)user.Role
+							Id = adopter.Id,
+							Uname = adopter.Uname,
+							Email = adopter.Email,
+							Role = (User.UserType)adopter.Role,
+							Phone = adopter.Phone,
+							Address = adopter.Address,
+							Activated = adopter.Activated,
+
+						};
+					case ShelterStaff staff:
+						return new StaffDto
+						{
+							Id = staff.Id,
+							Uname = staff.Uname,
+							Email = staff.Email,
+							Role = (User.UserType)staff.Role,
+							Phone = staff.Phone,
+							StaffType = (ShelterStaff.StaffTypes)staff.StaffType,
+							Activated = staff.Activated,
+							HiredDate = staff.HiredDate
+						};
+					default:
+						return new AdopterDto
+						{
+
 						};
 				}
 			}
 			else
-				return null; // user exists
+				return null; //indicates that the user exists
 		}
 
 		public async Task<AdminDto> addAdmin(Admin admin)
 		{
-			if (await _userRepository.UserExistense(admin.Email) == false)
+			if (await _adminRepository.UserExistence(admin) == false)
 			{
 				admin.Password = BCrypt.Net.BCrypt.HashPassword(admin.Password);
 				var Admin = await _adminRepository.AddAdmin(admin);
 				return new AdminDto
 				{
 					Id = admin.Id,
-					Name = admin.Uname,
+					Uname = admin.Uname,
 					Email = admin.Email,
 					Role = User.UserType.Admin,
 					adminType = (Admin.AdminTypes)admin.AdminType
@@ -76,8 +112,38 @@ namespace PetShelter.Services
 		}
 		public async Task<bool> deleteUser(UserDto u)
 		{
-			return await _adminRepository.DeleteUser(u);
+			var res =  await _adminRepository.DeleteUser(u);
+			if(res>0)
+			{
+				return true;
+			}
+			return false;
 		}
+
+		//Activating and deactivating Account not implemented yet
+
+		//shelter services
+		public async Task<ShelterCategory> addCategory(ShelterCategory category)
+		{
+			return await _adminRepository.addCategory(category);
+		}
+
+		public async Task<IEnumerable<ShelterCategory>> ListCategories()
+		{
+			return await _adminRepository.ListShelterCategories();
+		}
+
+		public async Task<bool> deleteCategory(ShelterCategory category)
+		{
+			var res = await _adminRepository.deleteCategory(category);
+			if (res > 0)
+			{
+				return true;
+			}
+			return false;
+		}
+
+		//edit category need to be handled
 
 	}
 }

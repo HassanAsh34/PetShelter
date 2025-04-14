@@ -169,3 +169,4 @@ C:\Users\Hassan\source\repos\PetShelter\petshelter\obj\Debug\net8.0\PetShelter.g
 C:\Users\Hassan\source\repos\PetShelter\petshelter\obj\Debug\net8.0\ref\PetShelter.dll
 C:\Users\Hassan\source\repos\PetShelter\PetShelter\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\Hassan\source\repos\PetShelter\PetShelter\bin\Debug\net8.0\Microsoft.Bcl.Memory.dll
+C:\Users\Hassan\source\repos\PetShelter\PetShelter\obj\Debug\net8.0\PetShelter.sourcelink.json

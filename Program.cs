@@ -21,6 +21,8 @@ public class Program
 		builder.Services.AddScoped<UserService>();
 		builder.Services.AddScoped <AdminRepository>();
 		builder.Services.AddScoped<AdminServices>();
+		builder.Services.AddScoped<ShelterStaffRepository>();
+		builder.Services.AddScoped<ShelterStaffServices>();
 		// Configure JWT options
 		var configuration = builder.Configuration;
 		var tokenOptions = configuration.GetSection("TokenOptions").Get<JWT>();

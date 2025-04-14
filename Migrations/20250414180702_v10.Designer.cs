@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PetShelter.Data;
 
@@ -11,9 +12,11 @@ using PetShelter.Data;
 namespace PetShelter.Migrations
 {
     [DbContext(typeof(Db_Context))]
-    partial class Db_ContextModelSnapshot : ModelSnapshot
+    [Migration("20250414180702_v10")]
+    partial class v10
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,11 +40,15 @@ namespace PetShelter.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("age")
+                        .HasMaxLength(2147483647)
                         .HasColumnType("int");
 
                     b.Property<string>("breed")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("category_id")
+                        .HasColumnType("int");
 
                     b.Property<string>("medication_history")
                         .IsRequired()
@@ -55,7 +62,7 @@ namespace PetShelter.Migrations
 
                     b.HasKey("id");
 
-                    b.HasIndex("CategoryID");
+                    b.HasIndex("category_id");
 
                     b.ToTable("Animals");
                 });
@@ -178,7 +185,7 @@ namespace PetShelter.Migrations
                 {
                     b.HasOne("PetShelter.Models.ShelterCategory", null)
                         .WithMany()
-                        .HasForeignKey("CategoryID")
+                        .HasForeignKey("category_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
