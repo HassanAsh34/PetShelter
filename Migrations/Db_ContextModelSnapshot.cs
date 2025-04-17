@@ -22,6 +22,131 @@ namespace PetShelter.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("PetShelter.Models.AdoptionRequest", b =>
+                {
+                    b.Property<int>("PetId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AdopterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("InterviewDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("PetId", "AdopterId");
+
+                    b.ToTable("AdoptionRequest");
+                });
+
+            modelBuilder.Entity("PetShelter.Models.Animal", b =>
+                {
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
+
+                    b.Property<int>("Adoption_State")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Category_FK")
+                        .HasColumnType("int");
+
+                    b.Property<int>("age")
+                        .HasColumnType("int");
+
+                    b.Property<string>("breed")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("medication_history")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("id");
+
+                    b.HasIndex("Category_FK");
+
+                    b.ToTable("Animals");
+                });
+
+            modelBuilder.Entity("PetShelter.Models.Shelter", b =>
+                {
+                    b.Property<int>("ShelterID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ShelterID"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShelterName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("ShelterID");
+
+                    b.HasIndex("ShelterName")
+                        .IsUnique();
+
+                    b.ToTable("Shelters");
+                });
+
+            modelBuilder.Entity("PetShelter.Models.ShelterCategory", b =>
+                {
+                    b.Property<int>("CategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
+
+                    b.Property<string>("CategoryDescription")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("CategoryName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("Shelter_FK")
+                        .HasColumnType("int");
+
+                    b.HasKey("CategoryId");
+
+                    b.HasIndex("CategoryName")
+                        .IsUnique();
+
+                    b.HasIndex("Shelter_FK");
+
+                    b.ToTable("Categories");
+                });
+
             modelBuilder.Entity("PetShelter.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -30,11 +155,14 @@ namespace PetShelter.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("Activated")
-                        .HasColumnType("bit");
+                    b.Property<int>("Activated")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("ActivatedAt")
+                    b.Property<DateTime?>("ActivatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<DateOnly?>("Banned_At")
+                        .HasColumnType("date");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -93,6 +221,41 @@ namespace PetShelter.Migrations
                     b.ToTable("Adopters", (string)null);
                 });
 
+            modelBuilder.Entity("PetShelter.Models.ShelterStaff", b =>
+                {
+                    b.HasBaseType("PetShelter.Models.User");
+
+                    b.Property<DateOnly?>("HiredDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StaffType")
+                        .HasColumnType("int");
+
+                    b.ToTable("ShelterStaff", (string)null);
+                });
+
+            modelBuilder.Entity("PetShelter.Models.Animal", b =>
+                {
+                    b.HasOne("PetShelter.Models.ShelterCategory", null)
+                        .WithMany()
+                        .HasForeignKey("Category_FK")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PetShelter.Models.ShelterCategory", b =>
+                {
+                    b.HasOne("PetShelter.Models.Shelter", null)
+                        .WithMany()
+                        .HasForeignKey("Shelter_FK")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("PetShelter.Models.Admin", b =>
                 {
                     b.HasOne("PetShelter.Models.User", null)
@@ -107,6 +270,15 @@ namespace PetShelter.Migrations
                     b.HasOne("PetShelter.Models.User", null)
                         .WithOne()
                         .HasForeignKey("PetShelter.Models.Adopter", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PetShelter.Models.ShelterStaff", b =>
+                {
+                    b.HasOne("PetShelter.Models.User", null)
+                        .WithOne()
+                        .HasForeignKey("PetShelter.Models.ShelterStaff", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

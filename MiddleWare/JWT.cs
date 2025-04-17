@@ -20,7 +20,7 @@ namespace PetShelter.MiddleWare
 			var claims = new List<Claim>
 			{
 				new Claim(ClaimTypes.NameIdentifier, userDetails.Id.ToString()),
-				new Claim(ClaimTypes.Name, userDetails.Name),
+				new Claim(ClaimTypes.Name, userDetails.Uname),
 				new Claim(ClaimTypes.Email, userDetails.Email),
 				new Claim(ClaimTypes.Role, userDetails.Role.ToString()),
 			};
@@ -35,7 +35,8 @@ namespace PetShelter.MiddleWare
 					//userDetails = userDetails as AdminDto;
 					break;
 				case User.UserType.ShelterStaff:
-					//userDetails = userDetails as AdminDto;
+					var StaffDetails = (StaffDto)userDetails;
+					claims.Add(new Claim("StaffType",StaffDetails.StaffType.ToString()));
 					break;
 
 			}
@@ -47,7 +48,7 @@ namespace PetShelter.MiddleWare
 			var tokenDescriptor = new SecurityTokenDescriptor
 			{
 				Subject = new ClaimsIdentity(claims),
-				Expires = DateTime.UtcNow.AddMinutes(60),
+				Expires = DateTime.UtcNow.AddMinutes(180),
 				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
 			};
 			var token = tokenHandler.CreateToken(tokenDescriptor);

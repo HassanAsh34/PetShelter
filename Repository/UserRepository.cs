@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.AccessControl;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetShelter.Data;
+using PetShelter.DTOs;
 using PetShelter.Models;
 
 namespace PetShelter.Repository
@@ -37,18 +39,18 @@ namespace PetShelter.Repository
                     case (int)User.UserType.Adopter:
                         {
                             var Adopter = await _context.Adopters.FirstOrDefaultAsync(a => a.Id == User.Id);
-
                             return Adopter;
                         }
                     case (int)User.UserType.ShelterStaff:
                         {
-                            return null;
+                            var Staff = await _context.Staff.FirstOrDefaultAsync(s => s.Id == User.Id);
+                            return Staff;
                         }
                 }
             }
             return null;
         }
-        public async Task<bool> UserExistense(string email)
+        public async Task<bool> UserExistence(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
@@ -60,32 +62,17 @@ namespace PetShelter.Repository
                 return true;
             }
         }
-        public async Task<User> RegisterUser(User user)
+        public async Task<User> RegisterUser(User user,bool ? Admin = false)
         {
             //switch (user.Role)
 			switch (user)
 			{
-				////case (int)User.UserType.Admin:
-				//case Admin admin:
-				//	{
-				//        //var admin = user as Admin;
-    //                    if (admin != null)
-    //                    {
-    //                        admin.Activated = true;
-    //                        admin.ActivatedAt = DateTime.Now;
-    //                        await _context.Users.AddAsync(admin);
-    //                        await _context.SaveChangesAsync();
-    //                        return admin;
-    //                    }
-    //                    break;
-    //                }
-                //case (int)User.UserType.Adopter:
 				case Adopter adopter:
 					{
-						//var adopter = user as Adopter;
+                        //var adopter = user as Adopter;
                         if (adopter != null)
                         {
-                            adopter.Activated = true;
+                            adopter.Activated = 1;
                             adopter.ActivatedAt = DateTime.Now;
                             await _context.Adopters.AddAsync(adopter);
                             await _context.SaveChangesAsync();
@@ -93,14 +80,55 @@ namespace PetShelter.Repository
                         }
                         break;
                     }
-                //case (int)User.UserType.ShelterStaff:
-                //    {
-                //        return null;
-                //    }
+                case ShelterStaff staff:
+                    {
+                        if(staff != null)
+                        {
+                            if(Admin == true)
+                            {
+                                staff.Activated = 1;
+                                staff.HiredDate = DateOnly.FromDateTime(DateTime.Now);
+                            }
+                            else
+                                staff.Activated = 0;
+							await _context.Staff.AddAsync(staff);
+							await _context.SaveChangesAsync();
+							return staff;  
+                        }
+                        break;
+                    }
                 default:
                     throw new ArgumentException("Invalid user type.");
             }
             return null;
         }
+
+        public async Task<int> UpdateUser(UserDto user)
+        {
+            switch (user)
+            {
+                case AdminDto admin:
+                    Admin A = await _context.Admins.FirstOrDefaultAsync(A => A.Id == user.Id);
+                    //A.Role = (int)admin.Role;
+                    A.Email = admin.Email;
+                    A.Uname = admin.Uname;
+                    A.AdminType = (int)admin.adminType;
+                    A.UpdatedAt = DateTime.Now;
+                    //return await _context.SaveChangesAsync();
+                    break;
+                case StaffDto staff:
+                    ShelterStaff S = await _context.Staff.FirstOrDefaultAsync(s => s.Id == user.Id);
+                    S.Phone = staff.Phone;
+                    S.Email = staff.Email;
+                    S.Uname = staff.Uname;
+                    S.StaffType = (int)staff.StaffType;
+                    S.UpdatedAt = DateTime.Now;
+                    //return await _context.SaveChangesAsync();
+                    break;
+                default:
+                    break;
+            }
+			return await _context.SaveChangesAsync();
+		}
     }
 }

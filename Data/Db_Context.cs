@@ -16,7 +16,17 @@ namespace PetShelter.Data
 
 		public DbSet<Adopter> Adopters { get; set; }
 
-		//protected override void OnModelCreating(ModelBuilder modelBuilder)
+		public DbSet<Animal> Animals { get; set; }
+
+		public DbSet<ShelterCategory> Categories { get; set; }
+
+		public DbSet<ShelterStaff> Staff { get; set; }
+
+		public DbSet<Shelter> Shelters { get; set; }
+
+		public DbSet<AdoptionRequest> AdoptionRequests { get; set; }
+
+		//protected override void OnModelCreating(ModelBuilder modelBuilder) //single table with descriminator
 		//{
 		//	modelBuilder.Entity<User>()
 		//		.HasDiscriminator<string>("Discriminator")
@@ -24,7 +34,7 @@ namespace PetShelter.Data
 		//		.HasValue<Adopter>("Adopter")
 		//		.HasValue<Admin>("Admin");
 		//}
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		protected override void OnModelCreating(ModelBuilder modelBuilder) //using tbt
 		{
 			modelBuilder.Entity<User>()
 				.ToTable("Users");
@@ -34,6 +44,18 @@ namespace PetShelter.Data
 
 			modelBuilder.Entity<Admin>()
 				.ToTable("Admins");
+			
+			modelBuilder.Entity<ShelterStaff>()
+				.ToTable("ShelterStaff");
+
+			modelBuilder.Entity<AdoptionRequest>().HasKey(A => new {A.PetId, A.AdopterId });
+
+			modelBuilder.Entity<Animal>().HasOne<ShelterCategory>().WithMany().HasForeignKey(A=>A.Category_FK);
+
+			modelBuilder.Entity<ShelterCategory>().HasOne<Shelter>().WithMany().HasForeignKey(C => C.Shelter_FK).OnDelete(DeleteBehavior.Cascade);
+
+			modelBuilder.Entity<Shelter>().HasIndex("ShelterName").IsUnique();
+
 		}
 
 	}

@@ -7,7 +7,7 @@ namespace PetShelter.Models
 	public abstract class User
 	{
 		[Key]
-		[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+		//[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 		public int Id { set; get; }
 
 		[DisplayName("UserName")]
@@ -29,7 +29,7 @@ namespace PetShelter.Models
 
 		public string Password { set; get; }
 		[DisplayName("Role")]
-		public int Role { set; get; } = (int)UserType.Adopter;
+		public int Role { set; get; }
 
 		public enum UserType
 		{
@@ -38,9 +38,10 @@ namespace PetShelter.Models
 			ShelterStaff
 		}
 
-		public bool Activated { get; set; } = false;
+		public int Activated { get; set; } = 0;
 
-		public DateTime ActivatedAt { get; set; }
+		public DateOnly ?Banned_At { get; set; }
+		public DateTime ?ActivatedAt { get; set; }
 		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 		public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 	}
