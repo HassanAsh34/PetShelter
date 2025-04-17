@@ -175,11 +175,10 @@ namespace PetShelter.Repository
 			return User.Activated;
 		}
 
-		//public async Task<UserDto> UpdateUser(UserDto U)
-		//{
-
-
-		//}
+		public async Task<int> UpdateUser(UserDto U)
+		{
+			return await _userRepository.UpdateUser(U);
+		}
 
 		//public async Task<bool> DeleteUser(UserDto U)
 		public async Task<int> DeleteUser(UserDto U)
@@ -204,7 +203,7 @@ namespace PetShelter.Repository
 		//{
 		//	ShelterCategory category = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryName.ToLower().Equals(Category.CategoryName.ToLower()));
 		//}
-		public async Task<ShelterCategory> addCategory(ShelterCategory shelterCategory)
+		public async Task<object> addCategory(ShelterCategory shelterCategory)
 		{
 			var res = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryName.ToLower().Equals(shelterCategory.CategoryName.ToLower()));
 			if (res == null)
@@ -214,7 +213,7 @@ namespace PetShelter.Repository
 				return shelterCategory;
 			}
 			else
-				return null; //which means that category exists
+				return 0; //which means that category exists
 		}
 		public async Task<int> editCategory(ShelterCategory category)
 		{
@@ -240,6 +239,30 @@ namespace PetShelter.Repository
 				return await _context.SaveChangesAsync();
 			}
 			return -1; //incase not found
+		}
+
+		//shelter
+
+		public async Task<bool> ShelterExistence(Shelter shelter)
+		{
+			var res = await _context.Shelters.FirstOrDefaultAsync(a => a.ShelterName.ToLower() == (shelter.ShelterName != null ? shelter.ShelterName.ToLower() : "") || a.ShelterID == shelter.ShelterID);
+			if ( res != null)
+			{
+				return true;
+			}
+			else
+				return false;
+		}
+		public async Task<Shelter> AddShelter(Shelter shelter)
+		{
+			if (shelter != null)
+			{
+				await _context.Shelters.AddAsync(shelter);
+				await _context.SaveChangesAsync();
+				return shelter;
+			}
+			else
+				return null;
 		}
 	}
 }

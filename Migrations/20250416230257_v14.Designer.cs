@@ -12,8 +12,8 @@ using PetShelter.Data;
 namespace PetShelter.Migrations
 {
     [DbContext(typeof(Db_Context))]
-    [Migration("20250414192832_v12")]
-    partial class v12
+    [Migration("20250416230257_v14")]
+    partial class v14
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,7 +36,7 @@ namespace PetShelter.Migrations
                     b.Property<int>("Adoption_State")
                         .HasColumnType("int");
 
-                    b.Property<int>("CategoryID")
+                    b.Property<int>("Category_FK")
                         .HasColumnType("int");
 
                     b.Property<int>("age")
@@ -58,9 +58,43 @@ namespace PetShelter.Migrations
 
                     b.HasKey("id");
 
-                    b.HasIndex("CategoryID");
+                    b.HasIndex("Category_FK");
 
                     b.ToTable("Animals");
+                });
+
+            modelBuilder.Entity("PetShelter.Models.Shelter", b =>
+                {
+                    b.Property<int>("ShelterID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ShelterID"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShelterName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("ShelterID");
+
+                    b.HasIndex("ShelterName")
+                        .IsUnique();
+
+                    b.ToTable("Shelters");
                 });
 
             modelBuilder.Entity("PetShelter.Models.ShelterCategory", b =>
@@ -81,9 +115,17 @@ namespace PetShelter.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int>("Shelter_FK")
+                        .HasColumnType("int");
+
                     b.HasKey("CategoryId");
 
-                    b.ToTable("ShelterCategory", (string)null);
+                    b.HasIndex("CategoryName")
+                        .IsUnique();
+
+                    b.HasIndex("Shelter_FK");
+
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("PetShelter.Models.User", b =>
@@ -181,7 +223,16 @@ namespace PetShelter.Migrations
                 {
                     b.HasOne("PetShelter.Models.ShelterCategory", null)
                         .WithMany()
-                        .HasForeignKey("CategoryID")
+                        .HasForeignKey("Category_FK")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("PetShelter.Models.ShelterCategory", b =>
+                {
+                    b.HasOne("PetShelter.Models.Shelter", null)
+                        .WithMany()
+                        .HasForeignKey("Shelter_FK")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

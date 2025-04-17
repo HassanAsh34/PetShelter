@@ -85,29 +85,28 @@ namespace PetShelter.Controllers
 				return Unauthorized();
 		}
 
-		[HttpPut("EditUserDetails")]
-		public async Task<ActionResult<UserDto>> editUserDetails([FromBody] UserDto U)
-		{
-			if (Authorize(2))
-			{
-				switch(U)
-				{
-					case AdminDto admin:
-						if(Authorize(1))
-						{
-							U = await _adminServices.UpdateUserDetails(U);
-							return Ok(U);
-						}
-						else
-							return Unauthorized();
-					default:
-						U = await _adminServices.UpdateUserDetails(U);
-						return Ok(U);
-				}
-			}
-			else
-				return Unauthorized();
-		}
+		//[HttpPut("EditUserDetails")]
+		//public async Task<ActionResult<UserDto>> editUserDetails([FromBody] UserDto U)
+		//{
+		//	if (Authorize(2))
+		//	{
+		//		//switch(U)
+		//		//{
+		//		//	case AdminDto admin:
+		//		//		if(Authorize(1))
+		//		//		{
+		//		//			//var u = await _adminServices.UpdateUserDetails(U);
+		//		//			//return Ok(U);
+		//		//		}
+		//		//		else
+		//		//			return Unauthorized();
+		//		//	default:
+		//		//		var u = await _adminServices.UpdateUserDetails(U);
+		//		//		return Ok(U);
+		//	}
+		//	else
+		//		return Unauthorized();
+		//}
 
 		[HttpPut("Activate-DeactivateAccount")]
 		public async Task<ActionResult<string>> Activate_Deactivate_User([FromBody] UserDto U)
@@ -220,15 +219,21 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<ShelterCategory>> AddCategory([FromBody]ShelterCategory Cat)
+		public async Task<ActionResult<object>> AddCategory([FromBody]ShelterCategory Cat)
 		{
 			if (Authorize(3))
 			{
-				ShelterCategory category = await _adminServices.addCategory(Cat);
-				if (category == null)
-					return BadRequest(new { message = "the Category Already Exist" });
+				var category = await _adminServices.addCategory(Cat);
+				if (category is ShelterCategory cat)
+					return Ok(new {cat ,message = "the Category was added successfully" });
 				else
-					return Ok(new {category ,message = "the Category was added successfully" });
+				{
+					if((int)category == -1)
+						return BadRequest(new { message = "that Shelter doesn't Exist" });
+					else
+						return BadRequest(new { message = "that Category already Exist" });
+
+				}
 			}
 			else
 			{
@@ -279,6 +284,31 @@ namespace PetShelter.Controllers
 			else
 				return Unauthorized();
 		}
+
+		[HttpPost("Add Shelter")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status201Created)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+
+		public async Task<ActionResult<ShelterDto>> AddShelter(Shelter shelter)
+		{
+			if (Authorize(1))
+			{
+				var res = await _adminServices.addShelter(shelter);
+				if (res != null)
+				{
+					return Ok(res);
+				}
+				else
+				{
+					return BadRequest(new { message = "Shelter already exists" });
+				}
+			}
+			else
+				return Unauthorized();
+		}
+
+
 
 
 	}

@@ -22,6 +22,10 @@ namespace PetShelter.Data
 
 		public DbSet<ShelterStaff> Staff { get; set; }
 
+		public DbSet<Shelter> Shelters { get; set; }
+
+		public DbSet<AdoptionRequest> AdoptionRequests { get; set; }
+
 		//protected override void OnModelCreating(ModelBuilder modelBuilder) //single table with descriminator
 		//{
 		//	modelBuilder.Entity<User>()
@@ -44,9 +48,13 @@ namespace PetShelter.Data
 			modelBuilder.Entity<ShelterStaff>()
 				.ToTable("ShelterStaff");
 
-			modelBuilder.Entity<Animal>().HasOne<ShelterCategory>().WithMany().HasForeignKey(A=>A.CategoryID);
+			modelBuilder.Entity<AdoptionRequest>().HasKey(A => new {A.PetId, A.AdopterId });
 
-			modelBuilder.Entity<ShelterCategory>().ToTable("ShelterCategory");
+			modelBuilder.Entity<Animal>().HasOne<ShelterCategory>().WithMany().HasForeignKey(A=>A.Category_FK);
+
+			modelBuilder.Entity<ShelterCategory>().HasOne<Shelter>().WithMany().HasForeignKey(C => C.Shelter_FK).OnDelete(DeleteBehavior.Cascade);
+
+			modelBuilder.Entity<Shelter>().HasIndex("ShelterName").IsUnique();
 
 		}
 

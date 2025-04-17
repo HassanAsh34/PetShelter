@@ -30,7 +30,7 @@ namespace PetShelter.Models
 		public int Adoption_State { get; set; }
 
 		//[ForeignKey("")]
-		public int CategoryID { get; set; } // navigation property
+		public int Category_FK { get; set; } // navigation property
 		public enum AdoptionState
 		{
 			Adopted,

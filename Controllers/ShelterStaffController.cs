@@ -66,12 +66,12 @@ namespace PetShelter.Controllers
 		[HttpGet("List Pets")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		public async Task<ActionResult<IEnumerable<AnimalDto>>> ListPets([FromQuery]int ? CatId =0	)
 		{
 			IEnumerable<AnimalDto> animalDtos = await _shelterStaffServices.ListPets(CatId);
 			if(animalDtos == null)
-				return NotFound();
+				return NoContent();
 			else
 				return Ok(animalDtos);
 		}

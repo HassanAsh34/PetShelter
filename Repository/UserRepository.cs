@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.AccessControl;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PetShelter.Data;
+using PetShelter.DTOs;
 using PetShelter.Models;
 
 namespace PetShelter.Repository
@@ -100,5 +102,33 @@ namespace PetShelter.Repository
             }
             return null;
         }
+
+        public async Task<int> UpdateUser(UserDto user)
+        {
+            switch (user)
+            {
+                case AdminDto admin:
+                    Admin A = await _context.Admins.FirstOrDefaultAsync(A => A.Id == user.Id);
+                    //A.Role = (int)admin.Role;
+                    A.Email = admin.Email;
+                    A.Uname = admin.Uname;
+                    A.AdminType = (int)admin.adminType;
+                    A.UpdatedAt = DateTime.Now;
+                    //return await _context.SaveChangesAsync();
+                    break;
+                case StaffDto staff:
+                    ShelterStaff S = await _context.Staff.FirstOrDefaultAsync(s => s.Id == user.Id);
+                    S.Phone = staff.Phone;
+                    S.Email = staff.Email;
+                    S.Uname = staff.Uname;
+                    S.StaffType = (int)staff.StaffType;
+                    S.UpdatedAt = DateTime.Now;
+                    //return await _context.SaveChangesAsync();
+                    break;
+                default:
+                    break;
+            }
+			return await _context.SaveChangesAsync();
+		}
     }
 }

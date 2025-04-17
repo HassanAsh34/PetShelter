@@ -105,10 +105,14 @@ namespace PetShelter.Services
 				return null;
 		}
 
-		public async Task<UserDto> UpdateUserDetails(UserDto u)
+		public async Task<bool> UpdateUserDetails(UserDto u)
 		{
-			//var U = await _adminRepository.UpdateUser(u);
-			return null;
+			var U = await _adminRepository.UpdateUser(u);
+			if (U > 0)
+				return true;
+			else
+				return false;
+			//return null;
 		}
 		public async Task<bool> deleteUser(UserDto u)
 		{
@@ -123,9 +127,14 @@ namespace PetShelter.Services
 		//Activating and deactivating Account not implemented yet
 
 		//shelter services
-		public async Task<ShelterCategory> addCategory(ShelterCategory category)
+		public async Task<object> addCategory(ShelterCategory category)
 		{
-			return await _adminRepository.addCategory(category);
+			if (await _adminRepository.ShelterExistence(new Shelter { ShelterID = category.Shelter_FK }) == true)
+			{
+				return await _adminRepository.addCategory(category);
+			}
+			else
+				return -1; //indicates that the shelter does not exist
 		}
 
 		public async Task<IEnumerable<ShelterCategory>> ListCategories()
@@ -144,6 +153,32 @@ namespace PetShelter.Services
 		}
 
 		//edit category need to be handled
+
+
+		//shelter
+
+		public async Task<ShelterDto> addShelter(Shelter shelter)
+		{
+
+			if (shelter != null)
+			{
+				if (await _adminRepository.ShelterExistence(shelter) != true)
+				{
+					var res = await _adminRepository.AddShelter(shelter);
+					return new ShelterDto
+					{
+						ShelterId = res.ShelterID,
+						ShelterName = res.ShelterName,
+						ShelterLocation = res.Location,
+						ShelterPhone = res.Phone,
+					};
+				}
+				else
+					return null; // indicates that the shelter exists
+			}
+			else
+				return null;
+		}
 
 	}
 }

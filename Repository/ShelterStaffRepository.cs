@@ -24,7 +24,7 @@ namespace PetShelter.Repository
 		{
 			if (CatId != 0)
 			{
-				return await _context.Animals.Where(a => a.CategoryID == CatId).ToListAsync();
+				return await _context.Animals.Where(a => a.Category_FK == CatId).ToListAsync();
 			}
 			else
 				return await _context.Animals.ToListAsync();
