@@ -42,7 +42,7 @@ namespace PetShelter.Services
 		}
 		public async Task<int> AddPet(Animal animal)
 		{
-			if (await _shelterStaffRepository.CategoryExistence(animal.CategoryID) == true)
+			if (await _shelterStaffRepository.CategoryExistence(animal.Category_FK) == true)
 			{
 				var res = await _shelterStaffRepository.AddPet(animal);
 				if (res > 0)

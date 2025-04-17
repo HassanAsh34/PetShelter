@@ -23,6 +23,8 @@ namespace PetShelter.Models
 		[Required]
 		public string CategoryDescription { get; set; }
 
+		public int Shelter_FK { get; set; } // foreign key
+
 		//public List<Animal> Animal { get; set; } //navigation property
 	}
 }
