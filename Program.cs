@@ -41,6 +41,17 @@ public class Program
 			options.JsonSerializerOptions.Converters.Add(new UserDtoCovertor());
 		});
 
+		//cors origin
+		builder.Services.AddCors(options =>
+		{
+			options.AddPolicy("AllowFrontend", policy =>
+			{
+				policy.WithOrigins("http://localhost:3000") // change this to your frontend's URL
+					  .AllowAnyHeader()
+					  .AllowAnyMethod();
+			});
+		});
+
 		builder.Services.AddControllers();
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen(options =>
@@ -96,7 +107,8 @@ public class Program
 			app.UseSwaggerUI();
 			
 		}
-
+		app.UseCors("Allow Frontend");
+		//app.UseCors()
 		app.UseHttpsRedirection();
 		app.UseAuthentication();
 		app.UseAuthorization();

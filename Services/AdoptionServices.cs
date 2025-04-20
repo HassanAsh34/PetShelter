@@ -88,7 +88,7 @@ namespace PetShelter.Services
 			return -1;//something went wrong
 		}
 
-		/*public async Task<bool> CancelAdoption(int id)
+		public async Task<bool> CancelAdoption(int id)
 		{
 			if (id != 0)
 			{
@@ -101,6 +101,28 @@ namespace PetShelter.Services
 					return false;
 			}
 			return false;//something went wrong
-		}*/
+		}
+
+		public async Task<object> ShowPet(int id)
+		{
+			if (id != 0)
+			{
+				var res = await _adoptionRepository.ListPets(id);
+				if (res is Animal animal)
+				{
+					return new AnimalDto
+					{
+						id = animal.id,
+						name = animal.name,
+						Adoption_State = ((Animal.AdoptionState)animal.Adoption_State).ToString(),
+						age = animal.age,
+						breed = animal.breed
+					};
+				}
+				else
+					return 0;
+			}
+			return -1;//something went wrong
+		}
 	}
 }
