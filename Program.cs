@@ -104,12 +104,12 @@ public class Program
 		if (app.Environment.IsDevelopment())
 		{
 			app.UseSwagger();
-			app.UseSwaggerUI();
+            app.UseSwaggerUI();
 			
 		}
-		app.UseCors("Allow Frontend");
+		app.UseCors("AllowFrontend");
 		//app.UseCors()
-		app.UseHttpsRedirection();
+		//app.UseHttpsRedirection();
 		app.UseAuthentication();
 		app.UseAuthorization();
 		app.MapControllers();

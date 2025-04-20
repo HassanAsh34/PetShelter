@@ -1,11 +1,12 @@
 {
   "Version": 1,
-  "Hash": "8qyjOgLXfRjA/gi/vlWo5ITpqVSUEX4OEzu7JCpUe3Q=",
+  "Hash": "0l+t9mZdtj80apRx5xfXr/RCOYIFAwwR8Xtk7NPAjuk=",
   "Source": "PetShelter",
   "BasePath": "_content/PetShelter",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [],
-  "Assets": []
+  "Assets": [],
+  "Endpoints": []
 }

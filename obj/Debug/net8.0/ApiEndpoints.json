@@ -607,7 +607,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AuthenticationController",
     "Method": "Login",
-    "RelativePath": "Login",
+    "RelativePath": "AuthApi/Login",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -642,7 +642,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AuthenticationController",
     "Method": "Register",
-    "RelativePath": "Register",
+    "RelativePath": "AuthApi/Register",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
