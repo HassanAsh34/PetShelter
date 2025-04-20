@@ -68,6 +68,46 @@ namespace PetShelter.Controllers
 				return Ok(history);
 			}
 		}
+
+		[HttpPut("Cancel Adoption/{id}")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<ActionResult<bool>> CancelAdoption(int id)
+		{
+			var res = await _adoptionServices.CancelAdoption(id);
+			if (res)
+			{
+				return Ok(new { message = "Your Adoption Request is cancelled successfully" });
+			}
+			else
+			{
+				return BadRequest(new { message = "Something went wrong" });
+			}
+		}
+
+		[HttpGet("Show Pet/{id}")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<object>> ShowPet(int id)
+		{
+			var pet = await _adoptionServices.ShowPet(id);
+			if (pet is AnimalDto animalDto)
+			{
+				return Ok(animalDto);
+			}
+			else
+			{
+				if ((int)pet == 0)
+				{
+					return NotFound(new { message = "Pet not found" });
+				}
+				else
+				{
+					return BadRequest(new { message = "Something went wrong" });
+				}
+			}
+		}
+
 	}
 
 }
