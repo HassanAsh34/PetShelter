@@ -60,6 +60,27 @@ namespace PetShelter.Repository
 			return await _context.Animals.FirstOrDefaultAsync(a=>a.id== id);
 		}
 
+		public async Task<int> UpdatePet(Animal animal)
+		{
+			if (animal != null)
+			{
+				Animal a = await _context.Animals.FirstOrDefaultAsync(A => A.id == animal.id);
+				//if(a == null)
+				//	return 0; //animal not found
+				a.name = animal.name;
+				a.age = animal.age;
+				a.breed = animal.breed;
+				a.Adoption_State =animal.Adoption_State;
+				a.medication_history = animal.medication_history;
+				_context.Animals.Update(a);
+				int res = _context.SaveChanges();
+				return res;
+			}
+			else
+			{
+				return -1;//something went wrong
+			}
+		}
 		public async Task<int> DeletePet(AnimalDto animal)
 		{
 			if (animal != null)
@@ -71,7 +92,7 @@ namespace PetShelter.Repository
 			}
 			else
 			{
-				return 0;
+				return 0; //something went wrong
 			}
 		}
 

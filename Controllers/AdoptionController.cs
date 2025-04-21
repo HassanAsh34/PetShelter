@@ -18,7 +18,7 @@ namespace PetShelter.Controllers
 		}
 
 		[AllowAnonymous]
-		[HttpGet("List Pets")]
+		[HttpGet("List-Pets")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		//[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		//[ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -52,7 +52,7 @@ namespace PetShelter.Controllers
 			}
 		}
 
-		[HttpGet("Adoption History")]
+		[HttpGet("Adoption-History")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task<ActionResult<IEnumerable<AdoptionRequestDto>>> AdoptionHistory()
@@ -69,7 +69,7 @@ namespace PetShelter.Controllers
 			}
 		}
 
-		[HttpPut("Cancel Adoption/{id}")]
+		[HttpPut("Cancel-Adoption/{id}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<ActionResult<bool>> CancelAdoption(int id)
@@ -85,26 +85,25 @@ namespace PetShelter.Controllers
 			}
 		}
 
-		[HttpGet("Show Pet/{id}")]
+		[HttpGet("View-Pet/{id}")]
+		[AllowAnonymous]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<ActionResult<object>> ShowPet(int id)
+		public async Task<ActionResult<object>> ViewPet(int id)
 		{
 			var pet = await _adoptionServices.ShowPet(id);
-			if (pet is AnimalDto animalDto)
+			if (pet != null)
 			{
-				return Ok(animalDto);
+				return Ok(pet);
 			}
 			else
 			{
-				if ((int)pet == 0)
-				{
 					return NotFound(new { message = "Pet not found" });
-				}
-				else
-				{
-					return BadRequest(new { message = "Something went wrong" });
-				}
+				//}
+				//else
+				//{
+				//	return BadRequest(new { message = "Something went wrong" });
+				//}
 			}
 		}
 

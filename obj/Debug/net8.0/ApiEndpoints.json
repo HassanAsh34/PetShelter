@@ -2,7 +2,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AdminController",
     "Method": "Activate_Deactivate_User",
-    "RelativePath": "Admin/Activate-DeactivateAccount",
+    "RelativePath": "Admin/Activate-Deactivate-Account",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -28,7 +28,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AdminController",
     "Method": "AddAdmin",
-    "RelativePath": "Admin/Add Admin Account",
+    "RelativePath": "Admin/Add-Admin-Account",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -72,7 +72,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AdminController",
     "Method": "AddCategory",
-    "RelativePath": "Admin/Add Category",
+    "RelativePath": "Admin/Add-Category",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -112,7 +112,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AdminController",
     "Method": "AddShelter",
-    "RelativePath": "Admin/Add Shelter",
+    "RelativePath": "Admin/Add-Shelter",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -156,7 +156,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AdminController",
     "Method": "addUser",
-    "RelativePath": "Admin/Add User",
+    "RelativePath": "Admin/Add-User",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -191,7 +191,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AdminController",
     "Method": "BanUser",
-    "RelativePath": "Admin/BanAccount",
+    "RelativePath": "Admin/Ban-Account",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -217,7 +217,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AdminController",
     "Method": "DeleteUser",
-    "RelativePath": "Admin/Delete Category",
+    "RelativePath": "Admin/Delete-Category",
     "HttpMethod": "DELETE",
     "IsController": true,
     "Order": 0,
@@ -257,7 +257,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AdminController",
     "Method": "DeleteUser",
-    "RelativePath": "Admin/Delete User",
+    "RelativePath": "Admin/Delete-User",
     "HttpMethod": "DELETE",
     "IsController": true,
     "Order": 0,
@@ -297,7 +297,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AdminController",
     "Method": "getUsers",
-    "RelativePath": "Admin/List Users",
+    "RelativePath": "Admin/List-Users",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -335,7 +335,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AdminController",
     "Method": "getCategories",
-    "RelativePath": "Admin/Show Categories",
+    "RelativePath": "Admin/Show-Categories",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -373,7 +373,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AdminController",
     "Method": "getUserDetails",
-    "RelativePath": "Admin/UserDetails/{id}",
+    "RelativePath": "Admin/User-Details/{id}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -461,7 +461,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AdoptionController",
     "Method": "AdoptionHistory",
-    "RelativePath": "Adoption/Adoption History",
+    "RelativePath": "Adoption/Adoption-History",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -490,7 +490,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AdoptionController",
     "Method": "CancelAdoption",
-    "RelativePath": "Adoption/Cancel Adoption/{id}",
+    "RelativePath": "Adoption/Cancel-Adoption/{id}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
@@ -525,7 +525,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AdoptionController",
     "Method": "ListPets",
-    "RelativePath": "Adoption/List Pets",
+    "RelativePath": "Adoption/List-Pets",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -555,8 +555,8 @@
   },
   {
     "ContainingType": "PetShelter.Controllers.AdoptionController",
-    "Method": "ShowPet",
-    "RelativePath": "Adoption/Show Pet/{id}",
+    "Method": "ViewPet",
+    "RelativePath": "Adoption/View-Pet/{id}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -607,7 +607,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AuthenticationController",
     "Method": "Login",
-    "RelativePath": "Login",
+    "RelativePath": "AuthApi/Login",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -642,7 +642,7 @@
   {
     "ContainingType": "PetShelter.Controllers.AuthenticationController",
     "Method": "Register",
-    "RelativePath": "Register",
+    "RelativePath": "AuthApi/Register",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -677,7 +677,7 @@
   {
     "ContainingType": "PetShelter.Controllers.ShelterStaffController",
     "Method": "AddPet",
-    "RelativePath": "Shelter Management/Add Pet",
+    "RelativePath": "Shelter Management/Add-Pet",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -720,8 +720,52 @@
   },
   {
     "ContainingType": "PetShelter.Controllers.ShelterStaffController",
+    "Method": "DeletePet",
+    "RelativePath": "Shelter Management/Delete-Pet",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "animal",
+        "Type": "PetShelter.DTOs.AnimalDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Boolean",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 401
+      }
+    ]
+  },
+  {
+    "ContainingType": "PetShelter.Controllers.ShelterStaffController",
     "Method": "ListPets",
-    "RelativePath": "Shelter Management/List Pets",
+    "RelativePath": "Shelter Management/List-Pets",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -761,7 +805,7 @@
   {
     "ContainingType": "PetShelter.Controllers.ShelterStaffController",
     "Method": "ListCategories",
-    "RelativePath": "Shelter Management/Show Ctegories",
+    "RelativePath": "Shelter Management/Show-Categories",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -784,6 +828,81 @@
           "text/json"
         ],
         "StatusCode": 401
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      }
+    ]
+  },
+  {
+    "ContainingType": "PetShelter.Controllers.ShelterStaffController",
+    "Method": "UpdatePet",
+    "RelativePath": "Shelter Management/Update-Pet",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "animal",
+        "Type": "PetShelter.Models.Animal",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "PetShelter.Models.Animal",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 401
+      }
+    ]
+  },
+  {
+    "ContainingType": "PetShelter.Controllers.ShelterStaffController",
+    "Method": "ShowPet",
+    "RelativePath": "Shelter Management/View-Pet/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
       },
       {
         "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",

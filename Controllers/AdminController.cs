@@ -47,7 +47,7 @@ namespace PetShelter.Controllers
 		}
 		//[Authorize()]
 		//User managing
-		[HttpGet("List Users")]
+		[HttpGet("List-Users")]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -62,7 +62,7 @@ namespace PetShelter.Controllers
 				return Unauthorized();
 		}
 
-		[HttpGet("UserDetails/{id}")]
+		[HttpGet("User-Details/{id}")]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -108,7 +108,7 @@ namespace PetShelter.Controllers
 		//		return Unauthorized();
 		//}
 
-		[HttpPut("Activate-DeactivateAccount")]
+		[HttpPut("Activate-Deactivate-Account")]
 		public async Task<ActionResult<string>> Activate_Deactivate_User([FromBody] UserDto U)
 		{
 			if (((User.UserType)U.Role == Models.User.UserType.Admin && Authorize(1)) || ((User.UserType)U.Role != Models.User.UserType.Admin && Authorize(2)))
@@ -131,7 +131,7 @@ namespace PetShelter.Controllers
 		//		return Unauthorized();
 		//}
 
-		[HttpPut("BanAccount")]
+		[HttpPut("Ban-Account")]
 		public async Task<ActionResult<bool>> BanUser([FromBody] UserDto U)
 		{
 			if (((User.UserType)U.Role == Models.User.UserType.Admin && Authorize(1)) || ((User.UserType)U.Role != Models.User.UserType.Admin && Authorize(2)))
@@ -143,7 +143,7 @@ namespace PetShelter.Controllers
 				return Unauthorized();
 		}
 
-		[HttpPost("Add User")]
+		[HttpPost("Add-User")]
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<ActionResult<UserDto>> addUser([FromBody] User user)
@@ -163,7 +163,7 @@ namespace PetShelter.Controllers
 			}
 		}
 
-		[HttpPost("Add Admin Account")]
+		[HttpPost("Add-Admin-Account")]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -188,7 +188,7 @@ namespace PetShelter.Controllers
 				return Unauthorized();
 		}
 
-		[HttpDelete("Delete User")]
+		[HttpDelete("Delete-User")]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -215,7 +215,7 @@ namespace PetShelter.Controllers
 		//Shelter managing "creating categories within shelter"
 
 		
-		[HttpPost("Add Category")]
+		[HttpPost("Add-Category")]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -244,7 +244,7 @@ namespace PetShelter.Controllers
 		}
 
 
-		[HttpGet("Show Categories")]
+		[HttpGet("Show-Categories")]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -263,7 +263,7 @@ namespace PetShelter.Controllers
 				return Unauthorized();
 		}
 
-		[HttpDelete("Delete Category")]
+		[HttpDelete("Delete-Category")]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -285,7 +285,7 @@ namespace PetShelter.Controllers
 				return Unauthorized();
 		}
 
-		[HttpPost("Add Shelter")]
+		[HttpPost("Add-Shelter")]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]

@@ -66,12 +66,37 @@ namespace PetShelter.Services
 				return 0; // category not found
 		}
 
-		public async Task<Animal> ViewPet(AnimalDto animal)
+		public async Task<Animal> ViewPet(int id)
 		{
-			Animal pet = await _shelterStaffRepository.ViewPet(animal.id);
-			return pet;
+			Animal pet = await _shelterStaffRepository.ViewPet(id);
+			if(pet == null)
+			{
+				return null; //pet not found
+			}
+			else
+				return pet;
+			//return pet;
 		}
 
+		public async Task<object> UpdatePet(Animal animal)
+		{
+			var res = await _shelterStaffRepository.UpdatePet(animal);
+			if (res > 0)
+			{
+				return new AnimalDto
+				{
+					id = animal.id,
+					name = animal.name,
+					Adoption_State = animal.Adoption_State.ToString(),
+					age = animal.age,
+					breed = animal.breed
+				};
+			}
+			else
+			{
+				return res;
+			}
+		}
 		public async Task<bool> RemovePet(AnimalDto p)
 		{
 			var res = await _shelterStaffRepository.DeletePet(p);

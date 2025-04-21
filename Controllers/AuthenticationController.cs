@@ -27,7 +27,7 @@ namespace PetShelter.Controllers
 			//_userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
 		}
 
-		[HttpPost("/Register")]
+		[HttpPost("Register")]
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<ActionResult<UserDto>> Register([FromBody] User user)
@@ -47,7 +47,7 @@ namespace PetShelter.Controllers
 			}
 		}
 		//[Authorize]
-		[HttpPost("/Login")]
+		[HttpPost("Login")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<ActionResult<UserDto>> Login([FromBody] LoginDto login)

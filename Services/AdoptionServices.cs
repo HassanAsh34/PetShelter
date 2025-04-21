@@ -105,24 +105,15 @@ namespace PetShelter.Services
 
 		public async Task<object> ShowPet(int id)
 		{
-			if (id != 0)
+			var res = await _adoptionRepository.ShowPet(id);
+			if (res != null)
 			{
-				var res = await _adoptionRepository.ListPets(id);
-				if (res is Animal animal)
-				{
-					return new AnimalDto
-					{
-						id = animal.id,
-						name = animal.name,
-						Adoption_State = ((Animal.AdoptionState)animal.Adoption_State).ToString(),
-						age = animal.age,
-						breed = animal.breed
-					};
-				}
-				else
-					return 0;
+				return res;
 			}
-			return -1;//something went wrong
+			else
+				return null;
+			//}
+			//return -1;//something went wrong
 		}
 	}
 }
