@@ -158,5 +158,24 @@ namespace PetShelter.Controllers
 			}
 
 		}
+
+		[HttpGet("Show-Adoption-Requests")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+
+		public async Task<ActionResult<IEnumerable<AdoptionRequestDto>>> ListAdoptionRequests()
+		{
+			if (Authorize(2) == false)
+				return Unauthorized(new { message = "You are not authorized to perform this operation" });
+			else
+			{
+				IEnumerable<AdoptionRequestDto> adoptionRequests = await _shelterStaffServices.ListAdoptionRequests();
+				if (adoptionRequests == null)
+					return NoContent();
+				else
+					return Ok(adoptionRequests);
+			}
+		}
 	}
 }

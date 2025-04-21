@@ -106,5 +106,28 @@ namespace PetShelter.Services
 			}
 			return false;
 		}
+
+		public async Task<IEnumerable<AdoptionRequestDto>> ListAdoptionRequests()
+		{
+			var res = await _shelterStaffRepository.ListAdoptionRequests();
+			List<AdoptionRequestDto> adoptionRequestDtos = new List<AdoptionRequestDto>();
+			if (res.Count() != 0)
+			{
+				res.ToList().ForEach(request =>
+				{
+					adoptionRequestDtos.Add(new AdoptionRequestDto
+					{
+						AdopterId = request.AdopterId,
+						PetId = request.PetId,
+						Status = ((AdoptionRequest.AdoptionRequestStatus)request.Status).ToString(),
+					});
+				});
+				return adoptionRequestDtos;
+			}
+			else
+			{
+				return null;
+			}
+		}
 	}
 }

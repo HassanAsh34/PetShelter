@@ -96,6 +96,11 @@ namespace PetShelter.Repository
 			}
 		}
 
+		public async Task<IEnumerable<AdoptionRequest>> ListAdoptionRequests()
+		{
+			return await _context.AdoptionRequests.ToListAsync();
+		}
+
 		//update
 	}
 }

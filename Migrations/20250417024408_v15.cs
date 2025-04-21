@@ -12,7 +12,7 @@ namespace PetShelter.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "AdoptionRequest",
+                name: "AdoptionRequests",
                 columns: table => new
                 {
                     AdopterId = table.Column<int>(type: "int", nullable: false),
@@ -31,7 +31,7 @@ namespace PetShelter.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AdoptionRequest");
+                name: "AdoptionRequests");
         }
     }
 }
