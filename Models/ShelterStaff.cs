@@ -15,6 +15,8 @@ namespace PetShelter.Models
 
 		public int Shelter_FK { get; set; }
 
+		public Shelter? Shelter { get; set; }
+
 		public enum StaffTypes
 		{
 			Manager,

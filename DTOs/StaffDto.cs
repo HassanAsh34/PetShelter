@@ -11,7 +11,9 @@ namespace PetShelter.DTOs
 
 		public DateOnly? HiredDate { get; set; }
 
-		public int Shelter_FK { get; set; }
+		public int Shelter_FK { get; set; } //dont forget to remove that part
+
+		public ShelterDto? Shelter { get; set; }
 
 		[Required]
 		public ShelterStaff.StaffTypes StaffType { get; set; }

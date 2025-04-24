@@ -14,48 +14,56 @@ namespace PetShelter.Services
 			_adoptionRepository = adoptionRepository ?? throw new ArgumentNullException(nameof(adoptionRepository));
 		}
 
-		public async Task<IEnumerable<AnimalDto>> ListPets(int? CatId = 0)
+		public async Task<IEnumerable<AnimalDto>> ListPets(string? catname ="")//done
 		{
-			IEnumerable<Animal> animals = await _adoptionRepository.ListPets(CatId);
-			List<AnimalDto> animalDtos = new List<AnimalDto>();
-			animals.ToList().ForEach(animal =>
+			IEnumerable<Animal> animals = await _adoptionRepository.ListPets(0,0,catname);
+			//IEnumerable<Animal> animals = await _shelterStaffRepository.ListPets(CatId);
+			if (animals != null)
 			{
-				animalDtos.Add(new AnimalDto
+				List<AnimalDto> animalDtos = new List<AnimalDto>();
+				animals.ToList().ForEach(animal =>
 				{
-					id = animal.id,
-					name = animal.name,
-					Adoption_State = ((Animal.AdoptionState)animal.Adoption_State).ToString(),
-					age = animal.age,
-					breed = animal.breed
+					animalDtos.Add(new AnimalDto
+					{
+						id = animal.id,
+						name = animal.name,
+						Adoption_State = ((Animal.AdoptionState)animal.Adoption_State).ToString(),
+						age = animal.age,
+						breed = animal.breed,
+						ShelterCategory = new CategoryDto
+						{
+							CategoryId = animal.ShelterCategory.CategoryId,
+							CategoryName = animal.ShelterCategory.CategoryName,
+						},
+						shelterDto = new ShelterDto
+						{
+							ShelterId = animal.Shelter.ShelterID,
+							ShelterName = animal.Shelter.ShelterName,
+							ShelterLocation = animal.Shelter.Location,
+							ShelterPhone = animal.Shelter.Phone,
+						}
+					});
 				});
-			});
-			if(animalDtos.Count() == 0)
-			{
-				return null;//not found
+				return animalDtos;
 			}
 			else
 			{
-				return animalDtos;
+				return null; //no content
 			}
 		}
 
-		public async Task<object> Adopt(AdoptionRequest adoption)
+		public async Task<int> Adopt(AdoptionRequest adoption)
 		{
 			if (adoption != null)
 			{
-				var res = await _adoptionRepository.Adopt(adoption);
-				if (res is AdoptionRequest adoptionRequest)
+				if(await _adoptionRepository.RequestExistence(adoption))
 				{
-					return new AdoptionRequestDto
-					{
-						//id = res.id,
-						PetId = adoptionRequest.PetId,
-						AdopterId = adoptionRequest.AdopterId,
-						Status = adoptionRequest.Status.ToString(),
-					};
+					return 0;// request exist
 				}
 				else
-					return 0;// adoption failed
+				{
+					return await _adoptionRepository.Adopt(adoption);
+				}
 			}
 			else
 				return -1;// something went wrong
@@ -71,8 +79,16 @@ namespace PetShelter.Services
 				{
 					adoptionRequestDtos.Add(new AdoptionRequestDto
 					{
-						PetId = adoption.PetId,
-						AdopterId = adoption.AdopterId,
+						Animal = new AnimalDto
+						{
+							id = adoption.Pet.id,
+							name = adoption.Pet.name,
+						},
+						Adopter = new AdopterDto
+						{
+							Id = adoption.AdopterId_FK,
+							Uname = adoption.Adopter.Uname,
+						},
 						Status = ((AdoptionRequest.AdoptionRequestStatus)adoption.Status).ToString(),
 					});
 				});

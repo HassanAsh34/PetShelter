@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
+using PetShelter.DTOs;
 
 namespace PetShelter.Models
 {
@@ -25,6 +26,8 @@ namespace PetShelter.Models
 
 		public int Shelter_FK { get; set; } // foreign key
 
-		//public List<Animal> Animal { get; set; } //navigation property
+		public Shelter ?Shelter { get; set; } // navigation property 
+
+		public List<Animal> ?Animal { get; set; } //navigation property
 	}
 }

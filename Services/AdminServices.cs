@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using PetShelter.Data;
 using PetShelter.DTOs;
-using PetShelter.Migrations;
+//using PetShelter.Migrations;
 using PetShelter.Models;
 using PetShelter.Repository;
 
@@ -74,7 +74,14 @@ namespace PetShelter.Services
 							Phone = staff.Phone,
 							StaffType = (ShelterStaff.StaffTypes)staff.StaffType,
 							Activated = staff.Activated,
-							HiredDate = staff.HiredDate
+							HiredDate = staff.HiredDate,
+							Shelter = staff.Shelter != null ? new ShelterDto
+							{
+								ShelterId = staff.Shelter.ShelterID,
+								ShelterName = staff.Shelter.ShelterName,
+								ShelterLocation = staff.Shelter.Location,
+								ShelterPhone = staff.Shelter.Phone,
+							} : null
 						};
 					default:
 						return new AdopterDto
@@ -132,7 +139,17 @@ namespace PetShelter.Services
 		{
 			if (await _adminRepository.ShelterExistence(new Shelter { ShelterID = category.Shelter_FK }) == true)
 			{
-				return await _adminRepository.addCategory(category);
+				var res =  await _adminRepository.addCategory(category);
+				if (res is ShelterCategory cat)
+				{
+					return new CategoryDto
+					{
+						CategoryId = cat.CategoryId,
+						CategoryName = cat.CategoryName
+					};
+				}
+				else
+					return 0; //already exists
 			}
 			else
 				return -1; //indicates that the shelter does not exist
@@ -236,6 +253,7 @@ namespace PetShelter.Services
 		public async Task<int> deleteShelter(Shelter shelter)
 		{
 			await _adminRepository.UnassignFromShelter(shelter.ShelterID);
+			await _adminRepository.deleteCategory(null,true,shelter.ShelterID);
 			return await _adminRepository.DeleteShelter(shelter);
 		}
 	}

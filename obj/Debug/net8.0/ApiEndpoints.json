@@ -260,7 +260,7 @@
   },
   {
     "ContainingType": "PetShelter.Controllers.AdminController",
-    "Method": "DeleteUser",
+    "Method": "DeleteCategory",
     "RelativePath": "Admin/Delete-Category",
     "HttpMethod": "DELETE",
     "IsController": true,
@@ -739,8 +739,8 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "CatId",
-        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "Name": "Catname",
+        "Type": "System.String",
         "IsRequired": false
       }
     ],
@@ -905,6 +905,50 @@
           "text/json"
         ],
         "StatusCode": 201
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 401
+      }
+    ]
+  },
+  {
+    "ContainingType": "PetShelter.Controllers.ShelterStaffController",
+    "Method": "ApproveAdoptionRequest",
+    "RelativePath": "Shelter Management/Approve-Adoption-Request",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Rid",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Int32",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
       },
       {
         "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",

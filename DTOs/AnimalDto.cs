@@ -25,6 +25,9 @@ namespace PetShelter.DTOs
 
 		public string Adoption_State { get; set; }
 
-		//public ShelterCategory ShelterCategory { get; set; }
+
+		public CategoryDto ?ShelterCategory { get; set; }
+
+		public ShelterDto ? shelterDto { get; set; } // navigation property
 	}
 }

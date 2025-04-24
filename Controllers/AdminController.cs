@@ -52,7 +52,7 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<IEnumerable<UserDto>>> getUsers()
+		public async Task<ActionResult<IEnumerable<UserDto>>> getUsers()//done
 		{
 			if (Authorize(2))
 			{
@@ -67,7 +67,7 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<IEnumerable<UserDto>>> getUnassignedStaff()
+		public async Task<ActionResult<IEnumerable<UserDto>>> getUnassignedStaff()//done
 		{
 			if (Authorize(2))
 			{
@@ -127,7 +127,7 @@ namespace PetShelter.Controllers
 		//}
 
 		[HttpPut("Activate-Deactivate-Account")]
-		public async Task<ActionResult<string>> Activate_Deactivate_User([FromBody] UserDto U)
+		public async Task<ActionResult<string>> Activate_Deactivate_User([FromBody] UserDto U)//done
 		{
 			if (((User.UserType)U.Role == Models.User.UserType.Admin && Authorize(1)) || ((User.UserType)U.Role != Models.User.UserType.Admin && Authorize(2)))
 			{
@@ -150,7 +150,7 @@ namespace PetShelter.Controllers
 		//}
 
 		[HttpPut("Ban-Account")]
-		public async Task<ActionResult<bool>> BanUser([FromBody] UserDto U)
+		public async Task<ActionResult<bool>> BanUser([FromBody] UserDto U)//done
 		{
 			if (((User.UserType)U.Role == Models.User.UserType.Admin && Authorize(1)) || ((User.UserType)U.Role != Models.User.UserType.Admin && Authorize(2)))
 			{
@@ -164,7 +164,7 @@ namespace PetShelter.Controllers
 		[HttpPost("Add-User")]
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<UserDto>> addUser([FromBody] User user)
+		public async Task<ActionResult<UserDto>> addUser([FromBody] User user)//done
 		{
 			var res = await _adminServices.addUser(user);
 			if (res == null)
@@ -186,7 +186,7 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 
-		public async Task<ActionResult<AdminDto>> AddAdmin(Admin admin)
+		public async Task<ActionResult<AdminDto>> AddAdmin(Admin admin)//done
 		{
 			if (Authorize(1))
 			{
@@ -210,7 +210,7 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		public async Task<ActionResult<bool>> DeleteUser(UserDto U)
+		public async Task<ActionResult<bool>> DeleteUser(UserDto U)//done
 		{
 
 			if (((User.UserType)U.Role == Models.User.UserType.Admin && Authorize(1)) || ((User.UserType)U.Role != Models.User.UserType.Admin && Authorize(2)))
@@ -237,12 +237,12 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<object>> AddCategory([FromBody] ShelterCategory Cat)
+		public async Task<ActionResult<object>> AddCategory([FromBody] ShelterCategory Cat)//done
 		{
 			if (Authorize(3))
 			{
 				var category = await _adminServices.addCategory(Cat);
-				if (category is ShelterCategory cat)
+				if (category is CategoryDto cat)
 					return Ok(new { cat, message = "the Category was added successfully" });
 				else
 				{
@@ -285,7 +285,7 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		public async Task<ActionResult<bool>> DeleteUser(ShelterCategory category)
+		public async Task<ActionResult<bool>> DeleteCategory(ShelterCategory category)//done
 		{
 			if (Authorize(2))
 			{
@@ -308,7 +308,7 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 
-		public async Task<ActionResult<ShelterDto>> AddShelter(Shelter shelter)
+		public async Task<ActionResult<ShelterDto>> AddShelter(Shelter shelter)//done
 		{
 			if (Authorize(1))
 			{
@@ -393,7 +393,7 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<int>> DeleteShelter(Shelter shelter)
+		public async Task<ActionResult<int>> DeleteShelter(Shelter shelter)//done
 		{
 			if (Authorize(1))
 			{
@@ -415,7 +415,7 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<bool>> AssigntoShelter(StaffDto staff)
+		public async Task<ActionResult<bool>> AssigntoShelter(StaffDto staff)//done
 		{
 			if (Authorize(2))
 			{

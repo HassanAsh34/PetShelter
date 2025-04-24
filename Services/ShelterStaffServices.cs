@@ -21,15 +21,20 @@ namespace PetShelter.Services
 			{
 				if (cats.Count() != 0)
 				{
-					List<object> categoryDtos = new List<object>();
+					List<CategoryDto> categoryDtos = new List<CategoryDto>();
 					cats.ToList().ForEach(cat =>
 					{
-						categoryDtos.Add(new
+						categoryDtos.Add(new CategoryDto
 						{
-							id = cat.CategoryId,
-							name = cat.CategoryName,
-							description = cat.CategoryDescription,
-							shelter_FK = cat.Shelter_FK
+							CategoryId = cat.CategoryId,
+							CategoryName = cat.CategoryName,
+							Shelter = new ShelterDto
+							{
+								ShelterId = cat.Shelter.ShelterID,
+								ShelterName = cat.Shelter.ShelterName,
+								ShelterLocation = cat.Shelter.Location,
+								ShelterPhone = cat.Shelter.Phone,
+							}
 						});
 					});
 					return categoryDtos;
@@ -40,37 +45,58 @@ namespace PetShelter.Services
 			else
 				return -1; //not assigned to a shelter at the moment
 		}
-		public async Task<IEnumerable<AnimalDto>> ListPets(int ?CatId = 0)
+		public async Task<IEnumerable<AnimalDto>> ListPets(int ?CatId = 0, int? ShelterID = 0)
 		{
-			IEnumerable<Animal> animals = await _shelterStaffRepository.ListPets(CatId);
-			List<AnimalDto> animalDtos = new List<AnimalDto>();
-			animals.ToList().ForEach(animal => {
-				animalDtos.Add(new AnimalDto
+			IEnumerable<Animal> animals = await _shelterStaffRepository.ListPets(CatId, ShelterID);
+			//IEnumerable<Animal> animals = await _shelterStaffRepository.ListPets(CatId);
+			if(animals != null)
+			{
+				List<AnimalDto> animalDtos = new List<AnimalDto>();
+				animals.ToList().ForEach(animal =>
 				{
-					id = animal.id,
-					name = animal.name,
-					Adoption_State = ((Animal.AdoptionState)animal.Adoption_State).ToString(),
-					age = animal.age,
-					breed = animal.breed
+					animalDtos.Add(new AnimalDto
+					{
+						id = animal.id,
+						name = animal.name,
+						Adoption_State = ((Animal.AdoptionState)animal.Adoption_State).ToString(),
+						age = animal.age,
+						breed = animal.breed,
+						ShelterCategory = new CategoryDto
+						{
+							CategoryId = animal.ShelterCategory.CategoryId,
+							CategoryName = animal.ShelterCategory.CategoryName,
+						},
+						shelterDto = new ShelterDto
+						{
+							ShelterId = animal.Shelter.ShelterID,
+							ShelterName = animal.Shelter.ShelterName,
+							ShelterLocation = animal.Shelter.Location,
+							ShelterPhone = animal.Shelter.Phone,
+						}
+					});
 				});
-			});
-			return animalDtos;
+				return animalDtos;
+			}
+			else
+			{
+				return null; //no content
+			}
 		}
-		public async Task<int> AddPet(Animal animal)
+		public async Task<object> AddPet(Animal animal)//need to be edited
 		{
 			if (await _shelterStaffRepository.CategoryExistence(animal.Category_FK) == true)
 			{
 				var res = await _shelterStaffRepository.AddPet(animal);
-				if (res > 0)
+				if (res is Animal)
 				{
-					//return new AnimalDto
-					//{
-					//	id = animal.id,
-					//	name = animal.name,
-					//	Adoption_State = (Animal.AdoptionState)animal.Adoption_State,
-					//	age = animal.age,
-					//	breed = animal.breed
-					//};
+					return new AnimalDto
+					{
+						id = animal.id,
+						name = animal.name,
+						Adoption_State = animal.Adoption_State.ToString(),
+						age = animal.age,
+						breed = animal.breed
+					};
 					return res;
 				}
 				else
@@ -82,7 +108,7 @@ namespace PetShelter.Services
 				return 0; // category not found
 		}
 
-		public async Task<Animal> ViewPet(int id)
+		public async Task<Animal> ViewPet(int id) //edit here
 		{
 			Animal pet = await _shelterStaffRepository.ViewPet(id);
 			if(pet == null)
@@ -94,8 +120,12 @@ namespace PetShelter.Services
 			//return pet;
 		}
 
-		public async Task<object> UpdatePet(Animal animal)
+		public async Task<object> UpdatePet(Animal animal) 
 		{
+			if(await _shelterStaffRepository.CategoryExistence(animal.Category_FK) == false)
+			{
+				return -3; // category not found
+			}
 			var res = await _shelterStaffRepository.UpdatePet(animal);
 			if (res > 0)
 			{
@@ -105,7 +135,12 @@ namespace PetShelter.Services
 					name = animal.name,
 					Adoption_State = animal.Adoption_State.ToString(),
 					age = animal.age,
-					breed = animal.breed
+					breed = animal.breed,
+					ShelterCategory = new CategoryDto
+					{
+						CategoryId = animal.ShelterCategory.CategoryId,
+						CategoryName = animal.ShelterCategory.CategoryName,
+					}
 				};
 			}
 			else
@@ -113,9 +148,9 @@ namespace PetShelter.Services
 				return res;
 			}
 		}
-		public async Task<bool> RemovePet(AnimalDto p)
+		public async Task<bool> RemovePet(AnimalDto p) 
 		{
-			var res = await _shelterStaffRepository.DeletePet(p);
+			var res = await _shelterStaffRepository.DeletePet(p.id);
 			if (res > 0)
 			{
 				return true;
@@ -123,18 +158,27 @@ namespace PetShelter.Services
 			return false;
 		}
 
-		public async Task<IEnumerable<AdoptionRequestDto>> ListAdoptionRequests()
+		public async Task<IEnumerable<AdoptionRequestDto>> ListAdoptionRequests(int shelterID)
 		{
-			var res = await _shelterStaffRepository.ListAdoptionRequests();
+			var res = await _shelterStaffRepository.ListAdoptionRequests(shelterID);
 			List<AdoptionRequestDto> adoptionRequestDtos = new List<AdoptionRequestDto>();
-			if (res.Count() != 0)
+			if (res != null)
 			{
 				res.ToList().ForEach(request =>
 				{
 					adoptionRequestDtos.Add(new AdoptionRequestDto
 					{
-						AdopterId = request.AdopterId,
-						PetId = request.PetId,
+						requestId = request.Id,
+						Adopter = new AdopterDto
+						{
+							Id = request.Adopter.Id,
+							Uname = request.Adopter.Uname,
+						},
+						Animal = new AnimalDto
+						{
+							id = request.Pet.id,
+							name = request.Pet.name,
+						},
 						Status = ((AdoptionRequest.AdoptionRequestStatus)request.Status).ToString(),
 					});
 				});
@@ -144,6 +188,15 @@ namespace PetShelter.Services
 			{
 				return null;
 			}
+		}
+
+		public async Task<int> ApproveAdoptionRequest(int id)
+		{
+			if (id != 0)
+			{
+				return await _shelterStaffRepository.ApproveAdoptionRequest(id);
+			}
+			return -2;//something went wrong id is set to 0
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PetShelter.Data;
+using PetShelter.DTOs;
 using PetShelter.Models;
 
 namespace PetShelter.Repository
@@ -17,33 +18,41 @@ namespace PetShelter.Repository
 			_shelterRepository = shelterRepository ?? throw new ArgumentNullException(nameof(shelterRepository));
 			_shelterStaffRepository = shelterStaffRepository ?? throw new ArgumentNullException(nameof(shelterStaffRepository));
 		}
-		public async Task<IEnumerable<Animal>> ListPets(int? CatId = 0)
+		public async Task<IEnumerable<Animal>> ListPets(int? CatId = 0, int? ShelterID = 0,string? catname = "")
 		{
-			return await  _shelterRepository.ListPets(CatId);
+			return await  _shelterRepository.ListPets(CatId,ShelterID,catname);
 		}
 
-		public async Task<object> Adopt(AdoptionRequest adoption)
+		public async Task<bool> RequestExistence(AdoptionRequest adoption)
 		{
-			if (adoption != null)
+			var res = await _context.AdoptionRequest.FirstOrDefaultAsync(a => a.PetId_FK == adoption.PetId_FK && a.AdopterId_FK == adoption.AdopterId_FK);
+			if (res != null)
 			{
-				adoption.Status = AdoptionRequest.AdoptionRequestStatus.Pending;
-				adoption.RequestDate = DateTime.Now;
-				//await _context.AdoptionRequests.AddAsync(adoption);
-				int res = await _context.SaveChangesAsync();
-				if (res > 0)
-				{
-					return adoption;
-				}
-				else
-					return 0;// adoption failed
+				return true;
 			}
 			else
-				return -1; //something went wrong
+				return false;// request exist
+		}
+
+		public async Task<int> Adopt(AdoptionRequest adoption)
+		{
+			adoption.Status = AdoptionRequest.AdoptionRequestStatus.Pending;
+			adoption.RequestDate = DateTime.Now;
+			await _context.AdoptionRequest.AddAsync(adoption);
+			int res = await _context.SaveChangesAsync();
+			if (res > 0)
+			{
+				return res;
+			}
+			else
+				return -1;// adoption failed
 		}
 
 		public async Task<IEnumerable<AdoptionRequest>> AdoptionHistory(int Aid)
 		{
-			return await _context.AdoptionRequest.Where(a => a.AdopterId == Aid).ToListAsync();
+			return await _context.AdoptionRequest.Include(a => a.Pet).Include(a=>a.Adopter)  // Eager load the Pet details
+			.Where(a => a.AdopterId_FK == Aid)
+			.ToListAsync();
 		}
 
 		/*public async Task<AdoptionRequest> ViewAdoption(int id)
@@ -53,7 +62,7 @@ namespace PetShelter.Repository
 
 		public async Task<bool> CancelAdoption(int id)
 		{
-			var adoption = await _context.AdoptionRequest.FirstOrDefaultAsync(a => a.PetId == id);
+			var adoption = await _context.AdoptionRequest.FirstOrDefaultAsync(a => a.Id == id);
 			if (adoption != null)
 			{
 				adoption.Status = AdoptionRequest.AdoptionRequestStatus.Rejected;

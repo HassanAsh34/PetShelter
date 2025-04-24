@@ -31,6 +31,12 @@ namespace PetShelter.Models
 
 		//[ForeignKey("")]
 		public int Category_FK { get; set; } // navigation property
+
+		public int ?Shelter_FK { get; set; } // navigation property
+
+		public ShelterCategory ?ShelterCategory { get; set; } // navigation property
+
+		public Shelter? Shelter { get; set; } // navigation property
 		public enum AdoptionState
 		{
 			Adopted,

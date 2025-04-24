@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic; // Make sure to import this namespace
 
 namespace PetShelter.Models
 {
-	
 	public class Shelter
 	{
 		[Key]
-		public int ShelterID {  get; set; }
+		public int ShelterID { get; set; }
 
 		[Required]
 		[MinLength(3, ErrorMessage = "Please make sure that the Shelter's name is written correctly")]
@@ -16,7 +16,6 @@ namespace PetShelter.Models
 		[Required]
 		[MinLength(3, ErrorMessage = "Please make sure that the Shelter's LOCATION is written correctly")]
 		public string? Location { get; set; }
-		//public string? ContactEmail { get; set; }
 
 		[Required]
 		[Phone(ErrorMessage = "Please make sure that Shelter's phone number is valid")]
@@ -26,5 +25,11 @@ namespace PetShelter.Models
 		[MinLength(15, ErrorMessage = "Please write a brief description of the Shelter")]
 		[MaxLength(255)]
 		public string? Description { get; set; }
+
+		public IEnumerable<ShelterStaff>? Staff { get; set; }
+		public IEnumerable<ShelterCategory>? Category { get; set; }
+
+		// Add the Animals navigation property here
+		public IEnumerable<Animal>? Animals { get; set; } 
 	}
 }

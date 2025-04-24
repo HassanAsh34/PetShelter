@@ -5,11 +5,22 @@ namespace PetShelter.DTOs
 {
 	public class AdoptionRequestDto
 	{
-		public int AdopterId { get; set; }
-		//public ApplicationUser? Adopter { get; set; }
-		public int PetId { get; set; }
-		//public Pet? Pet { get; set; }
+		
+		public int requestId { get; set; }
+		//public int AdopterId { get; set; }
+		////public ApplicationUser? Adopter { get; set; }
+		//public int PetId { get; set; }
+		////public Pet? Pet { get; set; }
+		//public int ShelterId { get; set; } // navigation property
 
+		public ShelterDto ?Shelter { get; set; } // navigation property
+
+		public AnimalDto ?Animal { get; set; }
+
+		public AdopterDto ?Adopter { get; set; }
 		public string? Status { get; set; }
+
+
+
 	}
 }

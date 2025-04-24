@@ -85,7 +85,7 @@ namespace PetShelter.Repository
 			if (unassignedStaff == true)
 			{
 				var unassigned = await _context.Staff
-					.Where(s => s.Shelter_FK == -1)
+					.Where(s => s.Shelter_FK == 1)
 					.Select(user => new {
 						user.Id,
 						user.Uname,
@@ -299,7 +299,7 @@ namespace PetShelter.Repository
 		//}
 		public async Task<object> addCategory(ShelterCategory shelterCategory)
 		{
-			var res = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryName.ToLower().Equals(shelterCategory.CategoryName.ToLower()));
+			var res = await _context.Categories.FirstOrDefaultAsync(c=>c.CategoryName.ToLower().Contains(shelterCategory.CategoryName.ToLower())&&c.Shelter_FK==shelterCategory.Shelter_FK);
 			if (res == null)
 			{
 				await _context.Categories.AddAsync(shelterCategory);
@@ -324,16 +324,32 @@ namespace PetShelter.Repository
 			}
 		}
 
-		public async Task<int> deleteCategory(ShelterCategory category)
+		public async Task<int> deleteCategory(ShelterCategory? category = null, bool? all = false,int ?shelterID =0)
 		{
-			ShelterCategory res = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == category.CategoryId);
-			if (res != null)
+			if (all == true && shelterID != 0)
 			{
-				_context.Categories.Remove(res);
-				return await _context.SaveChangesAsync();
+				var allCategories = await _context.Categories.Where(c=>c.Shelter_FK == shelterID).ToListAsync();
+				if (allCategories.Any())
+				{
+					_context.Categories.RemoveRange(allCategories);
+					return await _context.SaveChangesAsync();
+				}
+				return 0; // nothing to delete
 			}
-			return -1; //incase not found
+
+			if (category != null)
+			{
+				var res = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == category.CategoryId);
+				if (res != null)
+				{
+					_context.Categories.Remove(res);
+					return await _context.SaveChangesAsync();
+				}
+			}
+
+			return -1; // category not found
 		}
+
 
 		//shelter
 
@@ -365,6 +381,7 @@ namespace PetShelter.Repository
 			if (s != null)
 			{
 				s.Shelter_FK = staff.Shelter_FK;
+				s.HiredDate = DateOnly.FromDateTime(DateTime.Now);
 				return await _context.SaveChangesAsync();
 			}
 			else
@@ -404,7 +421,7 @@ namespace PetShelter.Repository
 			List<ShelterStaff> s = await _context.Staff.Where(s=>s.Shelter_FK == id).ToListAsync();
 			s.ForEach(staff =>
 			{
-				staff.Shelter_FK = -1;
+				staff.Shelter_FK = 1;
 			});
 			return await _context.SaveChangesAsync();
 			//else

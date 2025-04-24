@@ -82,7 +82,8 @@ namespace PetShelter.Repository
                     }
                 case ShelterStaff staff:
                     {
-                        if(staff != null)
+                        Shelter shelter = await _context.Shelters.FirstOrDefaultAsync(s=>s.ShelterID == staff.Shelter_FK);
+						if (staff != null)
                         {
                             if(Admin == true)
                             {
@@ -90,12 +91,14 @@ namespace PetShelter.Repository
                                 staff.HiredDate = DateOnly.FromDateTime(DateTime.Now);
                                 staff.ActivatedAt = DateTime.Now;
                                 staff.Shelter_FK = staff.Shelter_FK;
+								staff.Shelter = shelter;
 
 							}
                             else
                             {
                                 staff.Activated = 0;
-                                staff.Shelter_FK = -1;
+                                staff.Shelter_FK = 1;
+                                staff.Shelter = null;
                             }
 							await _context.Staff.AddAsync(staff);
 							await _context.SaveChangesAsync();

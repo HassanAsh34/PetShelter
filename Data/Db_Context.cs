@@ -1,116 +1,83 @@
-﻿//using Microsoft.EntityFrameworkCore;
-//using Microsoft.Extensions.Options;
-//using PetShelter.Models;
-
-//namespace PetShelter.Data
-//{
-//	public class Db_Context : DbContext
-//	{
-//		public Db_Context(DbContextOptions<Db_Context>options):base(options)
-//		{
-//		}
-
-//		public DbSet<User> Users { get; set; }
-
-//		public DbSet<Admin> Admins {  get; set; }
-
-//		public DbSet<Adopter> Adopters { get; set; }
-
-//		public DbSet<Animal> Animals { get; set; }
-
-//		public DbSet<ShelterCategory> Categories { get; set; }
-
-//		public DbSet<ShelterStaff> Staff { get; set; }
-
-//		public DbSet<Shelter> Shelters { get; set; }
-
-//		public DbSet<AdoptionRequest> AdoptionRequest { get; set; }
-
-//		//protected override void OnModelCreating(ModelBuilder modelBuilder) //single table with descriminator
-//		//{
-//		//	modelBuilder.Entity<User>()
-//		//		.HasDiscriminator<string>("Discriminator")
-//		//		.HasValue<User>("User")
-//		//		.HasValue<Adopter>("Adopter")
-//		//		.HasValue<Admin>("Admin");
-//		//}
-//		protected override void OnModelCreating(ModelBuilder modelBuilder) //using tbt
-//		{
-//			modelBuilder.Entity<User>()
-//				.ToTable("Users");
-
-//			modelBuilder.Entity<Adopter>()
-//				.ToTable("Adopters");
-
-//			modelBuilder.Entity<Admin>()
-//				.ToTable("Admins");
-
-//			modelBuilder.Entity<ShelterStaff>().HasOne<Shelter>().WithMany().HasForeignKey(S => S.Shelter_FK).OnDelete(DeleteBehavior.Cascade);
-
-//			modelBuilder.Entity<AdoptionRequest>().HasKey(A => new { A.PetId, A.AdopterId }).HasName("PK_AdoptionRequest");
-
-//			modelBuilder.Entity<Animal>().HasOne<ShelterCategory>().WithMany().HasForeignKey(A=>A.Category_FK);
-
-//			modelBuilder.Entity<ShelterCategory>().HasOne<Shelter>().WithMany().HasForeignKey(C => C.Shelter_FK).OnDelete(DeleteBehavior.Cascade);
-
-//			modelBuilder.Entity<Shelter>().HasIndex("ShelterName").IsUnique();
-
-//		}
-
-//	}
-//}
-
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.EntityFrameworkCore;
 using PetShelter.Models;
 
 namespace PetShelter.Data
 {
+	
 	public class Db_Context : DbContext
 	{
 		public Db_Context(DbContextOptions<Db_Context> options) : base(options)
 		{
 		}
 
+		// DbSets for each model
 		public DbSet<User> Users { get; set; }
 		public DbSet<Admin> Admins { get; set; }
 		public DbSet<Adopter> Adopters { get; set; }
-		public DbSet<Animal> Animals { get; set; }
-		public DbSet<ShelterCategory> Categories { get; set; }
 		public DbSet<ShelterStaff> Staff { get; set; }
-		public DbSet<Shelter> Shelters { get; set; }
 		public DbSet<AdoptionRequest> AdoptionRequest { get; set; }
+		public DbSet<Animal> Animals { get; set; }
+		public DbSet<Shelter> Shelters { get; set; }
+		public DbSet<ShelterCategory> Categories { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
+			base.OnModelCreating(modelBuilder);
+
+			// TPT Mapping for User Inheritance
 			modelBuilder.Entity<User>().ToTable("Users");
-			modelBuilder.Entity<Adopter>().ToTable("Adopters");
 			modelBuilder.Entity<Admin>().ToTable("Admins");
-			modelBuilder.Entity<ShelterStaff>()
-				.HasOne<Shelter>()
-				.WithMany()
-				.HasForeignKey(S => S.Shelter_FK)
-				.OnDelete(DeleteBehavior.Cascade);
+			modelBuilder.Entity<Adopter>().ToTable("Adopters");
+			modelBuilder.Entity<ShelterStaff>().ToTable("ShelterStaff");
 
-			modelBuilder.Entity<AdoptionRequest>()
-				.ToTable("AdoptionRequest") // 👈 force singular table name
-				.HasKey(A => new { A.PetId, A.AdopterId })
-				.HasName("PK_AdoptionRequest");
-
-			modelBuilder.Entity<Animal>()
-				.HasOne<ShelterCategory>()
-				.WithMany()
-				.HasForeignKey(A => A.Category_FK);
-
-			modelBuilder.Entity<ShelterCategory>()
-				.HasOne<Shelter>()
-				.WithMany()
-				.HasForeignKey(C => C.Shelter_FK)
-				.OnDelete(DeleteBehavior.Cascade);
-
+			// Shelter and Staff one-to-many
 			modelBuilder.Entity<Shelter>()
-				.HasIndex("ShelterName")
-				.IsUnique();
+				.HasMany(s => s.Staff)
+				.WithOne(staff => staff.Shelter)
+				.HasForeignKey(staff => staff.Shelter_FK)
+				.OnDelete(DeleteBehavior.Cascade);
+
+			// Shelter and Animals one-to-many
+			modelBuilder.Entity<Shelter>()
+				.HasMany(s => s.Animals)
+				.WithOne(a => a.Shelter)
+				.HasForeignKey(a => a.Shelter_FK)
+				.OnDelete(DeleteBehavior.Restrict);
+
+			// ShelterCategory and Animals one-to-many
+			modelBuilder.Entity<ShelterCategory>()
+				.HasMany(sc => sc.Animal)
+				.WithOne(a => a.ShelterCategory)
+				.HasForeignKey(a => a.Category_FK)
+				.OnDelete(DeleteBehavior.Cascade);
+
+			// Shelter and Category one-to-many
+			modelBuilder.Entity<Shelter>()
+				.HasMany(s => s.Category)
+				.WithOne(c => c.Shelter)
+				.HasForeignKey(c => c.Shelter_FK)
+				.OnDelete(DeleteBehavior.Cascade);
+
+			// AdoptionRequest and Adopter one-to-many
+			modelBuilder.Entity<AdoptionRequest>()
+				.HasOne(ar => ar.Adopter)
+				.WithMany()
+				.HasForeignKey(ar => ar.AdopterId_FK)
+				.OnDelete(DeleteBehavior.Cascade);
+
+			// AdoptionRequest and Pet one-to-many
+			modelBuilder.Entity<AdoptionRequest>()
+				.HasOne(ar => ar.Pet)
+				.WithMany()
+				.HasForeignKey(ar => ar.PetId_FK)
+				.OnDelete(DeleteBehavior.Restrict);
+
+			// AdoptionRequest and Shelter one-to-many
+			modelBuilder.Entity<AdoptionRequest>()
+				.HasOne(ar => ar.Shelter)
+				.WithMany()
+				.HasForeignKey(ar => ar.Shelter_FK)
+				.OnDelete(DeleteBehavior.Restrict);
 		}
 	}
 }

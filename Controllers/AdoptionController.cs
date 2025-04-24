@@ -23,9 +23,9 @@ namespace PetShelter.Controllers
 		//[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		//[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
-		public async Task<ActionResult<IEnumerable<AnimalDto>>> ListPets([FromQuery]int ? CatId =0)
+		public async Task<ActionResult<IEnumerable<AnimalDto>>> ListPets([FromQuery]String ? Catname ="")//done
 		{
-			var pets = await _adoptionServices.ListPets(CatId);
+			var pets = await _adoptionServices.ListPets(Catname);
 			if (pets == null)
 			{
 				return NoContent();
@@ -39,23 +39,24 @@ namespace PetShelter.Controllers
 		[HttpPost("Adopt")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<AdoptionRequestDto>> Adopt([FromBody] AdoptionRequest adoption)
+		public async Task<ActionResult<AdoptionRequestDto>> Adopt([FromBody] AdoptionRequest adoption)//done
 		{
 			var res = await _adoptionServices.Adopt(adoption);
-			if (res is AdoptionRequest adoptionRequest)
+			switch(res)
 			{
-				return Ok(new {adoptionRequest,message="Your Adoption Request is completed successfully"});
-			}
-			else
-			{
-					return (int)res != 0 ? BadRequest(new { message = "Something went wrong" }) : BadRequest(new { message = "Adoption failed" });
+				case >0:
+					return Ok(new {message="Your Adoption Request is submitted successfully"});
+				case -1:
+					return BadRequest(new { message = "Adoption failed" });
+				default:
+					return BadRequest(new { message = "Request already exists" });
 			}
 		}
 
 		[HttpGet("Adoption-History")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<ActionResult<IEnumerable<AdoptionRequestDto>>> AdoptionHistory()
+		public async Task<ActionResult<IEnumerable<AdoptionRequestDto>>> AdoptionHistory()//done
 		{
 			var Aid = int.Parse(User.FindFirst("Id")?.Value);
 			var history = await _adoptionServices.AdoptionHistory(Aid);
@@ -72,7 +73,7 @@ namespace PetShelter.Controllers
 		[HttpPut("Cancel-Adoption/{id}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<bool>> CancelAdoption(int id)
+		public async Task<ActionResult<bool>> CancelAdoption(int id)//done
 		{
 			var res = await _adoptionServices.CancelAdoption(id);
 			if (res)
