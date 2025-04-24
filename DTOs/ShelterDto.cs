@@ -9,5 +9,7 @@
 		public string ShelterLocation { get; set; }
 
 		public string ShelterPhone { get; set; }
+
+		//return shelter manager name
 	}
 }

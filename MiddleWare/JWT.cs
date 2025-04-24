@@ -37,6 +37,7 @@ namespace PetShelter.MiddleWare
 				case User.UserType.ShelterStaff:
 					var StaffDetails = (StaffDto)userDetails;
 					claims.Add(new Claim("StaffType",StaffDetails.StaffType.ToString()));
+					claims.Add(new Claim("ShelterId", StaffDetails.Shelter_FK.ToString()));
 					break;
 
 			}

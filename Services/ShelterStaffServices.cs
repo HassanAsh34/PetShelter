@@ -14,15 +14,31 @@ namespace PetShelter.Services
 
 
 
-		public async Task<IEnumerable<ShelterCategory>> ListCategories()
+		public async Task<object> ListCategories(int sh_fk)
 		{
-			IEnumerable<ShelterCategory> categories = await _shelterStaffRepository.listCategories();
-			if (categories == null)
+			var categories = await _shelterStaffRepository.listCategories(sh_fk);
+			if (categories is IEnumerable<ShelterCategory> cats)
 			{
-				return Enumerable.Empty<ShelterCategory>();
+				if (cats.Count() != 0)
+				{
+					List<object> categoryDtos = new List<object>();
+					cats.ToList().ForEach(cat =>
+					{
+						categoryDtos.Add(new
+						{
+							id = cat.CategoryId,
+							name = cat.CategoryName,
+							description = cat.CategoryDescription,
+							shelter_FK = cat.Shelter_FK
+						});
+					});
+					return categoryDtos;
+				}
+				else
+					return 0; // no categories found (empty list) (or return empty list?
 			}
 			else
-				return categories;
+				return -1; //not assigned to a shelter at the moment
 		}
 		public async Task<IEnumerable<AnimalDto>> ListPets(int ?CatId = 0)
 		{

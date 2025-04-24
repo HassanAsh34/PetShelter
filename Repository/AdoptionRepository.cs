@@ -43,7 +43,7 @@ namespace PetShelter.Repository
 
 		public async Task<IEnumerable<AdoptionRequest>> AdoptionHistory(int Aid)
 		{
-			return await _context.AdoptionRequests.Where(a => a.AdopterId == Aid).ToListAsync();
+			return await _context.AdoptionRequest.Where(a => a.AdopterId == Aid).ToListAsync();
 		}
 
 		/*public async Task<AdoptionRequest> ViewAdoption(int id)
@@ -53,7 +53,7 @@ namespace PetShelter.Repository
 
 		public async Task<bool> CancelAdoption(int id)
 		{
-			var adoption = await _context.AdoptionRequests.FirstOrDefaultAsync(a => a.PetId == id);
+			var adoption = await _context.AdoptionRequest.FirstOrDefaultAsync(a => a.PetId == id);
 			if (adoption != null)
 			{
 				adoption.Status = AdoptionRequest.AdoptionRequestStatus.Rejected;

@@ -88,9 +88,15 @@ namespace PetShelter.Repository
                             {
                                 staff.Activated = 1;
                                 staff.HiredDate = DateOnly.FromDateTime(DateTime.Now);
-                            }
+                                staff.ActivatedAt = DateTime.Now;
+                                staff.Shelter_FK = staff.Shelter_FK;
+
+							}
                             else
+                            {
                                 staff.Activated = 0;
+                                staff.Shelter_FK = -1;
+                            }
 							await _context.Staff.AddAsync(staff);
 							await _context.SaveChangesAsync();
 							return staff;  

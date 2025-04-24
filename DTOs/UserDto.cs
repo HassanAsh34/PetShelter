@@ -9,7 +9,8 @@ namespace PetShelter.DTOs
         public string Email { get; set; }
         public User.UserType Role { get; set; }
 
-        public int Activated { get; set; }
+        public bool banned { get; set; }
+		public int Activated { get; set; }
 
     }
 }

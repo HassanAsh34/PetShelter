@@ -12,7 +12,7 @@ using PetShelter.Data;
 namespace PetShelter.Migrations
 {
     [DbContext(typeof(Db_Context))]
-    [Migration("20250417024408_v15")]
+    [Migration("20250424002729_v15")]
     partial class v15
     {
         /// <inheritdoc />
@@ -42,9 +42,10 @@ namespace PetShelter.Migrations
                     b.Property<int?>("Status")
                         .HasColumnType("int");
 
-                    b.HasKey("PetId", "AdopterId");
+                    b.HasKey("PetId", "AdopterId")
+                        .HasName("PK_AdoptionRequest");
 
-                    b.ToTable("AdoptionRequest");
+                    b.ToTable("AdoptionRequest", (string)null);
                 });
 
             modelBuilder.Entity("PetShelter.Models.Animal", b =>
@@ -235,10 +236,15 @@ namespace PetShelter.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Shelter_FK")
+                        .HasColumnType("int");
+
                     b.Property<int>("StaffType")
                         .HasColumnType("int");
 
-                    b.ToTable("ShelterStaff", (string)null);
+                    b.HasIndex("Shelter_FK");
+
+                    b.ToTable("Staff");
                 });
 
             modelBuilder.Entity("PetShelter.Models.Animal", b =>
@@ -282,6 +288,12 @@ namespace PetShelter.Migrations
                     b.HasOne("PetShelter.Models.User", null)
                         .WithOne()
                         .HasForeignKey("PetShelter.Models.ShelterStaff", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PetShelter.Models.Shelter", null)
+                        .WithMany()
+                        .HasForeignKey("Shelter_FK")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

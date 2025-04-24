@@ -51,7 +51,8 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task<ActionResult<IEnumerable<ShelterCategory>>> ListCategories()
 		{
-			var shelterCategories = await _shelterStaffServices.ListCategories();
+			int shelter_FK = int.Parse(User.FindFirst("ShelterId")?.Value);
+			var shelterCategories = await _shelterStaffServices.ListCategories(shelter_FK);
 			if (shelterCategories == null)
 			{
 				return NotFound();

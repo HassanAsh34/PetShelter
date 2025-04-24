@@ -98,7 +98,8 @@ namespace PetShelter.Services
 							Phone = staff.Phone,
 							StaffType = (ShelterStaff.StaffTypes)staff.StaffType,
 							Activated = staff.Activated,
-							HiredDate = staff.HiredDate
+							HiredDate = staff.HiredDate,
+							Shelter_FK = staff.Shelter_FK
 						};
 					default:
 						return new AdopterDto

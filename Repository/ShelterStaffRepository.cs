@@ -15,10 +15,17 @@ namespace PetShelter.Repository
 			_context = context ?? throw new ArgumentNullException(nameof(context));
 		}
 
-		public async Task<IEnumerable<ShelterCategory>> listCategories()
+		public async Task<IEnumerable<ShelterCategory>> listCategories(int shelter_FK)
 		{
-			return await _context.Categories.ToListAsync();
-		}
+			if(shelter_FK != -1)
+			{
+				return await _context.Categories.Where(c=>c.Shelter_FK == shelter_FK).ToListAsync();
+			}
+            else
+            {
+				return null; //not assigned to a shelter at the moment
+			}
+        }
 
 		public async Task<IEnumerable<Animal>> ListPets(int ? CatId = 0)
 		{
@@ -98,7 +105,7 @@ namespace PetShelter.Repository
 
 		public async Task<IEnumerable<AdoptionRequest>> ListAdoptionRequests()
 		{
-			return await _context.AdoptionRequests.ToListAsync();
+			return await _context.AdoptionRequest.ToListAsync();
 		}
 
 		//update

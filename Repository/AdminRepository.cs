@@ -8,7 +8,7 @@ using PetShelter.Models;
 
 namespace PetShelter.Repository
 {
-    public class AdminRepository
+	public class AdminRepository
 	{
 		private readonly Db_Context _context;
 		private readonly UserRepository _userRepository;
@@ -20,58 +20,152 @@ namespace PetShelter.Repository
 
 		}
 
-		public async Task<IEnumerable<UserDto>> GetUsers()
+		//public async Task<IEnumerable<UserDto>> GetUsers(bool UnassignedStaff)
+		//{
+		//	var users = UnassignedStaff == true ? await _context.Staff.Select(user => new { user.Id, user.Uname, user.Email, user.Role, user.Activated, user.Banned_At ,user.}).Where(user => user.)
+		//				  .ToListAsync(): await _context.Users
+		//				  .Select(user => new { user.Id, user.Uname, user.Email, user.Role, user.Activated, user.Banned_At })
+		//				  .ToListAsync();
+		//	List<UserDto> userDtos = new List<UserDto>();
+		//	users.ForEach(user =>
+		//	{
+		//		switch ((User.UserType)user.Role)
+		//		{
+		//			case User.UserType.Admin:
+
+		//				userDtos.Add(
+		//					new AdminDto
+		//					{
+		//						Id = user.Id,
+		//						Uname = user.Uname,
+		//						Email = user.Email,
+		//						Role = (User.UserType)user.Role,
+		//						Activated = user.Activated,
+		//						banned = user.Banned_At != null ? true : false
+		//					}
+		//					);
+		//				break;
+		//			case User.UserType.Adopter:
+		//				userDtos.Add(
+		//					new AdopterDto
+		//					{
+		//						Id = user.Id,
+		//						Uname = user.Uname,
+		//						Email = user.Email,
+		//						Role = (User.UserType)user.Role,
+		//						Activated = user.Activated,
+		//						banned = user.Banned_At != null ? true : false
+		//					}
+		//					);
+		//				break;
+		//			case User.UserType.ShelterStaff:
+		//				userDtos.Add(
+		//				new StaffDto
+		//				{
+		//					Id = user.Id,
+		//					Uname = user.Uname,
+		//					Email = user.Email,
+		//					Role = (User.UserType)user.Role,
+		//					Activated = user.Activated,
+		//					banned = user.Banned_At != null ? true : false
+		//				});
+		//				break;
+		//		}
+
+		//	});
+		//	return userDtos;
+		//	//return await from User select new 
+		//}
+
+
+		public async Task<IEnumerable<UserDto>> GetUsers(bool ?unassignedStaff = false)
 		{
-			var users= await _context.Users
-						  .Select(user => new { user.Id, user.Uname, user.Email, user.Role, user.Activated })
-						  .ToListAsync();
-			List<UserDto> userDtos = new List<UserDto>();
-			users.ForEach(user =>
+			var userDtos = new List<UserDto>();
+
+			if (unassignedStaff == true)
 			{
-				switch ((User.UserType)user.Role)
+				var unassigned = await _context.Staff
+					.Where(s => s.Shelter_FK == -1)
+					.Select(user => new {
+						user.Id,
+						user.Uname,
+						user.Email,
+						user.Role,
+						user.Activated,
+						user.Banned_At
+					})
+					.ToListAsync();
+
+				unassigned.ForEach(user =>
 				{
-					case User.UserType.Admin:
-						
-						userDtos.Add(
-							new AdminDto
+					userDtos.Add(new StaffDto
+					{
+						Id = user.Id,
+						Uname = user.Uname,
+						Email = user.Email,
+						Role = (User.UserType)user.Role,
+						Activated = user.Activated,
+						banned = user.Banned_At != null
+					});
+				});
+			}
+			else
+			{
+				var users = await _context.Users
+					.Select(user => new {
+						user.Id,
+						user.Uname,
+						user.Email,
+						user.Role,
+						user.Activated,
+						user.Banned_At
+					})
+					.ToListAsync();
+
+				users.ForEach(user =>
+				{
+					switch ((User.UserType)user.Role)
+					{
+						case User.UserType.Admin:
+							userDtos.Add(new AdminDto
 							{
 								Id = user.Id,
 								Uname = user.Uname,
 								Email = user.Email,
 								Role = (User.UserType)user.Role,
 								Activated = user.Activated,
-							}
-							);
-						break;
-					case User.UserType.Adopter:
-						userDtos.Add(
-							new AdopterDto
-							{
-								Id = user.Id,
-								Uname = user.Uname,
-								Email = user.Email,
-								Role = (User.UserType)user.Role,
-								Activated = user.Activated,
-							}
-							);
-						break;
-					case User.UserType.ShelterStaff:
-						userDtos.Add(
-						new StaffDto
-						{
-								Id = user.Id,
-								Uname = user.Uname,
-								Email = user.Email,
-								Role = (User.UserType)user.Role,
-								Activated = user.Activated
+								banned = user.Banned_At != null
 							});
-						break;
-				}
-				
-			});
+							break;
+						case User.UserType.Adopter:
+							userDtos.Add(new AdopterDto
+							{
+								Id = user.Id,
+								Uname = user.Uname,
+								Email = user.Email,
+								Role = (User.UserType)user.Role,
+								Activated = user.Activated,
+								banned = user.Banned_At != null
+							});
+							break;
+						case User.UserType.ShelterStaff:
+							userDtos.Add(new StaffDto
+							{
+								Id = user.Id,
+								Uname = user.Uname,
+								Email = user.Email,
+								Role = (User.UserType)user.Role,
+								Activated = user.Activated,
+								banned = user.Banned_At != null
+							});
+							break;
+					}
+				});
+			}
+
 			return userDtos;
-			//return await from User select new 
 		}
+
 
 		public async Task<UserDto> GetUser(int id)
 		{
@@ -136,7 +230,7 @@ namespace PetShelter.Repository
 			return await _userRepository.RegisterUser(user, true);
 		}
 
-		public async Task<bool> UserExistence(User user) 
+		public async Task<bool> UserExistence(User user)
 		{
 			return await _userRepository.UserExistence(user.Email);
 		}
@@ -155,9 +249,9 @@ namespace PetShelter.Repository
 				return null;
 		}
 
-		public async Task<int> ToggleUserActivation(UserDto user,bool ?Banned = false)
+		public async Task<int> ToggleUserActivation(UserDto user, bool? Banned = false)
 		{
-			var User = await _context.Users.FirstOrDefaultAsync(u=>u.Id == user.Id);
+			var User = await _context.Users.FirstOrDefaultAsync(u => u.Id == user.Id);
 			if (Banned != true)
 			{
 				if (User.Activated == 0)
@@ -183,7 +277,7 @@ namespace PetShelter.Repository
 		//public async Task<bool> DeleteUser(UserDto U)
 		public async Task<int> DeleteUser(UserDto U)
 		{
-			var res = await _context.Users.FirstOrDefaultAsync(u=> u.Id == U.Id);
+			var res = await _context.Users.FirstOrDefaultAsync(u => u.Id == U.Id);
 			if (res != null)
 			{
 				_context.Users.Remove(res);
@@ -192,7 +286,7 @@ namespace PetShelter.Repository
 			return -1;
 		}
 		//shelter repo
-		
+
 		public async Task<IEnumerable<ShelterCategory>> ListShelterCategories()
 		{
 			List<ShelterCategory> shelterCategories = await _context.Categories.ToListAsync();
@@ -233,7 +327,7 @@ namespace PetShelter.Repository
 		public async Task<int> deleteCategory(ShelterCategory category)
 		{
 			ShelterCategory res = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == category.CategoryId);
-			if(res != null)
+			if (res != null)
 			{
 				_context.Categories.Remove(res);
 				return await _context.SaveChangesAsync();
@@ -246,7 +340,7 @@ namespace PetShelter.Repository
 		public async Task<bool> ShelterExistence(Shelter shelter)
 		{
 			var res = await _context.Shelters.FirstOrDefaultAsync(a => a.ShelterName.ToLower() == (shelter.ShelterName != null ? shelter.ShelterName.ToLower() : "") || a.ShelterID == shelter.ShelterID);
-			if ( res != null)
+			if (res != null)
 			{
 				return true;
 			}
@@ -263,6 +357,58 @@ namespace PetShelter.Repository
 			}
 			else
 				return null;
+		}
+
+		public async Task<int> AssignToShelter(StaffDto staff)
+		{
+			ShelterStaff s = await _context.Staff.FirstOrDefaultAsync(s => s.Id == staff.Id);
+			if (s != null)
+			{
+				s.Shelter_FK = staff.Shelter_FK;
+				return await _context.SaveChangesAsync();
+			}
+			else
+				return -1;//indicates that the staff does not exist
+		}
+
+		public async Task<Shelter> ShowShelter(int id)
+		{
+			Shelter shelter = await _context.Shelters.FirstOrDefaultAsync(s => s.ShelterID == id);
+			if(shelter != null)
+			{
+				return shelter;
+			}
+			else
+				return null; //indicates that the shelter does not exist
+		}
+
+		public async Task<IEnumerable<Shelter>> ListShelters()
+		{
+			return await _context.Shelters.ToListAsync();
+		}
+
+		public async Task<int> DeleteShelter(Shelter shelter)
+		{
+			Shelter s = await _context.Shelters.FirstOrDefaultAsync(s => s.ShelterID == shelter.ShelterID);
+			if(s != null)
+			{
+				_context.Remove(s);
+				return await _context.SaveChangesAsync();
+			}
+			else
+				return -1; //indicates that the shelter does not exist
+		}
+
+		public async Task<int> UnassignFromShelter(int id)
+		{
+			List<ShelterStaff> s = await _context.Staff.Where(s=>s.Shelter_FK == id).ToListAsync();
+			s.ForEach(staff =>
+			{
+				staff.Shelter_FK = -1;
+			});
+			return await _context.SaveChangesAsync();
+			//else
+			//	return -1; //indicates that there is no staff in that shelter
 		}
 	}
 }

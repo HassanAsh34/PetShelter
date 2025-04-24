@@ -1,12 +1,13 @@
 ﻿using System.Runtime.InteropServices;
 using PetShelter.Data;
 using PetShelter.DTOs;
+using PetShelter.Migrations;
 using PetShelter.Models;
 using PetShelter.Repository;
 
 namespace PetShelter.Services
 {
-    public class AdminServices
+	public class AdminServices
 	{
 		private readonly AdminRepository _adminRepository;
 
@@ -18,9 +19,9 @@ namespace PetShelter.Services
 			//_userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
 		}
 
-		public async Task<IEnumerable<UserDto>> ListUsers()
+		public async Task<IEnumerable<UserDto>> ListUsers(bool? UnassignedStaff = false)
 		{
-			return await _adminRepository.GetUsers();
+			return await _adminRepository.GetUsers(UnassignedStaff);
 		}
 
 		public async Task<UserDto> getUserDetails(int id)
@@ -28,10 +29,10 @@ namespace PetShelter.Services
 			return await _adminRepository.GetUser(id);
 		}
 
-		public async Task<string> ToggleUserActivation(UserDto user,bool ? Ban =false)
+		public async Task<string> ToggleUserActivation(UserDto user, bool? Ban = false)
 		{
-			var res = await _adminRepository.ToggleUserActivation(user,Ban);
-			switch (res) 
+			var res = await _adminRepository.ToggleUserActivation(user, Ban);
+			switch (res)
 			{
 				case 0:
 					return "Account was deactivated successfully";
@@ -116,8 +117,8 @@ namespace PetShelter.Services
 		}
 		public async Task<bool> deleteUser(UserDto u)
 		{
-			var res =  await _adminRepository.DeleteUser(u);
-			if(res>0)
+			var res = await _adminRepository.DeleteUser(u);
+			if (res > 0)
 			{
 				return true;
 			}
@@ -180,5 +181,62 @@ namespace PetShelter.Services
 				return null;
 		}
 
+		public async Task<int> AssignToShelter(StaffDto staff)
+		{
+			if (await _adminRepository.ShelterExistence(new Shelter { ShelterID = staff.Shelter_FK }) == true)
+			{
+				var res = await _adminRepository.AssignToShelter(staff);
+				if (res > 0)
+				{
+					return res;
+				}
+				else
+				{
+					if (res == -1)
+					{
+						return -1; //indicates that the staff does not exist
+					}
+					else
+					{
+						return 0; //indicates that nothing changed
+					}
+				}
+			}
+			else
+				return -2; //indicates that the shelter does not exist
+		}
+
+		public async Task<Shelter> ShowShelter(int id)
+		{
+			return await _adminRepository.ShowShelter(id);
+		}
+
+		public async Task<object> ListShelters()
+		{
+			IEnumerable<Shelter> res = await _adminRepository.ListShelters();
+			if (res.Count() != 0)
+			{
+				List<ShelterDto> shelterDtos = new List<ShelterDto>();
+				res.ToList().ForEach(shelter =>
+				{
+					shelterDtos.Add(new ShelterDto
+					{
+						ShelterId = shelter.ShelterID,
+						ShelterName = shelter.ShelterName,
+						ShelterLocation = shelter.Location,
+						ShelterPhone = shelter.Phone,
+					});
+				});
+				return shelterDtos;
+			}
+			else
+				return null; //indicates that there are no shelters
+		}
+
+		public async Task<int> deleteShelter(Shelter shelter)
+		{
+			await _adminRepository.UnassignFromShelter(shelter.ShelterID);
+			return await _adminRepository.DeleteShelter(shelter);
+		}
 	}
 }

@@ -9,7 +9,7 @@ using PetShelter.Services;
 
 namespace PetShelter.Controllers
 {
-    [Route("/Admin")]
+	[Route("/Admin")]
 	[ApiController]
 	[Authorize(Roles = "Admin")]
 	public class AdminController : ControllerBase
@@ -31,7 +31,7 @@ namespace PetShelter.Controllers
 					case 2:
 						if (adminType == Admin.AdminTypes.SuperAdmin.ToString() || adminType == Admin.AdminTypes.UsersAdmin.ToString())
 							return true;
-						else 
+						else
 							return false;
 					case 3:
 						if (adminType == Admin.AdminTypes.SuperAdmin.ToString() || adminType == Admin.AdminTypes.ShelterAdmin.ToString())
@@ -42,7 +42,8 @@ namespace PetShelter.Controllers
 			}
 			return false;
 		}
-		public AdminController(AdminServices adminServices) {
+		public AdminController(AdminServices adminServices)
+		{
 			_adminServices = adminServices ?? throw new ArgumentNullException(nameof(adminServices));
 		}
 		//[Authorize()]
@@ -53,9 +54,24 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<ActionResult<IEnumerable<UserDto>>> getUsers()
 		{
-			if(Authorize(2))
+			if (Authorize(2))
 			{
-				var users =  await _adminServices.ListUsers();
+				var users = await _adminServices.ListUsers();
+				return Ok(users);
+			}
+			else
+				return Unauthorized();
+		}
+
+		[HttpGet("List-Unassigned-Staff")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<ActionResult<IEnumerable<UserDto>>> getUnassignedStaff()
+		{
+			if (Authorize(2))
+			{
+				var users = await _adminServices.ListUsers(true);
 				return Ok(users);
 			}
 			else
@@ -72,7 +88,7 @@ namespace PetShelter.Controllers
 			if (Authorize(2))
 			{
 				var user = await _adminServices.getUserDetails(id);
-				if(user != null)
+				if (user != null)
 				{
 					return Ok(user);
 				}
@@ -84,6 +100,8 @@ namespace PetShelter.Controllers
 			else
 				return Unauthorized();
 		}
+
+
 
 		//[HttpPut("EditUserDetails")]
 		//public async Task<ActionResult<UserDto>> editUserDetails([FromBody] UserDto U)
@@ -136,7 +154,7 @@ namespace PetShelter.Controllers
 		{
 			if (((User.UserType)U.Role == Models.User.UserType.Admin && Authorize(1)) || ((User.UserType)U.Role != Models.User.UserType.Admin && Authorize(2)))
 			{
-				var res = await _adminServices.ToggleUserActivation(U,true);
+				var res = await _adminServices.ToggleUserActivation(U, true);
 				return Ok(res);
 			}
 			else
@@ -178,10 +196,10 @@ namespace PetShelter.Controllers
 					return Ok(Admin);
 				}
 				else
-				{ 
+				{
 					return BadRequest(new { message = "Admin already exists" });
 				}
-			
+
 				//return Ok(user);
 			}
 			else
@@ -194,12 +212,12 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public async Task<ActionResult<bool>> DeleteUser(UserDto U)
 		{
-			
-			if(((User.UserType)U.Role == Models.User.UserType.Admin && Authorize(1))|| ((User.UserType)U.Role != Models.User.UserType.Admin && Authorize(2)))
-			{ 
+
+			if (((User.UserType)U.Role == Models.User.UserType.Admin && Authorize(1)) || ((User.UserType)U.Role != Models.User.UserType.Admin && Authorize(2)))
+			{
 				if (await _adminServices.deleteUser(U) == true)
 				{
-					return Ok(new {message = "the User was removed successfully"});
+					return Ok(new { message = "the User was removed successfully" });
 				}
 				else
 				{
@@ -214,21 +232,21 @@ namespace PetShelter.Controllers
 
 		//Shelter managing "creating categories within shelter"
 
-		
+
 		[HttpPost("Add-Category")]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<object>> AddCategory([FromBody]ShelterCategory Cat)
+		public async Task<ActionResult<object>> AddCategory([FromBody] ShelterCategory Cat)
 		{
 			if (Authorize(3))
 			{
 				var category = await _adminServices.addCategory(Cat);
 				if (category is ShelterCategory cat)
-					return Ok(new {cat ,message = "the Category was added successfully" });
+					return Ok(new { cat, message = "the Category was added successfully" });
 				else
 				{
-					if((int)category == -1)
+					if ((int)category == -1)
 						return BadRequest(new { message = "that Shelter doesn't Exist" });
 					else
 						return BadRequest(new { message = "that Category already Exist" });
@@ -253,7 +271,7 @@ namespace PetShelter.Controllers
 			if (Authorize(3))
 			{
 				IEnumerable<ShelterCategory> Categories = await _adminServices.ListCategories();
-				if(Categories == null)
+				if (Categories == null)
 				{
 					return NoContent();
 				}
@@ -308,8 +326,118 @@ namespace PetShelter.Controllers
 				return Unauthorized();
 		}
 
+		//public async Task<ActionResult<ShelterDto>> UpdateShelter(Shelter shelter)
+		//{
+		//	if (Authorize(1))
+		//	{
+		//		var res = await _adminServices.UpdateShelter(shelter);
+		//		if (res != null)
+		//		{
+		//			return Ok(res);
+		//		}
+		//		else
+		//		{
+		//			return BadRequest(new { message = "Shelter already exists" });
+		//		}
+		//	}
+		//	else
+		//		return Unauthorized();
+		//}
 
+		[HttpGet("Show-Shelters-details/{id}")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 
+		public async Task<ActionResult<Shelter>> ShowShelter(int id)
+		{
+			if (Authorize(1))
+			{
+				var res = await _adminServices.ShowShelter(id);
+				if (res != null)
+				{
+					return Ok(res);
+				}
+				else
+				{
+					return BadRequest(new { message = "Shelter not found" });
+				}
+			}
+			else
+				return Unauthorized();
+		}
 
+		[HttpGet("Show-Shelters")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<ActionResult<IEnumerable<Shelter>>> ShowShelters()
+		{
+			if (Authorize(1))
+			{
+				var res = await _adminServices.ListShelters();
+				if (res != null)
+				{
+					return Ok(res);
+				}
+				else
+				{
+					return BadRequest(new { message = "Shelter not found" });
+				}
+			}
+			else
+				return Unauthorized();
+		}
+
+		[HttpDelete("Delete-Shelter")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<ActionResult<int>> DeleteShelter(Shelter shelter)
+		{
+			if (Authorize(1))
+			{
+				var res = await _adminServices.deleteShelter(shelter);
+				if (res > 0)
+				{
+					return Ok(new { message = "the Shelter was removed successfully" });
+				}
+				else
+				{
+					return BadRequest(new { message = "Shelter doesnt exist" });
+				}
+			}
+			else
+				return Unauthorized();
+		}
+
+		[HttpPut("Assign-to-shelter")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<ActionResult<bool>> AssigntoShelter(StaffDto staff)
+		{
+			if (Authorize(2))
+			{
+				var res = await _adminServices.AssignToShelter(staff);
+				if (res > 0)
+				{
+					return Ok(new { message = "the Staff was assigned to the Shelter successfully" });
+				}
+				else
+				{
+					switch (res)
+					{
+						case -1: return BadRequest(new { message = "the Staff doesn't Exist" });
+						case -2: return BadRequest(new { message = "the Shelter doesn't Exist" });
+						default: return Ok(new { message = "Nothing changed" });
+					}
+				}
+			}
+			else
+			{
+				return Unauthorized();
+			}
+		}
 	}
 }

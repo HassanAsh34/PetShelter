@@ -13,6 +13,8 @@ namespace PetShelter.Models
 		[Required]
 		public int StaffType { get; set; }
 
+		public int Shelter_FK { get; set; }
+
 		public enum StaffTypes
 		{
 			Manager,
