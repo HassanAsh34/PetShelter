@@ -17,7 +17,7 @@ namespace PetShelter.Services
 
 		public async Task<UserDto> Login(LoginDto login)
 		{
-			var User = await _userRepository.GetUserDetails(login.Email);
+			var User = await _userRepository.GetUserDetails(login.Email.ToLower().Trim());
 			if (User != null)
 			{
 				if (BCrypt.Net.BCrypt.Verify(login.Password, User.Password))
@@ -72,6 +72,7 @@ namespace PetShelter.Services
 
 		public async Task<UserDto> Register(User user)
 		{
+			user.Email = user.Email.ToLower().Trim();
 			if (await _userRepository.UserExistence(user.Email) == false)
 			{
 				user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);

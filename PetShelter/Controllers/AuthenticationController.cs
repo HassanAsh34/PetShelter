@@ -104,7 +104,7 @@ namespace PetShelter.Controllers
 		//{
 		//	return Ok(new
 		//	{
-		//		User = await _userRepository.AddUser(user),
+		//		User = await _userRepo2sitory.AddUser(user),
 		//		Message = "User was added successfully"
 		//	});
 		//}

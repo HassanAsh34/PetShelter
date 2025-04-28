@@ -333,18 +333,15 @@ namespace PetShelter.Repository
 						if (request.Id != Rid)
 						{
 							request.Status = AdoptionRequest.AdoptionRequestStatus.Rejected;
-							_context.AdoptionRequest.Update(request);
+							//_context.AdoptionRequest.Update(request);
 						}
 					}
 				}
 				adoption.Status = AdoptionRequest.AdoptionRequestStatus.Approved;
 				adoption.Approved_At = DateTime.Now;
-				_context.AdoptionRequest.Update(adoption);
+				//_context.AdoptionRequest.Update(adoption);
 				int res = await _context.SaveChangesAsync();
-				if (res > 0)
-					return res;
-				else
-					return 0;
+				return res > 0 ? res : 0; 
 			}
 			else
 				return -1;//not found
@@ -362,6 +359,35 @@ namespace PetShelter.Repository
 		}
 
 
+		//public async Task<int> AutomaticScheduleInterview(int Rid)
+		//{
+		//	var res = await _context.AdoptionRequest.Include(ar => ar.Adopter).FirstOrDefaultAsync(a => a.Id == Rid);
+		//	if (res != null)
+		//	{
+		//		DateOnly Idate = await DayAvailability(DateOnly.FromDateTime(res.RequestDate));
+		//		Interview interview = new Interview
+		//		{
+		//			AdoptionRequest_fk = Rid,
+		//			InterviewDate = Idate,
+		//			AdoptionRequest = new AdoptionRequest
+		//			{
+		//				Id = res.Id,
+		//				RequestDate = res.RequestDate,
+		//				Adopter = new Adopter
+		//				{
+		//					Id = res.Adopter.Id,
+		//					Uname = res.Adopter.Uname,
+		//					Phone = res.Adopter.Phone,
+		//					Email = res.Adopter.Email
+		//				}
+		//			}
+		//		};
+		//		await _context.Interviews.AddAsync(interview);
+		//		return await _context.SaveChangesAsync();	
+		//	}
+		//	else
+		//		return -1; //adoption request doesn't exist
+		//}
 		public async Task<int> AutomaticScheduleInterview(int Rid)
 		{
 			var res = await _context.AdoptionRequest.Include(ar => ar.Adopter).FirstOrDefaultAsync(a => a.Id == Rid);
@@ -371,22 +397,11 @@ namespace PetShelter.Repository
 				Interview interview = new Interview
 				{
 					AdoptionRequest_fk = Rid,
-					InterviewDate = Idate,
-					AdoptionRequest = new AdoptionRequest
-					{
-						Id = res.Id,
-						RequestDate = res.RequestDate,
-						Adopter = new Adopter
-						{
-							Id = res.Adopter.Id,
-							Uname = res.Adopter.Uname,
-							Phone = res.Adopter.Phone,
-							Email = res.Adopter.Email
-						}
-					}
+					InterviewDate = Idate
+					// Don't create a new AdoptionRequest, it's already tracked
 				};
 				await _context.Interviews.AddAsync(interview);
-				return await _context.SaveChangesAsync();	
+				return await _context.SaveChangesAsync();
 			}
 			else
 				return -1; //adoption request doesn't exist

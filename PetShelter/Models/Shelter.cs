@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic; // Make sure to import this namespace
+using System.Collections.Generic;
+using System.Text.Json.Serialization; // Make sure to import this namespace
 
 namespace PetShelter.Models
 {
@@ -26,10 +27,13 @@ namespace PetShelter.Models
 		[MaxLength(255)]
 		public string? Description { get; set; }
 
+		[JsonIgnore]
 		public IEnumerable<ShelterStaff>? Staff { get; set; }
+		[JsonIgnore]
 		public IEnumerable<ShelterCategory>? Category { get; set; }
 
 		// Add the Animals navigation property here
+		[JsonIgnore]
 		public IEnumerable<Animal>? Animals { get; set; } 
 	}
 }

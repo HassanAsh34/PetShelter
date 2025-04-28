@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace PetShelter.Models
 {
@@ -15,6 +16,7 @@ namespace PetShelter.Models
 
 		public int Shelter_FK { get; set; }
 
+		[JsonIgnore]
 		public Shelter? Shelter { get; set; }
 
 		public enum StaffTypes

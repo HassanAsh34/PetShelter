@@ -26,7 +26,7 @@ namespace PetShelter.Repository
         public async Task<User> GetUserDetails(string email)
         {
             //await _context.Users.FirstOrDefaultAsync(u => u.Email.Equals(email));
-            var User = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var User = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower().Trim() == email);
             if (User != null)
             {
                 switch (User.Role)
@@ -52,7 +52,7 @@ namespace PetShelter.Repository
         }
         public async Task<bool> UserExistence(string email)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email );
             if (user == null)
             {
                 return false;

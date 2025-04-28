@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using PetShelter.DTOs;
 
 namespace PetShelter.Models
@@ -11,14 +12,15 @@ namespace PetShelter.Models
 
 		public int AdopterId_FK { get; set; }
 		//public ApplicationUser? Adopter { get; set; }
+		[JsonIgnore]
 		public Adopter ?Adopter { get; set; }
 
 		public int PetId_FK { get; set; }
 		//public Pet? Pet { get; set; }
-
+		[JsonIgnore]
 		public Animal? Pet { get; set; }
 		public int Shelter_FK { get; set; } // navigation property
-
+		[JsonIgnore]
 		public Shelter? Shelter { get; set; } // navigation property
 		public AdoptionRequestStatus? Status { get; set; }
 		public DateTime RequestDate { get; set; }

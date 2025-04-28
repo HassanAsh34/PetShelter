@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using PetShelter.DTOs;
 
 namespace PetShelter.Models
 {
-	[Index(nameof(CategoryName),IsUnique =true)]
+	//[Index(nameof(CategoryName),IsUnique =true)]
+	[Index(nameof(CategoryName), nameof(Shelter_FK), IsUnique = true)]
 	public class ShelterCategory
 	{
 
@@ -26,8 +28,10 @@ namespace PetShelter.Models
 
 		public int Shelter_FK { get; set; } // foreign key
 
+		[JsonIgnore]
 		public Shelter ?Shelter { get; set; } // navigation property 
 
+		[JsonIgnore]
 		public List<Animal> ?Animal { get; set; } //navigation property
 	}
 }
