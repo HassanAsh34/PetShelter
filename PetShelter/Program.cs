@@ -9,6 +9,7 @@ using PetShelter.Services;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using System.IdentityModel.Tokens.Jwt;
 
 
 public class Program
@@ -98,6 +99,7 @@ public class Program
 					RoleClaimType = ClaimTypes.Role
 				};
 			});
+		JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 		var app = builder.Build();
 
