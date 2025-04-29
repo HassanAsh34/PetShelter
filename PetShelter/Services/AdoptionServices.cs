@@ -104,6 +104,36 @@ namespace PetShelter.Services
 			return -1;//something went wrong
 		}
 
+		public async Task<object> ViewAdoption(int id)
+		{
+			if (id != 0)
+			{
+				var res = await _adoptionRepository.ViewAdoption(id);
+				if (res == null)
+				{
+					return 0; //nothing was found
+				}
+				else
+				{
+					return new AdoptionRequestDto
+					{
+						Adopter = new AdopterDto
+						{
+							Id = res.AdopterId_FK,
+							Uname = res.Adopter.Uname,
+						},
+						Animal = new AnimalDto
+						{
+							id = res.Pet.id,
+							name = res.Pet.name,
+						},
+						Status = ((AdoptionRequest.AdoptionRequestStatus)res.Status).ToString(),
+						Approved_At = res.Approved_At
+					};
+				}
+			}
+			return -1;//something went wrong
+		}
 		public async Task<bool> CancelAdoption(int id)
 		{
 			if (id != 0)
@@ -121,15 +151,36 @@ namespace PetShelter.Services
 
 		public async Task<object> ShowPet(int id)
 		{
-			var res = await _adoptionRepository.ShowPet(id);
-			if (res != null)
+			if(id != 0)
 			{
-				return res;
+				var res = await _adoptionRepository.ShowPet(id);
+			if (res is Animal a)
+			{
+				return new AnimalDto
+				{
+					id = a.id,
+					name = a.name,
+					Adoption_State = ((Animal.AdoptionState)a.Adoption_State).ToString(),
+					age = a.age,
+					breed = a.breed,
+					ShelterCategory = new CategoryDto
+					{
+						CategoryId = a.ShelterCategory.CategoryId,
+						CategoryName = a.ShelterCategory.CategoryName,
+					},
+					shelterDto = new ShelterDto
+					{
+						ShelterId = a.Shelter.ShelterID,
+						ShelterName = a.Shelter.ShelterName,
+						ShelterLocation = a.Shelter.Location,
+						ShelterPhone = a.Shelter.Phone,
+					}
+				};
 			}
 			else
 				return null;
-			//}
-			//return -1;//something went wrong
+			}
+			return -1;//something went wrong
 		}
 	}
 }

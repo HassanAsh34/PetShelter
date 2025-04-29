@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace PetShelter.Models
 {
@@ -34,8 +35,10 @@ namespace PetShelter.Models
 
 		public int ?Shelter_FK { get; set; } // navigation property
 
+		[JsonIgnore]
 		public ShelterCategory ?ShelterCategory { get; set; } // navigation property
 
+		[JsonIgnore]
 		public Shelter? Shelter { get; set; } // navigation property
 		public enum AdoptionState
 		{

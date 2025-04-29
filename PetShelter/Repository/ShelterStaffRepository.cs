@@ -254,13 +254,9 @@ namespace PetShelter.Repository
 
 		public async Task<Animal> ViewPet(int id)
 		{
-			Animal a = await _context.Animals.FirstOrDefaultAsync(a=>a.id== id);
-			if (a != null)
+			Animal a = await _context.Animals.Include(a=>a.Shelter).Include(a=>a.ShelterCategory).FirstOrDefaultAsync(a=>a.id== id);
+			if(a != null)
 			{
-				ShelterCategory Cat = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == a.Category_FK);
-				Shelter Shelter = await _context.Shelters.FirstOrDefaultAsync(s => s.ShelterID == Cat.Shelter_FK);
-				a.ShelterCategory = Cat;
-				a.Shelter = Shelter;
 				return a;
 			}
 			else

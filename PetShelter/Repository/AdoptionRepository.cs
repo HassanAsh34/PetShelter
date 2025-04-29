@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using PetShelter.Data;
 using PetShelter.DTOs;
 using PetShelter.Models;
@@ -55,6 +56,11 @@ namespace PetShelter.Repository
 			.ToListAsync();
 		}
 
+		public async Task<AdoptionRequest> ViewAdoption(int ARID)
+		{
+			return await _context.AdoptionRequest.Include(a => a.Pet).Include(a => a.Adopter).FirstOrDefaultAsync(a => a.Id == ARID);
+		}
+
 		/*public async Task<AdoptionRequest> ViewAdoption(int id)
 		{
 			return await _context.AdoptionRequests.FirstOrDefaultAsync(a => a.PetId == id);
@@ -65,6 +71,7 @@ namespace PetShelter.Repository
 			var adoption = await _context.AdoptionRequest.FirstOrDefaultAsync(a => a.Id == id);
 			if (adoption != null)
 			{
+				//_context.AdoptionRequest.Remove(adoption);
 				adoption.Status = AdoptionRequest.AdoptionRequestStatus.Rejected;
 				int res = await _context.SaveChangesAsync();
 				if (res > 0)
@@ -78,19 +85,7 @@ namespace PetShelter.Repository
 
 		public async Task<object> ShowPet(int id)
 		{
-			if (id != 0)
-			{
-				var res = await _shelterStaffRepository.ViewPet(id);
-				if (res == null)
-				{
-					return 0; //nothing was found
-				}
-				else
-				{
-					return res;
-				}
-			}
-			return -1;//something went wrong
+			return await _shelterStaffRepository.ViewPet(id);
 		}
 
 	}

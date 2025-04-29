@@ -70,6 +70,22 @@ namespace PetShelter.Controllers
 			}
 		}
 
+		[HttpGet("View-Adoption/{id}")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<AdoptionRequestDto>> ViewAdoption(int id)//done
+		{
+			var adoption = await _adoptionServices.ViewAdoption(id);
+			if (adoption != null)
+			{
+				return Ok(adoption);
+			}
+			else
+			{
+				return NotFound(new { message = "Adoption not found" });
+			}
+		}
+
 		[HttpPut("Cancel-Adoption/{id}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -86,8 +102,8 @@ namespace PetShelter.Controllers
 			}
 		}
 
-		[HttpGet("View-Pet/{id}")]
 		[AllowAnonymous]
+		[HttpGet("View-Pet/{id}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		public async Task<ActionResult<object>> ViewPet(int id)
@@ -99,7 +115,7 @@ namespace PetShelter.Controllers
 			}
 			else
 			{
-					return NotFound(new { message = "Pet not found" });
+				return NotFound(new { message = "Pet not found" });
 				//}
 				//else
 				//{

@@ -21,7 +21,7 @@ namespace PetShelter.DTOs
 		public AdopterDto ?Adopter { get; set; }
 		public string? Status { get; set; }
 
-
+		public DateTime? Approved_At { get; set; }
 
 	}
 }
