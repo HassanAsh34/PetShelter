@@ -29,13 +29,16 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<ActionResult<UserDto>> Register([FromBody] User user)
 		{
+			Console.WriteLine($"Received registration request for user: {JsonSerializer.Serialize(user)}");
 			var res = await _userService.Register(user);
 			if (res == null)
 			{
+				Console.WriteLine("Registration failed: User already exists");
 				return BadRequest(new { message = "User already exists" });
 			}
 			else
 			{
+				Console.WriteLine($"Registration successful for user: {JsonSerializer.Serialize(res)}");
 				return StatusCode(StatusCodes.Status201Created, new
 				{
 					res = res,
@@ -68,6 +71,20 @@ namespace PetShelter.Controllers
 			else
 			{
 				return BadRequest(new { message = "Invalid Email or Password" });
+			}
+		}
+
+		[HttpPut("EditUserDetails")]
+		public ActionResult<object> UpdateUser([FromBody] UserDto user)
+		{
+			var res = _userService.UpdateUserDetails(user);
+			if (res != null)
+			{
+				return Ok(new {user ,message = "User Updated Successfully" });
+			}
+			else
+			{
+				return BadRequest(new { message = "updating user failed" });
 			}
 		}
 

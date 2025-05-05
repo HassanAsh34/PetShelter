@@ -167,16 +167,17 @@ namespace PetShelter.Repository
 		}
 
 
-		public async Task<UserDto> GetUser(int id)
+		public async Task<UserDto> GetUser(int id, int role)
 		{
-			var user = await _context.Users.Where(user => user.Id == id).Select(user => new { user.Id, user.Role }).FirstOrDefaultAsync();
-			if (user != null)
+			//var user = await _context.Users.Where(user => user.Id == id && user.Role == role).FirstOrDefaultAsync();
+			//if (role)
+			//{
+			switch (role)
 			{
-				switch (user.Role)
-				{
-					case (int)User.UserType.Admin:
-						Admin admin = await _context.Admins.Where(admin => admin.Id == user.Id).FirstOrDefaultAsync();
-						//admin.Password = "";
+				case (int)User.UserType.Admin:
+					Admin admin = await _context.Admins.Where(admin => admin.Id == id).FirstOrDefaultAsync();
+					if (admin != null)
+					{
 						return new AdminDto
 						{
 							Id = admin.Id,
@@ -185,10 +186,15 @@ namespace PetShelter.Repository
 							Activated = admin.Activated,
 							adminType = (Admin.AdminTypes)admin.AdminType,
 							Role = User.UserType.Admin,
+							CreatedAt = admin.CreatedAt
 						};
-					case (int)User.UserType.Adopter:
-						Adopter adopter = await _context.Adopters.Where(adopter => adopter.Id == user.Id).FirstOrDefaultAsync();
-						//adopter.Password = "";
+					}
+					else
+						return null;
+				case (int)User.UserType.Adopter:
+					Adopter adopter = await _context.Adopters.Where(adopter => adopter.Id == id).FirstOrDefaultAsync();
+					if(adopter != null)
+					{
 						return new AdopterDto
 						{
 							Id = adopter.Id,
@@ -198,9 +204,15 @@ namespace PetShelter.Repository
 							Role = User.UserType.Adopter,
 							Address = adopter.Address,
 							Phone = adopter.Phone,
+							CreatedAt = adopter.CreatedAt
 						};
-					case (int)User.UserType.ShelterStaff:
-						ShelterStaff staff = await _context.Staff.Where(adopter => adopter.Id == user.Id).FirstOrDefaultAsync();
+					}
+					else
+						return null;
+				case (int)User.UserType.ShelterStaff:
+					ShelterStaff staff = await _context.Staff.Where(adopter => adopter.Id == id).Include(s=>s.Shelter).FirstOrDefaultAsync();
+					if(staff != null)
+					{
 						return new StaffDto
 						{
 							Id = staff.Id,
@@ -210,17 +222,20 @@ namespace PetShelter.Repository
 							Phone = staff.Phone,
 							StaffType = (ShelterStaff.StaffTypes)staff.StaffType,
 							Activated = staff.Activated,
-							HiredDate = staff.HiredDate
+							HiredDate = staff.HiredDate,
+							CreatedAt = staff.CreatedAt,
+							Shelter = new ShelterDto
+							{
+								ShelterId = staff.Shelter.ShelterID,
+								ShelterName = staff.Shelter.ShelterName
+							}
 						};
-					default:
+					}
+					else
 						return null;
-						{
-
-						}
-				}
+				default:
+					return null;
 			}
-			else
-				return null;
 		}
 
 		// dont forget to ask michel about what to do in Add user function 
@@ -388,21 +403,28 @@ namespace PetShelter.Repository
 				return -1;//indicates that the staff does not exist
 		}
 
-		public async Task<Shelter> ShowShelter(int id)
+		public async Task<object> ShowShelter(int ? id = 0)
 		{
-			Shelter shelter = await _context.Shelters.FirstOrDefaultAsync(s => s.ShelterID == id);
-			if(shelter != null)
+			if(id!=0)
 			{
-				return shelter;
+				Shelter shelter = await _context.Shelters.Include(s=>s.Staff).FirstOrDefaultAsync(s => s.ShelterID == id);
+				if(shelter != null)
+				{
+					return shelter;
+				}
+				else
+					return null; //indicates that the shelter does not exist
 			}
 			else
-				return null; //indicates that the shelter does not exist
+			{
+                return await _context.Shelters.ToListAsync();
+            }
 		}
 
-		public async Task<IEnumerable<Shelter>> ListShelters()
-		{
-			return await _context.Shelters.ToListAsync();
-		}
+		//public async Task<IEnumerable<Shelter>> ListShelters()
+		//{
+		//	return await _context.Shelters.ToListAsync();
+		//}
 
 		public async Task<int> DeleteShelter(Shelter shelter)
 		{
@@ -426,6 +448,24 @@ namespace PetShelter.Repository
 			return await _context.SaveChangesAsync();
 			//else
 			//	return -1; //indicates that there is no staff in that shelter
+		}
+
+		public async Task<DashboardStatsDto> GetDashboardStats()
+		{
+			var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+			var endOfMonth = startOfMonth.AddMonths(1).AddSeconds(-1);
+
+			return new DashboardStatsDto
+			{
+				TotalShelters = await _context.Shelters.CountAsync(),
+				TotalPets = await _context.Animals.CountAsync(),
+				ActiveUsers = await _context.Users.CountAsync(u => u.Activated == 1),
+				AdoptionsThisMonth = await _context.AdoptionRequest
+					.CountAsync(a => a.RequestDate >= startOfMonth && a.RequestDate <= endOfMonth),
+				PendingAdoptions = await _context.AdoptionRequest
+					.CountAsync(a => a.Status == AdoptionRequest.AdoptionRequestStatus.Pending),
+				TotalAdoptions = await _context.AdoptionRequest.CountAsync()
+			};
 		}
 	}
 }

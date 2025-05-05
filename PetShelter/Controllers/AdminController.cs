@@ -83,11 +83,11 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<ActionResult<UserDto>> getUserDetails(int id)
+		public async Task<ActionResult<UserDto>> getUserDetails(int id, [FromQuery] int role)
 		{
 			if (Authorize(2))
 			{
-				var user = await _adminServices.getUserDetails(id);
+				var user = await _adminServices.getUserDetails(id, role);
 				if (user != null)
 				{
 					return Ok(user);
@@ -103,28 +103,37 @@ namespace PetShelter.Controllers
 
 
 
-		//[HttpPut("EditUserDetails")]
-		//public async Task<ActionResult<UserDto>> editUserDetails([FromBody] UserDto U)
-		//{
-		//	if (Authorize(2))
-		//	{
-		//		//switch(U)
-		//		//{
-		//		//	case AdminDto admin:
-		//		//		if(Authorize(1))
-		//		//		{
-		//		//			//var u = await _adminServices.UpdateUserDetails(U);
-		//		//			//return Ok(U);
-		//		//		}
-		//		//		else
-		//		//			return Unauthorized();
-		//		//	default:
-		//		//		var u = await _adminServices.UpdateUserDetails(U);
-		//		//		return Ok(U);
-		//	}
-		//	else
-		//		return Unauthorized();
-		//}
+		[HttpPut("EditUserDetails")]
+		public async Task<ActionResult<UserDto>> editUserDetails([FromBody] UserDto U)
+		{
+			if (Authorize(2))
+			{
+				bool u;
+				switch (U)
+				{
+					case AdminDto admin:
+						if (Authorize(1))
+						{
+							u = await _adminServices.UpdateUserDetails(U);
+							if(u == true)
+								return Ok(U);
+							else
+								return BadRequest(new { message = "Update Failed" });
+							//return Ok(U);
+						}
+						else
+							return Unauthorized();
+					default:
+						u = await _adminServices.UpdateUserDetails(U);
+						if (u == true)
+							return Ok(U);
+						else
+							return BadRequest(new { message = "Update Failed" });
+				}
+			}
+			else
+				return Unauthorized();
+		}
 
 		[HttpPut("Activate-Deactivate-Account")]
 		public async Task<ActionResult<string>> Activate_Deactivate_User([FromBody] UserDto U)//done
@@ -375,7 +384,7 @@ namespace PetShelter.Controllers
 		{
 			if (Authorize(1))
 			{
-				var res = await _adminServices.ListShelters();
+				var res = await _adminServices.ShowShelter();
 				if (res != null)
 				{
 					return Ok(res);
@@ -438,6 +447,21 @@ namespace PetShelter.Controllers
 			{
 				return Unauthorized();
 			}
+		}
+
+		[HttpGet("dashboard-stats")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<ActionResult<DashboardStatsDto>> GetDashboardStats()
+		{
+			if (Authorize(1)) // Only SuperAdmin can view dashboard stats
+			{
+				var stats = await _adminServices.GetDashboardStats();
+				return Ok(stats);
+			}
+			else
+				return Unauthorized();
 		}
 	}
 }

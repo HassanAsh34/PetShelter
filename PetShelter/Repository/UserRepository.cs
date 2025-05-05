@@ -119,7 +119,7 @@ namespace PetShelter.Repository
                 case AdminDto admin:
                     Admin A = await _context.Admins.FirstOrDefaultAsync(A => A.Id == user.Id);
                     //A.Role = (int)admin.Role;
-                    A.Email = admin.Email;
+                    //A.Email = admin.Email;
                     A.Uname = admin.Uname;
                     A.AdminType = (int)admin.adminType;
                     A.UpdatedAt = DateTime.Now;
@@ -128,13 +128,22 @@ namespace PetShelter.Repository
                 case StaffDto staff:
                     ShelterStaff S = await _context.Staff.FirstOrDefaultAsync(s => s.Id == user.Id);
                     S.Phone = staff.Phone;
-                    S.Email = staff.Email;
+                    //S.Email = staff.Email;
                     S.Uname = staff.Uname;
                     S.StaffType = (int)staff.StaffType;
                     S.UpdatedAt = DateTime.Now;
                     //return await _context.SaveChangesAsync();
                     break;
-                default:
+                case AdopterDto adopter:
+					Adopter a = await _context.Adopters.FirstOrDefaultAsync(a => a.Id == user.Id);
+					a.Phone = adopter.Phone;
+					a.Uname = adopter.Uname;
+					a.Address = adopter.Address;
+					a.UpdatedAt = DateTime.Now;
+
+					//return await _context.SaveChangesAsync();
+					break;
+				default:
                     break;
             }
 			return await _context.SaveChangesAsync();

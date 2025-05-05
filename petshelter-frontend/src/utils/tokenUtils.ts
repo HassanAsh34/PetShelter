@@ -5,6 +5,8 @@ interface DecodedToken {
   firstName: string;
   lastName: string;
   exp: number;
+  AdminType?: string | number;
+  staffType?: string;
 }
 
 export const getToken = (): string | null => {
@@ -46,8 +48,29 @@ export const parseJwt = (token: string): DecodedToken | null => {
         .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
         .join('')
     );
-    return JSON.parse(jsonPayload);
-  } catch {
+    const decoded = JSON.parse(jsonPayload);
+    
+    // Convert AdminType to number if it exists
+    if (decoded.AdminType !== undefined) {
+      const adminTypeValue = typeof decoded.AdminType === 'string' 
+        ? parseInt(decoded.AdminType, 10)
+        : Number(decoded.AdminType);
+      
+      if (!isNaN(adminTypeValue)) {
+        decoded.AdminType = adminTypeValue;
+      }
+    }
+    
+    console.log('Token Utils - Parsed JWT:', {
+      decoded,
+      adminType: decoded.AdminType,
+      adminTypeType: typeof decoded.AdminType,
+      rawAdminType: decoded.AdminType
+    });
+    
+    return decoded;
+  } catch (error) {
+    console.error('Token Utils - Error parsing JWT:', error);
     return null;
   }
 }; 

@@ -12,9 +12,15 @@ namespace PetShelter.DTOs
 
 		public string ShelterPhone { get; set; }
 
+		public string Description { get; set; }
+
 		//return shelter manager name
 		//public ShelterManagerDto ShelterManager { get; set; }
-		public IEnumerable<ShelterCategory>? Categories { get; set; }
+
+		public int CountStaff { get; set; }
+
+        //public int CountAnimals { get; set; }
+        public IEnumerable<ShelterCategory>? Categories { get; set; }
 
 		public IEnumerable<StaffDto> ?staff { get; set; }
 	}

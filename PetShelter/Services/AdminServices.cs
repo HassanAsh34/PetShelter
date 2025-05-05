@@ -4,19 +4,18 @@ using PetShelter.DTOs;
 //using PetShelter.Migrations;
 using PetShelter.Models;
 using PetShelter.Repository;
+using Microsoft.EntityFrameworkCore;
 
 namespace PetShelter.Services
 {
 	public class AdminServices
 	{
 		private readonly AdminRepository _adminRepository;
-
-		//private readonly UserRepository _userRepository;
+		
 		public AdminServices(AdminRepository adminRepository)
 		{
 			_adminRepository = adminRepository ?? throw new ArgumentNullException(nameof(adminRepository));
-
-			//_userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+			
 		}
 
 		public async Task<IEnumerable<UserDto>> ListUsers(bool? UnassignedStaff = false)
@@ -24,9 +23,9 @@ namespace PetShelter.Services
 			return await _adminRepository.GetUsers(UnassignedStaff);
 		}
 
-		public async Task<UserDto> getUserDetails(int id)
+		public async Task<UserDto> getUserDetails(int id, int role)
 		{
-			return await _adminRepository.GetUser(id);
+			return await _adminRepository.GetUser(id, role);
 		}
 
 		public async Task<string> ToggleUserActivation(UserDto user, bool? Ban = false)
@@ -223,38 +222,78 @@ namespace PetShelter.Services
 				return -2; //indicates that the shelter does not exist
 		}
 
-		public async Task<Shelter> ShowShelter(int id)
+		public async Task<object> ShowShelter(int? id = 0)
 		{
-			return await _adminRepository.ShowShelter(id);
-		}
-
-		public async Task<object> ListShelters()
-		{
-			IEnumerable<Shelter> res = await _adminRepository.ListShelters();
-			if (res.Count() != 0)
+			//return await _adminRepository.ShowShelter(id);
+			var res = await _adminRepository.ShowShelter(id);
+			if (res != null)
 			{
-				List<ShelterDto> shelterDtos = new List<ShelterDto>();
-				res.ToList().ForEach(shelter =>
+				switch (res)
 				{
-					shelterDtos.Add(new ShelterDto
-					{
-						ShelterId = shelter.ShelterID,
-						ShelterName = shelter.ShelterName,
-						ShelterLocation = shelter.Location,
-						ShelterPhone = shelter.Phone,
-					});
-				});
-				return shelterDtos;
+					case IEnumerable<Shelter> shelters:
+						List<ShelterDto> shelterDtos = new List<ShelterDto>();
+						shelters.ToList().ForEach(shelter =>
+						{
+							shelterDtos.Add(
+								new ShelterDto()
+								{
+									ShelterId = shelter.ShelterID,
+									ShelterName = shelter.ShelterName,
+									ShelterLocation = shelter.Location,
+									ShelterPhone = shelter.Phone,
+								});
+						});
+						return shelterDtos;
+					case Shelter shelter:
+						return new ShelterDto()
+						{
+							ShelterId = shelter.ShelterID,
+							ShelterName = shelter.ShelterName,
+							ShelterLocation = shelter.Location,
+							ShelterPhone = shelter.Phone,
+							CountStaff = shelter.Staff.Count(),
+							Description = shelter.Description
+						};
+					default:
+						return null;
+				}
 			}
 			else
-				return null; //indicates that there are no shelters
+				return null;
 		}
+
+		//public async Task<object> ListShelters()
+		//{
+		//	IEnumerable<Shelter> res = await _adminRepository.ListShelters();
+		//	if (res.Count() != 0)
+		//	{
+		//		List<ShelterDto> shelterDtos = new List<ShelterDto>();
+		//		res.ToList().ForEach(shelter =>
+		//		{
+		//			shelterDtos.Add(new ShelterDto
+		//			{
+		//				ShelterId = shelter.ShelterID,
+		//				ShelterName = shelter.ShelterName,
+		//				ShelterLocation = shelter.Location,
+		//				ShelterPhone = shelter.Phone,
+		//			});
+		//		});
+		//		return shelterDtos;
+		//	}
+		//	else
+		//		return null; //indicates that there are no shelters
+		//}
 
 		public async Task<int> deleteShelter(Shelter shelter)
 		{
 			await _adminRepository.UnassignFromShelter(shelter.ShelterID);
 			await _adminRepository.deleteCategory(null,true,shelter.ShelterID);
 			return await _adminRepository.DeleteShelter(shelter);
+		}
+
+		public async Task<DashboardStatsDto> GetDashboardStats()
+		{
+			return await _adminRepository.GetDashboardStats();
 		}
 	}
 }

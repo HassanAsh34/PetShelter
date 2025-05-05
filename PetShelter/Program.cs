@@ -21,12 +21,13 @@ public class Program
 		// Add services to the container.
 		builder.Services.AddScoped<UserRepository>();
 		builder.Services.AddScoped<UserService>();
-		builder.Services.AddScoped <AdminRepository>();
+		builder.Services.AddScoped<AdminRepository>();
 		builder.Services.AddScoped<AdminServices>();
 		builder.Services.AddScoped<ShelterStaffRepository>();
 		builder.Services.AddScoped<ShelterStaffServices>();
 		builder.Services.AddScoped<AdoptionRepository>();
 		builder.Services.AddScoped<AdoptionServices>();
+		//builder.Services.AddScoped<Db_Context>();
 		// Configure JWT options
 		var configuration = builder.Configuration;
 		var tokenOptions = configuration.GetSection("TokenOptions").Get<JWT>();

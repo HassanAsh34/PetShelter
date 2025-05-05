@@ -8,7 +8,10 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import AnimalList from './pages/animals/AnimalList';
 import AnimalDetails from './pages/animals/AnimalDetails';
-import { AdminDashboard } from './pages/admin';
+import { AdminDashboard, AdminUsers, AdminShelters } from './pages/admin';
+import UserDetailsPage from './pages/admin/UserDetailsPage';
+import Shelters from './pages/admin/Shelters';
+import ShelterDetails from './pages/admin/ShelterDetails';
 
 // Protected Route Component
 const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
@@ -41,6 +44,38 @@ function App() {
             element={
               <ProtectedAdminRoute>
                 <AdminDashboard />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedAdminRoute>
+                <AdminUsers />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/shelters"
+            element={
+              <ProtectedAdminRoute>
+                <Shelters />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/shelters/:id"
+            element={
+              <ProtectedAdminRoute>
+                <ShelterDetails />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/users/:id/:role"
+            element={
+              <ProtectedAdminRoute>
+                <UserDetailsPage />
               </ProtectedAdminRoute>
             }
           />

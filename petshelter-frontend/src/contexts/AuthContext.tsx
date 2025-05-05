@@ -9,7 +9,7 @@ interface User {
   firstName: string;
   lastName: string;
   activated: number;
-  adminType?: string;
+  adminType?: number;
   staffType?: string;
   shelterId?: number;
 }
@@ -22,7 +22,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isShelterStaff: boolean;
   isAdopter: boolean;
-  adminType?: string;
+  adminType?: number;
   staffType?: string;
 }
 
@@ -30,6 +30,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Add helper function to convert role
   const convertRole = (role: string | number) => {
@@ -52,25 +53,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!isTokenValid()) {
         removeToken();
         setUser(null);
+        setIsAdmin(false);
         return;
       }
 
       const token = getToken();
       if (token) {
-        const decoded = parseJwt(token);
-        if (decoded) {
-          const role = convertRole(decoded.role);
-          setUser({
-            id: decoded.id,
-            email: decoded.email,
-            role: role,
-            firstName: decoded.firstName,
-            lastName: decoded.lastName,
-            activated: 1,
-            adminType: role === 'Admin' ? 'full' : undefined,
-            staffType: role === 'ShelterStaff' ? 'staff' : undefined,
-          });
-        }
+        parseToken(token);
       }
     };
 
@@ -79,30 +68,119 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(interval);
   }, []);
 
+  const parseToken = (token: string) => {
+    try {
+      const decodedToken = parseJwt(token);
+      console.log('Raw token data:', decodedToken);
+      
+      // Convert adminType to number if it exists
+      let adminTypeValue: number | undefined;
+      if (decodedToken?.AdminType !== undefined) {
+        // First try to parse as number
+        if (typeof decodedToken.AdminType === 'string') {
+          const parsedValue = parseInt(decodedToken.AdminType, 10);
+          adminTypeValue = isNaN(parsedValue) ? undefined : parsedValue;
+        } else if (typeof decodedToken.AdminType === 'number') {
+          adminTypeValue = decodedToken.AdminType;
+        }
+        
+        console.log('AdminType conversion:', {
+          original: decodedToken.AdminType,
+          type: typeof decodedToken.AdminType,
+          converted: adminTypeValue,
+          convertedType: typeof adminTypeValue,
+          isSuperAdmin: adminTypeValue === 0
+        });
+      }
+
+      // If we're an admin but don't have an adminType, set it to 0 (SuperAdmin)
+      if (decodedToken?.role === 'Admin' && adminTypeValue === undefined) {
+        adminTypeValue = 0;
+        console.log('Setting default adminType to 0 for Admin role');
+      }
+
+      const userData: User = {
+        id: decodedToken?.id || 0,
+        email: decodedToken?.email || '',
+        role: convertRole(decodedToken?.role || ''),
+        firstName: decodedToken?.firstName || '',
+        lastName: decodedToken?.lastName || '',
+        activated: 1,
+        adminType: adminTypeValue,
+        staffType: decodedToken?.staffType || (decodedToken?.role === 'ShelterStaff' ? 'staff' : undefined)
+      };
+
+      console.log('Setting user state:', {
+        ...userData,
+        isSuperAdmin: userData.adminType === 0,
+        adminTypeType: typeof userData.adminType
+      });
+
+      setUser(userData);
+      setIsAdmin(decodedToken?.role === 'Admin');
+    } catch (error) {
+      console.error('Error parsing token:', error);
+      setUser(null);
+      setIsAdmin(false);
+    }
+  };
+
   const login = async (email: string, password: string) => {
     try {
       const response = await authApi.login({ email, password });
-      const { token, user: userData } = response.data;
+      const { token, user: userData } = response;
       
       console.log('Auth Context - Raw login data:', {
         rawUserData: userData,
         rawRole: userData.role,
-        rawRoleType: typeof userData.role
+        rawRoleType: typeof userData.role,
+        rawAdminType: userData.adminType,
+        rawAdminTypeType: typeof userData.adminType,
+        token: token
       });
       
       const role = convertRole(userData.role);
+      // Fix adminType conversion in login
+      let adminTypeValue: number | undefined;
+      if (userData.adminType !== undefined) {
+        if (typeof userData.adminType === 'string') {
+          const parsedValue = parseInt(userData.adminType, 10);
+          adminTypeValue = isNaN(parsedValue) ? undefined : parsedValue;
+        } else if (typeof userData.adminType === 'number') {
+          adminTypeValue = userData.adminType;
+        }
+      }
+
+      // If we're an admin but don't have an adminType, set it to 0 (SuperAdmin)
+      if (role === 'Admin' && adminTypeValue === undefined) {
+        adminTypeValue = 0;
+        console.log('Setting default adminType to 0 for Admin role');
+      }
+
       const userWithRole = {
         ...userData,
         role: role,
-        adminType: role === 'Admin' ? 'full' : undefined,
-        staffType: role === 'ShelterStaff' ? 'staff' : undefined,
+        adminType: adminTypeValue,
+        staffType: userData.staffType || (role === 'ShelterStaff' ? 'staff' : undefined),
       };
 
       console.log('Auth Context - Processed user data:', {
         processedUser: userWithRole,
         processedRole: userWithRole.role,
         isAdmin: userWithRole.role === 'Admin',
-        isShelterStaff: userWithRole.role === 'ShelterStaff'
+        isShelterStaff: userWithRole.role === 'ShelterStaff',
+        adminType: userWithRole.adminType,
+        adminTypeType: typeof userWithRole.adminType,
+        isSuperAdmin: userWithRole.adminType === 0
+      });
+
+      // Parse and log the JWT token
+      const decodedToken = parseJwt(token);
+      console.log('Auth Context - Decoded JWT token:', {
+        decodedToken,
+        adminTypeFromToken: decodedToken?.AdminType,
+        adminTypeFromTokenType: typeof decodedToken?.AdminType,
+        isSuperAdmin: decodedToken?.AdminType === '0'
       });
       
       setToken(token);
@@ -117,6 +195,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     authApi.logout();
     setUser(null);
+    setIsAdmin(false);
     // No redirection here - let the component handle it
   };
 
@@ -125,7 +204,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     logout,
     isAuthenticated: !!user,
-    isAdmin: user?.role === 'Admin',
+    isAdmin: isAdmin,
     isShelterStaff: user?.role === 'ShelterStaff',
     isAdopter: user?.role === 'Adopter',
     adminType: user?.adminType,
@@ -141,4 +220,6 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}; 
+};
+
+export default AuthProvider; 

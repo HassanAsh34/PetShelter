@@ -29,7 +29,7 @@ namespace PetShelter.MiddleWare
 				
 				case User.UserType.Admin:
 					var admindetails  = (AdminDto)userDetails;
-					claims.Add(new Claim("AdminType",admindetails.adminType.ToString()));
+                    claims.Add(new Claim("AdminType", admindetails.adminType.ToString()));
 					break;
 				case User.UserType.Adopter:
 					//userDetails = userDetails as AdminDto;

@@ -12,5 +12,6 @@ namespace PetShelter.DTOs
         public bool banned { get; set; }
 		public int Activated { get; set; }
 
-    }
+		public DateTime CreatedAt { get; set; }
+	}
 }
