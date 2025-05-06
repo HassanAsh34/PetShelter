@@ -407,7 +407,10 @@ namespace PetShelter.Repository
 		{
 			if(id!=0)
 			{
-				Shelter shelter = await _context.Shelters.Include(s=>s.Staff).FirstOrDefaultAsync(s => s.ShelterID == id);
+				Shelter shelter = await _context.Shelters
+					.Include(s => s.Staff)
+					.Include(s => s.Category)
+					.FirstOrDefaultAsync(s => s.ShelterID == id);
 				if(shelter != null)
 				{
 					return shelter;
@@ -417,7 +420,10 @@ namespace PetShelter.Repository
 			}
 			else
 			{
-                return await _context.Shelters.ToListAsync();
+                return await _context.Shelters
+					.Include(s => s.Staff)
+					.Include(s => s.Category)
+					.ToListAsync();
             }
 		}
 

@@ -78,17 +78,43 @@ export const adminApi = {
     return response.data;
   },
   addShelter: async (data: {
-    shelterName: string;
-    shelterLocation: string;
-    shelterPhone: string;
-    description: string;
-  }) => {
-    const response = await api.post('/admin/shelters', data);
-    return response.data;
+    ShelterName: string;
+    Location: string;
+    Phone: string;
+    Description: string;
+  }): Promise<Shelter> => {
+    try {
+      console.log('API - Adding shelter with data:', data);
+      const response = await api.post('/Admin/Add-Shelter', data);
+      console.log('API - Add shelter response:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('API - Error adding shelter:', error);
+      if (error.response) {
+        console.error('API - Error response:', {
+          status: error.response.status,
+          data: error.response.data
+        });
+      }
+      if (error.response?.status === 401) {
+        throw new Error('Unauthorized: You do not have permission to add shelters');
+      } else if (error.response?.status === 400) {
+        throw new Error(error.response.data.message || 'Failed to add shelter');
+      }
+      throw new Error('Failed to add shelter. Please try again.');
+    }
   },
   updateShelter: (id: number, data: any) => api.put(`/Admin/Edit-Shelter/${id}`, data),
   deleteShelter: async (shelterId: number) => {
-    const response = await api.delete(`/admin/shelters/${shelterId}`);
+    const response = await api.delete('/Admin/Delete-Shelter', {
+      data: { 
+        ShelterID: shelterId,
+        ShelterName: "Temp Name",
+        Location: "Temp Location",
+        Phone: "1234567890",
+        Description: "Temporary description for deletion"
+      }
+    });
     return response.data;
   },
   
@@ -268,6 +294,13 @@ export interface Shelter {
   countStaff: number;
   categories: any[] | null;
   staff: any[] | null;
+}
+
+export interface AddShelterData {
+  shelterName: string;
+  shelterLocation: string;
+  shelterPhone: string;
+  description: string;
 }
 
 export type { }; 

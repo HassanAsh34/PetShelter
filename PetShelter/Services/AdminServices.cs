@@ -224,7 +224,6 @@ namespace PetShelter.Services
 
 		public async Task<object> ShowShelter(int? id = 0)
 		{
-			//return await _adminRepository.ShowShelter(id);
 			var res = await _adminRepository.ShowShelter(id);
 			if (res != null)
 			{
@@ -241,6 +240,8 @@ namespace PetShelter.Services
 									ShelterName = shelter.ShelterName,
 									ShelterLocation = shelter.Location,
 									ShelterPhone = shelter.Phone,
+									Description = shelter.Description,
+									CountStaff = shelter.Staff?.Count() ?? 0
 								});
 						});
 						return shelterDtos;
@@ -251,8 +252,8 @@ namespace PetShelter.Services
 							ShelterName = shelter.ShelterName,
 							ShelterLocation = shelter.Location,
 							ShelterPhone = shelter.Phone,
-							CountStaff = shelter.Staff.Count(),
-							Description = shelter.Description
+							Description = shelter.Description,
+							CountStaff = shelter.Staff?.Count() ?? 0
 						};
 					default:
 						return null;

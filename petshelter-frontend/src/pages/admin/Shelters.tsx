@@ -17,6 +17,7 @@ import {
   Paper,
   CircularProgress,
   Alert,
+  Modal,
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Visibility as ViewIcon } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -35,10 +36,10 @@ interface Shelter {
 }
 
 interface AddShelterData {
-  shelterName: string;
-  shelterLocation: string;
-  shelterPhone: string;
-  description: string;
+  ShelterName: string;
+  Location: string;
+  Phone: string;
+  Description: string;
 }
 
 interface ApiError extends Error {
@@ -80,10 +81,10 @@ export default function Shelters() {
   const [open, setOpen] = useState(false);
   const [selectedShelter, setSelectedShelter] = useState<Shelter | null>(null);
   const [formData, setFormData] = useState<AddShelterData>({
-    shelterName: '',
-    shelterLocation: '',
-    shelterPhone: '',
-    description: '',
+    ShelterName: '',
+    Location: '',
+    Phone: '',
+    Description: '',
   });
   const [errors, setErrors] = useState<Partial<AddShelterData>>({});
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -93,6 +94,9 @@ export default function Shelters() {
 
   // Add detailed debug logging
   const isSuperAdmin = user?.adminType === 0;
+  console.log('User admin type:', user?.adminType);
+  console.log('Is SuperAdmin:', isSuperAdmin);
+  console.log('Dialog open state:', open);
 
   // Fetch all shelters
   const { data: shelters, isLoading, error: sheltersError } = useQuery({
@@ -111,10 +115,20 @@ export default function Shelters() {
 
   // Add shelter mutation
   const addShelterMutation = useMutation({
-    mutationFn: (data: AddShelterData) => adminApi.addShelter(data),
+    mutationFn: (data: {
+      ShelterName: string;
+      Location: string;
+      Phone: string;
+      Description: string;
+    }) => adminApi.addShelter(data),
     onSuccess: () => {
+      console.log('Shelter added successfully');
       queryClient.invalidateQueries({ queryKey: ['shelters'] });
     },
+    onError: (error: any) => {
+      console.error('Mutation error:', error);
+      setError(error.message || 'Failed to add shelter');
+    }
   });
 
   // Delete shelter mutation
@@ -125,16 +139,30 @@ export default function Shelters() {
     },
   });
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => {
-    setOpen(false);
-    setFormData({
-      shelterName: '',
-      shelterLocation: '',
-      shelterPhone: '',
-      description: '',
-    });
+  const handleOpen = () => {
+    console.log('Opening add shelter dialog');
+    setOpen(true);
+    setError(null);
     setErrors({});
+    setFormData({
+      ShelterName: '',
+      Location: '',
+      Phone: '',
+      Description: ''
+    });
+  };
+
+  const handleClose = () => {
+    console.log('Closing add shelter dialog');
+    setOpen(false);
+    setError(null);
+    setErrors({});
+    setFormData({
+      ShelterName: '',
+      Location: '',
+      Phone: '',
+      Description: ''
+    });
   };
 
   const handleViewDetails = (shelter: Shelter) => {
@@ -143,47 +171,112 @@ export default function Shelters() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      try {
-        await addShelterMutation.mutateAsync(formData);
-        handleClose();
-      } catch (error) {
-        console.error('Error adding shelter:', error);
+    console.log('Form submitted with data:', formData);
+    
+    if (!validateForm()) {
+      console.log('Form validation failed');
+      return;
+    }
+
+    try {
+      console.log('Attempting to add shelter with data:', formData);
+      const result = await addShelterMutation.mutateAsync(formData);
+      console.log('Add shelter result:', result);
+      
+      // Close dialog and refresh list on success
+      handleClose();
+      queryClient.invalidateQueries({ queryKey: ['shelters'] });
+    } catch (error: any) {
+      console.error('Error adding shelter:', error);
+      if (error.response?.status === 401) {
+        setError('Unauthorized: You do not have permission to add shelters');
+      } else if (error.response?.status === 400) {
+        setError(error.response.data.message || 'Failed to add shelter');
+      } else {
+        setError(error.message || 'Failed to add shelter. Please try again.');
       }
     }
   };
 
   const validateForm = () => {
     const newErrors: Partial<AddShelterData> = {};
-    if (!formData.shelterName) newErrors.shelterName = 'Shelter name is required';
-    if (!formData.shelterLocation) newErrors.shelterLocation = 'Location is required';
-    if (!formData.shelterPhone) newErrors.shelterPhone = 'Phone is required';
-    if (!formData.description) newErrors.description = 'Description is required';
+    
+    // Shelter Name validation
+    if (!formData.ShelterName) {
+      newErrors.ShelterName = 'Shelter name is required';
+    } else if (formData.ShelterName.length < 3) {
+      newErrors.ShelterName = 'Shelter name must be at least 3 characters';
+    } else if (formData.ShelterName.length > 50) {
+      newErrors.ShelterName = 'Shelter name must be at most 50 characters';
+    }
+
+    // Location validation
+    if (!formData.Location) {
+      newErrors.Location = 'Location is required';
+    } else if (formData.Location.length < 3) {
+      newErrors.Location = 'Location must be at least 3 characters';
+    }
+
+    // Phone validation
+    if (!formData.Phone) {
+      newErrors.Phone = 'Phone is required';
+    } else if (!/^\+?[\d\s-]{10,}$/.test(formData.Phone)) {
+      newErrors.Phone = 'Please enter a valid phone number';
+    }
+
+    // Description validation
+    if (!formData.Description) {
+      newErrors.Description = 'Description is required';
+    } else if (formData.Description.length < 15) {
+      newErrors.Description = 'Description must be at least 15 characters';
+    } else if (formData.Description.length > 255) {
+      newErrors.Description = 'Description must be at most 255 characters';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    console.log('Form field changed:', name, value);
     setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
+    // Clear error for the field being changed
+    if (errors[name as keyof AddShelterData]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
   };
 
   const handleDeleteClick = (shelter: Shelter) => {
+    console.log('Delete clicked for shelter:', shelter);
     setShelterToDelete(shelter);
+    setIsDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
     if (shelterToDelete) {
       try {
+        console.log('Confirming deletion of shelter:', shelterToDelete);
         await deleteShelterMutation.mutateAsync(shelterToDelete.shelterId);
+        setIsDeleteDialogOpen(false);
         setShelterToDelete(null);
       } catch (error) {
         console.error('Error deleting shelter:', error);
+        setError('Failed to delete shelter. Please try again.');
       }
     }
+  };
+
+  const handleCloseDeleteDialog = () => {
+    console.log('Closing delete dialog');
+    setIsDeleteDialogOpen(false);
+    setShelterToDelete(null);
   };
 
   const handleCloseDetails = () => {
@@ -230,7 +323,10 @@ export default function Shelters() {
           <Button
             variant="contained"
             color="primary"
-            onClick={handleOpen}
+            onClick={() => {
+              console.log('Add Shelter button clicked');
+              handleOpen();
+            }}
             sx={{ mt: 2 }}
           >
             Add Shelter
@@ -504,37 +600,59 @@ export default function Shelters() {
       </Dialog>
 
       {/* Add Shelter Dialog */}
-      <Dialog 
-        open={open} 
-        onClose={handleClose} 
-        maxWidth="sm" 
-        fullWidth
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="add-shelter-modal"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999
+        }}
       >
-        <DialogTitle>Add New Shelter</DialogTitle>
-        <form onSubmit={handleSubmit}>
-          <DialogContent>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '100%',
+            maxWidth: 500,
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+            outline: 'none'
+          }}
+        >
+          <Typography variant="h6" component="h2" gutterBottom>
+            Add New Shelter
+          </Typography>
+          <form onSubmit={handleSubmit} noValidate>
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Shelter Name"
-                  name="shelterName"
-                  value={formData.shelterName}
+                  name="ShelterName"
+                  value={formData.ShelterName}
                   onChange={handleChange}
-                  error={!!errors.shelterName}
-                  helperText={errors.shelterName}
+                  error={!!errors.ShelterName}
+                  helperText={errors.ShelterName || "3-50 characters"}
                   required
+                  autoFocus
                 />
               </Grid>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
                   label="Location"
-                  name="shelterLocation"
-                  value={formData.shelterLocation}
+                  name="Location"
+                  value={formData.Location}
                   onChange={handleChange}
-                  error={!!errors.shelterLocation}
-                  helperText={errors.shelterLocation}
+                  error={!!errors.Location}
+                  helperText={errors.Location || "Minimum 3 characters"}
                   required
                 />
               </Grid>
@@ -542,11 +660,11 @@ export default function Shelters() {
                 <TextField
                   fullWidth
                   label="Phone"
-                  name="shelterPhone"
-                  value={formData.shelterPhone}
+                  name="Phone"
+                  value={formData.Phone}
                   onChange={handleChange}
-                  error={!!errors.shelterPhone}
-                  helperText={errors.shelterPhone}
+                  error={!!errors.Phone}
+                  helperText={errors.Phone || "Enter a valid phone number"}
                   required
                 />
               </Grid>
@@ -554,45 +672,62 @@ export default function Shelters() {
                 <TextField
                   fullWidth
                   label="Description"
-                  name="description"
-                  value={formData.description}
+                  name="Description"
+                  value={formData.Description}
                   onChange={handleChange}
-                  error={!!errors.description}
-                  helperText={errors.description}
+                  error={!!errors.Description}
+                  helperText={errors.Description || "15-255 characters"}
                   multiline
                   rows={4}
                   required
                 />
               </Grid>
             </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={addShelterMutation.isPending}
-            >
-              {addShelterMutation.isPending ? 'Adding...' : 'Add Shelter'}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
+            {error && (
+              <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+            <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+              <Button onClick={handleClose} color="inherit">
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={addShelterMutation.isPending}
+              >
+                {addShelterMutation.isPending ? 'Adding...' : 'Add Shelter'}
+              </Button>
+            </Box>
+          </form>
+        </Box>
+      </Modal>
 
       {/* Delete Confirmation Dialog */}
       <Dialog
         open={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="delete-dialog-title"
       >
-        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogTitle id="delete-dialog-title">
+          Confirm Delete
+        </DialogTitle>
         <DialogContent>
           <Typography>
             Are you sure you want to delete {shelterToDelete?.shelterName}? This action cannot be undone.
           </Typography>
+          {error && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {error}
+            </Alert>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleCloseDeleteDialog} color="inherit">
+            Cancel
+          </Button>
           <Button
             onClick={handleDeleteConfirm}
             color="error"
