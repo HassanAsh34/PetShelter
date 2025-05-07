@@ -8,6 +8,8 @@ using PetShelter.DTOs;
 using PetShelter.MiddleWare;
 using PetShelter.Models;
 using PetShelter.Services;
+using PetShelter.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace PetShelter.Controllers
 {
@@ -17,11 +19,13 @@ namespace PetShelter.Controllers
 	{
 		private readonly UserService _userService;
 		private readonly JWT _token;
+		private readonly IHubContext<UserNotificationHub> _hubContext;
 
-		public AuthenticationController(UserService userService, JWT token)
+		public AuthenticationController(UserService userService, JWT token, IHubContext<UserNotificationHub> hubContext)
 		{
 			_userService = userService ?? throw new ArgumentNullException(nameof(userService));
 			_token = token ?? throw new ArgumentNullException(nameof(token));
+			_hubContext = hubContext;
 		}
 
 		[HttpPost("Register")]
@@ -39,6 +43,8 @@ namespace PetShelter.Controllers
 			else
 			{
 				Console.WriteLine($"Registration successful for user: {JsonSerializer.Serialize(res)}");
+				// Notify admins about new user registration
+				await _hubContext.Clients.Group("Admins").SendAsync("ReceiveNewUserRegistration", res);
 				return StatusCode(StatusCodes.Status201Created, new
 				{
 					res = res,

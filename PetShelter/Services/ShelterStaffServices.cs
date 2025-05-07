@@ -1,18 +1,25 @@
 ﻿using PetShelter.DTOs;
 using PetShelter.Models;
 using PetShelter.Repository;
+using Microsoft.AspNetCore.SignalR;
+using PetShelter.Hubs;
 
 namespace PetShelter.Services
 {
-	public class ShelterStaffServices
+	public class ShelterStaffServices : BaseService
 	{
-		private ShelterStaffRepository _shelterStaffRepository;
-		public ShelterStaffServices(ShelterStaffRepository shelterStaffRepository)
+		private readonly ShelterStaffRepository _shelterStaffRepository;
+		private readonly AdminServices _adminServices;
+
+		public ShelterStaffServices(
+			ShelterStaffRepository shelterStaffRepository, 
+			IHubContext<DashboardHub> hubContext,
+			AdminServices adminServices)
+			: base(hubContext)
 		{
 			_shelterStaffRepository = shelterStaffRepository ?? throw new ArgumentNullException(nameof(shelterStaffRepository));
+			_adminServices = adminServices ?? throw new ArgumentNullException(nameof(adminServices));
 		}
-
-
 
 		public async Task<object> ListCategories(int sh_fk)
 		{
@@ -82,30 +89,34 @@ namespace PetShelter.Services
 				return null; //no content
 			}
 		}
-		public async Task<object> AddPet(Animal animal)//need to be edited
+		public async Task<object> AddPet(Animal animal)
 		{
 			if (await _shelterStaffRepository.CategoryExistence(animal.Category_FK) == true)
 			{
 				var res = await _shelterStaffRepository.AddPet(animal);
-				if (res is Animal)
+				if (res is Animal a)
 				{
+					var stats = await _adminServices.GetDashboardStats();
+					await NotifyDashboardUpdate(stats);
 					return new AnimalDto
 					{
-						id = animal.id,
-						name = animal.name,
-						Adoption_State = animal.Adoption_State.ToString(),
-						age = animal.age,
-						breed = animal.breed
+						id = a.id,
+						name = a.name,
+						Adoption_State = ((Animal.AdoptionState)a.Adoption_State).ToString(),
+						age = a.age,
+						breed = a.breed,
+						ShelterCategory = new CategoryDto
+						{
+							CategoryId = a.ShelterCategory.CategoryId,
+							CategoryName = a.ShelterCategory.CategoryName,
+						}
 					};
-					return res;
 				}
 				else
-				{
-					return -1; //something went wrong
-				}
+					return -1;
 			}
 			else
-				return 0; // category not found
+				return 0;
 		}
 
 		public async Task<object> ViewPet(int id) //edit here
@@ -143,15 +154,17 @@ namespace PetShelter.Services
 		}
 
 
-		public async Task<object> UpdatePet(Animal animal) 
+		public async Task<object> UpdatePet(Animal animal)
 		{
-			if(await _shelterStaffRepository.CategoryExistence(animal.Category_FK) == false)
+			if (await _shelterStaffRepository.CategoryExistence(animal.Category_FK) == false)
 			{
 				return -3; // category not found
 			}
 			var res = await _shelterStaffRepository.UpdatePet(animal);
 			if (res > 0)
 			{
+				var stats = await _adminServices.GetDashboardStats();
+				await NotifyDashboardUpdate(stats);
 				return new AnimalDto
 				{
 					id = animal.id,
@@ -171,11 +184,13 @@ namespace PetShelter.Services
 				return res;
 			}
 		}
-		public async Task<bool> RemovePet(AnimalDto p) 
+		public async Task<bool> RemovePet(AnimalDto p)
 		{
 			var res = await _shelterStaffRepository.DeletePet(p.id);
 			if (res > 0)
 			{
+				var stats = await _adminServices.GetDashboardStats();
+				await NotifyDashboardUpdate(stats);
 				return true;
 			}
 			return false;

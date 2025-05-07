@@ -65,7 +65,11 @@ export const animalsApi = {
   getAll: (searchParams?: { name?: string }) =>
     api.get('/Adoption/List-Pets', { params: searchParams }),
   getById: (id: string) => api.get(`/Adoption/View-Pet/${id}`),
-  adopt: (data: { animalId: number }) => api.post('/Adoption/Adopt', data),
+  adopt: (data: { 
+    adopterId_FK: number;
+    petId_FK: number;
+    shelter_FK: number;
+  }) => api.post('/Adoption/Adopt', data),
   cancelAdoption: (id: number) => api.post(`/Adoption/Cancel-Adoption/${id}`),
   getAdoptionHistory: () => api.get('/Adoption/Adoption-History'),
 };

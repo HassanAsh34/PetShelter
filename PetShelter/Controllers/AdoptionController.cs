@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PetShelter.DTOs;
 using PetShelter.Models;
@@ -25,7 +26,9 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		public async Task<ActionResult<IEnumerable<AnimalDto>>> ListPets([FromQuery]String ? Catname ="")//done
 		{
-			var pets = await _adoptionServices.ListPets(Catname);
+			string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			int.TryParse(userId, out int parsedUserId);
+			var pets = await _adoptionServices.ListPets(Catname,parsedUserId);
 			if (pets == null)
 			{
 				return NoContent();
@@ -41,7 +44,7 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<ActionResult<AdoptionRequestDto>> Adopt([FromBody] AdoptionRequest adoption)//done
 		{
-			var res = await _adoptionServices.Adopt(adoption);
+				var res = await _adoptionServices.Adopt(adoption);
 			switch(res)
 			{
 				case >0:

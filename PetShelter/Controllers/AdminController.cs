@@ -6,6 +6,8 @@ using PetShelter.MiddleWare;
 using PetShelter.Models;
 using PetShelter.Repository;
 using PetShelter.Services;
+using PetShelter.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace PetShelter.Controllers
 {
@@ -15,6 +17,7 @@ namespace PetShelter.Controllers
 	public class AdminController : ControllerBase
 	{
 		private readonly AdminServices _adminServices;
+		private readonly IHubContext<DashboardHub> _hubContext;
 
 		private bool Authorize(int op)
 		{
@@ -42,9 +45,10 @@ namespace PetShelter.Controllers
 			}
 			return false;
 		}
-		public AdminController(AdminServices adminServices)
+		public AdminController(AdminServices adminServices, IHubContext<DashboardHub> hubContext)
 		{
 			_adminServices = adminServices ?? throw new ArgumentNullException(nameof(adminServices));
+			_hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
 		}
 		//[Authorize()]
 		//User managing
@@ -458,6 +462,8 @@ namespace PetShelter.Controllers
 			if (Authorize(1)) // Only SuperAdmin can view dashboard stats
 			{
 				var stats = await _adminServices.GetDashboardStats();
+				// Notify all connected clients about the update
+				await _hubContext.Clients.All.SendAsync("ReceiveDashboardUpdate", stats);
 				return Ok(stats);
 			}
 			else

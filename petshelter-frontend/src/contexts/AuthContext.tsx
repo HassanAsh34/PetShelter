@@ -16,7 +16,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
@@ -125,7 +125,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User> => {
     try {
       const response = await authApi.login({ email, password });
       const { token, user: userData } = response;
@@ -157,7 +157,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('Setting default adminType to 0 for Admin role');
       }
 
-      const userWithRole = {
+      const userWithRole: User = {
         ...userData,
         role: role,
         adminType: adminTypeValue,
@@ -185,6 +185,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       setToken(token);
       setUser(userWithRole);
+      setIsAdmin(userWithRole.role === 'Admin');
       return userWithRole;
     } catch (error) {
       console.error('Login error in context:', error);

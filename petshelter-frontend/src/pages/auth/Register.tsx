@@ -32,7 +32,7 @@ const Register = () => {
     role: 1, // Default to Adopter
     phone: '',
     address: '',
-    staffType: undefined
+    staffType: ''
   });
   const [error, setError] = useState<string>('');
 
@@ -240,14 +240,14 @@ const Register = () => {
                     <InputLabel>Staff Type</InputLabel>
                     <Select
                       name="staffType"
-                      value={formData.staffType || ''}
+                      value={formData.staffType}
                       label="Staff Type"
                       onChange={handleSelectChange}
                       required
                     >
-                      <MenuItem value={1}>Veterinarian</MenuItem>
-                      <MenuItem value={2}>Caregiver</MenuItem>
-                      <MenuItem value={3}>Administrator</MenuItem>
+                      <MenuItem value={0}>Manager</MenuItem>
+                      <MenuItem value={1}>Interviewer</MenuItem>
+                      <MenuItem value={2}>Care Taker</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>

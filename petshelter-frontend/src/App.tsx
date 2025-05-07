@@ -18,17 +18,19 @@ const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated, isAdmin } = useAuth();
   
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" state={{ from: '/admin' }} replace />;
   }
   
   if (!isAdmin) {
-    return <Navigate to="/" />;
+    return <Navigate to="/" replace />;
   }
   
   return <>{children}</>;
 };
 
 function App() {
+  const { isAuthenticated, isAdmin } = useAuth();
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <CssBaseline />

@@ -19,9 +19,14 @@ namespace PetShelter.Repository
 			_shelterRepository = shelterRepository ?? throw new ArgumentNullException(nameof(shelterRepository));
 			_shelterStaffRepository = shelterStaffRepository ?? throw new ArgumentNullException(nameof(shelterStaffRepository));
 		}
-		public async Task<IEnumerable<Animal>> ListPets(int? CatId = 0, int? ShelterID = 0,string? catname = "")
+		public async Task<IEnumerable<Animal>> ListPets(int? CatId = 0, int? ShelterID = 0,string? catname = "",int ? Adopter_FK = 0)
 		{
-			return await  _shelterRepository.ListPets(CatId,ShelterID,catname);
+			IEnumerable<int> petids = null;
+			if (Adopter_FK != 0)
+			{
+				petids = await _context.AdoptionRequest.Where(a => a.AdopterId_FK == Adopter_FK).Select(a => a.PetId_FK).ToListAsync();
+			}
+			return await  _shelterRepository.ListPets(CatId,ShelterID,catname,petids);
 		}
 
 		public async Task<bool> RequestExistence(AdoptionRequest adoption)

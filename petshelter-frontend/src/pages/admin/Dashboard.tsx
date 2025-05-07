@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Container,
@@ -16,6 +16,7 @@ import {
   AppBar,
   Toolbar,
   CircularProgress,
+  Alert,
 } from '@mui/material';
 import {
   Pets,
@@ -27,23 +28,36 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../../services/api';
+import UserRegistrationNotification from '../../components/UserRegistrationNotification';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const queryClient = useQueryClient();
+
+  // Get admin type from user
+  const adminType = user?.adminType;
 
   const { data: stats, isLoading, error } = useQuery({
     queryKey: ['dashboardStats'],
     queryFn: () => adminApi.getDashboardStats(),
+    // Poll every 5 seconds when the window is focused
+    refetchInterval: (data) => {
+      // Only poll if we have data (meaning we've already loaded once)
+      return data ? 5000 : false;
+    },
+    // Only poll when the window is focused
+    refetchIntervalInBackground: false,
   });
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  // Define menu items based on admin type
   const menuItems = [
     { text: 'Shelters', icon: <Business />, path: '/admin/shelters' },
     { text: 'Users', icon: <People />, path: '/admin/users' },
@@ -58,6 +72,7 @@ const AdminDashboard = () => {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      <UserRegistrationNotification />
       {/* Top AppBar */}
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>

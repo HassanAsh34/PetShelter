@@ -2,21 +2,29 @@
 using PetShelter.DTOs;
 using PetShelter.Models;
 using PetShelter.Repository;
+using Microsoft.AspNetCore.SignalR;
+using PetShelter.Hubs;
 
 namespace PetShelter.Services
 {
-	public class AdoptionServices
+	public class AdoptionServices : BaseService
 	{
 		private readonly AdoptionRepository _adoptionRepository;
+		private readonly AdminServices _adminServices;
 
-		public AdoptionServices(AdoptionRepository adoptionRepository)
+		public AdoptionServices(
+			AdoptionRepository adoptionRepository, 
+			IHubContext<DashboardHub> hubContext,
+			AdminServices adminServices)
+			: base(hubContext)
 		{
 			_adoptionRepository = adoptionRepository ?? throw new ArgumentNullException(nameof(adoptionRepository));
+			_adminServices = adminServices ?? throw new ArgumentNullException(nameof(adminServices));
 		}
 
-		public async Task<IEnumerable<AnimalDto>> ListPets(string? catname ="")//done
+		public async Task<IEnumerable<AnimalDto>> ListPets(string? catname ="",int ? Uid = 0)//done
 		{
-			IEnumerable<Animal> animals = await _adoptionRepository.ListPets(0,0,catname);
+			IEnumerable<Animal> animals = await _adoptionRepository.ListPets(0,0,catname,Uid);
 			//IEnumerable<Animal> animals = await _shelterStaffRepository.ListPets(CatId);
 			if (animals != null)
 			{
@@ -62,7 +70,13 @@ namespace PetShelter.Services
 				}
 				else
 				{
-					return await _adoptionRepository.Adopt(adoption);
+					var result = await _adoptionRepository.Adopt(adoption);
+					if (result > 0)
+					{
+						var stats = await _adminServices.GetDashboardStats();
+						await NotifyDashboardUpdate(stats);
+					}
+					return result;
 				}
 			}
 			else

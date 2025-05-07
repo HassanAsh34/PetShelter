@@ -179,7 +179,7 @@ namespace PetShelter.Repository
 		//}
 
 
-		public async Task<IEnumerable<Animal>> ListPets(int? CatId = 0, int? ShelterID = 0, string? catname = "")
+		public async Task<IEnumerable<Animal>> ListPets(int? CatId = 0, int? ShelterID = 0, string? catname = "", IEnumerable<int> ? petids = null)
 		{
 			IEnumerable<Animal> animals;
 			List<ShelterCategory> categories = null;
@@ -218,7 +218,7 @@ namespace PetShelter.Repository
 			}
 			else
 			{
-				animals = await _context.Animals.Where(a=>a.Adoption_State != 0).Include(c=>c.ShelterCategory).Include(s=>s.Shelter).ToListAsync();
+				animals = await _context.Animals.Where(a=>a.Adoption_State != 0 && !petids.Contains(a.id)).Include(c=>c.ShelterCategory).Include(s=>s.Shelter).ToListAsync();
 			}
 			// Return animals if any exist, otherwise return null
 			return animals.Any() ? animals : null;

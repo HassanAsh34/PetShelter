@@ -5,17 +5,19 @@ using PetShelter.DTOs;
 using PetShelter.Models;
 using PetShelter.Repository;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
+using PetShelter.Hubs;
 
 namespace PetShelter.Services
 {
-	public class AdminServices
+	public class AdminServices : BaseService
 	{
 		private readonly AdminRepository _adminRepository;
 		
-		public AdminServices(AdminRepository adminRepository)
+		public AdminServices(AdminRepository adminRepository, IHubContext<DashboardHub> hubContext) 
+			: base(hubContext) // Remove adminServices parameter
 		{
 			_adminRepository = adminRepository ?? throw new ArgumentNullException(nameof(adminRepository));
-			
 		}
 
 		public async Task<IEnumerable<UserDto>> ListUsers(bool? UnassignedStaff = false)
@@ -83,10 +85,7 @@ namespace PetShelter.Services
 							} : null
 						};
 					default:
-						return new AdopterDto
-						{
-
-						};
+						return null;
 				}
 			}
 			else
@@ -116,16 +115,22 @@ namespace PetShelter.Services
 		{
 			var U = await _adminRepository.UpdateUser(u);
 			if (U > 0)
+			{
+				var stats = await GetDashboardStats();
+				await NotifyDashboardUpdate(stats);
 				return true;
+			}
 			else
 				return false;
-			//return null;
 		}
+
 		public async Task<bool> deleteUser(UserDto u)
 		{
 			var res = await _adminRepository.DeleteUser(u);
 			if (res > 0)
 			{
+				var stats = await GetDashboardStats();
+				await NotifyDashboardUpdate(stats);
 				return true;
 			}
 			return false;
@@ -138,9 +143,11 @@ namespace PetShelter.Services
 		{
 			if (await _adminRepository.ShelterExistence(new Shelter { ShelterID = category.Shelter_FK }) == true)
 			{
-				var res =  await _adminRepository.addCategory(category);
+				var res = await _adminRepository.addCategory(category);
 				if (res is ShelterCategory cat)
 				{
+					var stats = await GetDashboardStats();
+					await NotifyDashboardUpdate(stats);
 					return new CategoryDto
 					{
 						CategoryId = cat.CategoryId,
@@ -164,6 +171,8 @@ namespace PetShelter.Services
 			var res = await _adminRepository.deleteCategory(category);
 			if (res > 0)
 			{
+				var stats = await GetDashboardStats();
+				await NotifyDashboardUpdate(stats);
 				return true;
 			}
 			return false;
@@ -176,12 +185,13 @@ namespace PetShelter.Services
 
 		public async Task<ShelterDto> addShelter(Shelter shelter)
 		{
-
 			if (shelter != null)
 			{
 				if (await _adminRepository.ShelterExistence(shelter) != true)
 				{
 					var res = await _adminRepository.AddShelter(shelter);
+					var stats = await GetDashboardStats();
+					await NotifyDashboardUpdate(stats);
 					return new ShelterDto
 					{
 						ShelterId = res.ShelterID,

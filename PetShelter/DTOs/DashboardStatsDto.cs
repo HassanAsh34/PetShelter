@@ -8,5 +8,7 @@ namespace PetShelter.DTOs
         public int AdoptionsThisMonth { get; set; }
         public int PendingAdoptions { get; set; }
         public int TotalAdoptions { get; set; }
-    }
+
+        public int TotalUsers { get; set; }
+	}
 } 

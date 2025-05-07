@@ -458,16 +458,17 @@ namespace PetShelter.Repository
 
 		public async Task<DashboardStatsDto> GetDashboardStats()
 		{
-			var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-			var endOfMonth = startOfMonth.AddMonths(1).AddSeconds(-1);
+			// var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+			// var endOfMonth = startOfMonth.AddMonths(1).AddSeconds(-1);
 
 			return new DashboardStatsDto
 			{
 				TotalShelters = await _context.Shelters.CountAsync(),
 				TotalPets = await _context.Animals.CountAsync(),
-				ActiveUsers = await _context.Users.CountAsync(u => u.Activated == 1),
-				AdoptionsThisMonth = await _context.AdoptionRequest
-					.CountAsync(a => a.RequestDate >= startOfMonth && a.RequestDate <= endOfMonth),
+				TotalUsers = await _context.Users.CountAsync(),
+				ActiveUsers = await _context.Users.CountAsync(u=>u.Activated == 1),
+				// List<AdoptionRequestDto> AdoptionReq = await _context.AdoptionRequest.ToListAsync(),
+					// .CountAsync(a => a.RequestDate >= startOfMonth && a.RequestDate <= endOfMonth),
 				PendingAdoptions = await _context.AdoptionRequest
 					.CountAsync(a => a.Status == AdoptionRequest.AdoptionRequestStatus.Pending),
 				TotalAdoptions = await _context.AdoptionRequest.CountAsync()

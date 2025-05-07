@@ -25,6 +25,7 @@ import {
 } from '@mui/icons-material';
 import { animalsApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { parseJwt } from '../../utils/tokenUtils';
 
 interface Animal {
   id: number;
@@ -48,7 +49,7 @@ interface Animal {
 const AnimalDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const [currentAnimalIndex, setCurrentAnimalIndex] = React.useState<number>(-1);
 
   // Get all animals to determine navigation
@@ -97,8 +98,28 @@ const AnimalDetails = () => {
     }
 
     if (!animal) return;
+
+    // Get user ID from token
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found');
+      return;
+    }
+
+    const decodedToken = parseJwt(token);
+    if (!decodedToken || !decodedToken.nameid) {
+      console.error('Invalid token or missing user ID');
+      return;
+    }
+
     try {
-      animalsApi.adopt({ animalId: animal.id });
+      const adoptionData = {
+        adopterId_FK: parseInt(decodedToken.nameid),
+        petId_FK: animal.id,
+        shelter_FK: animal.shelterDto.shelterId
+      };
+
+      animalsApi.adopt(adoptionData);
       navigate('/animals');
     } catch (err) {
       console.error('Error adopting animal:', err);
@@ -243,15 +264,17 @@ const AnimalDetails = () => {
 
               {/* Action Buttons */}
               <Box sx={{ mt: 2 }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  size="large"
-                  onClick={handleAdopt}
-                >
-                  {animal.adoption_State === 'Available' ? 'Adopt Now' : 'Login to Adopt'}
-                </Button>
+                {!isAdmin && animal.adoption_State === 'Available' && (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    size="large"
+                    onClick={handleAdopt}
+                  >
+                    {isAuthenticated ? 'Adopt Now' : 'Login to Adopt'}
+                  </Button>
+                )}
               </Box>
             </Stack>
           </Grid>

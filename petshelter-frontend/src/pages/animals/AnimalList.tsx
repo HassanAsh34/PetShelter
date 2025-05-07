@@ -59,7 +59,7 @@ interface Category {
 
 const AnimalList = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const [searchName, setSearchName] = useState('');
   const [selectedShelter, setSelectedShelter] = useState<number | ''>('');
   const [selectedCategory, setSelectedCategory] = useState<number | ''>('');
@@ -148,6 +148,14 @@ const AnimalList = () => {
       default:
         return 'Unknown';
     }
+  };
+
+  const handleAdoptClick = (animalId: number) => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: `/animals/${animalId}` } });
+      return;
+    }
+    navigate(`/animals/${animalId}`);
   };
 
   if (isLoading) {
@@ -259,13 +267,13 @@ const AnimalList = () => {
                   >
                     View Details
                   </Button>
-                  {isAuthenticated && animal.adoption_State === 'Available' && (
+                  {!isAdmin && animal.adoption_State === 'Available' && (
                     <Button 
                       size="small" 
                       color="primary"
-                      onClick={() => navigate(`/animals/${animal.id}`)}
+                      onClick={() => handleAdoptClick(animal.id)}
                     >
-                      Adopt
+                      {isAuthenticated ? 'Adopt' : 'Login to Adopt'}
                     </Button>
                   )}
                 </CardActions>

@@ -10,7 +10,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
-
+using PetShelter.Hubs;
 
 public class Program
 {
@@ -49,14 +49,16 @@ public class Program
 		{
 			options.AddPolicy("AllowFrontend", policy =>
 			{
-				policy.WithOrigins("http://localhost:3000") // change this to your frontend's URL
+				policy.WithOrigins("http://localhost:3000")  // Frontend is running on port 3000
 					  .AllowAnyHeader()
-					  .AllowAnyMethod();
+					  .AllowAnyMethod()
+					  .AllowCredentials(); // Required for SignalR
 			});
 		});
 
 		builder.Services.AddControllers();
 		builder.Services.AddEndpointsApiExplorer();
+		builder.Services.AddSignalR();
 		builder.Services.AddSwaggerGen(options =>
 		{
 			options.AddSecurityDefinition(name: JwtBearerDefaults.AuthenticationScheme, securityScheme: new OpenApiSecurityScheme
@@ -117,6 +119,10 @@ public class Program
 		app.UseAuthentication();
 		app.UseAuthorization();
 		app.MapControllers();
+		
+		// Add SignalR hub endpoints
+		app.MapHub<UserNotificationHub>("/userNotificationHub");
+		
 		app.Run();
 	}
 }
