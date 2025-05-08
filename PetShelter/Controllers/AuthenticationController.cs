@@ -125,6 +125,30 @@ namespace PetShelter.Controllers
 				return null;
 			}
 		}
+
+		[Authorize]
+		[HttpGet("/View-Profile")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<UserDto>> getUserDetails()
+		{
+			int id = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+			//int role = int.Parse(User.FindFirst(ClaimTypes.Role)?.Value ?? "0");
+			string role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+			var user = await _userService.getUserDetails(id, role);
+			Console.WriteLine(role);
+			//User user = null;
+			if (user != null)
+			{
+				return Ok(user);
+			}
+			else
+			{
+				return NotFound();
+			}
+		}
 	}
 }
 	

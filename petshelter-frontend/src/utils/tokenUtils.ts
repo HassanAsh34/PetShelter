@@ -1,5 +1,6 @@
 interface DecodedToken {
-  id: number;
+  nameid: string;  // JWT claim for user ID
+  id?: number;     // Keep for backward compatibility
   email: string;
   role: string;
   firstName: string;

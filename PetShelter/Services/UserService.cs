@@ -18,7 +18,7 @@ namespace PetShelter.Services
 
 		public async Task<UserDto> Login(LoginDto login)
 		{
-			var User = await _userRepository.GetUserDetails(login.Email.ToLower().Trim());
+			var User = await _userRepository.Login(login.Email.ToLower().Trim());
 			if (User != null)
 			{
 				if (BCrypt.Net.BCrypt.Verify(login.Password, User.Password))
@@ -152,6 +152,30 @@ namespace PetShelter.Services
 		public User.UserType getType(int type)
 		{
 			return (User.UserType)type;
+		}
+
+		public async Task<UserDto> getUserDetails(int id, string role)
+		{
+			int r = -1;
+			switch(role)
+			{
+				case "Admin":
+					r = 0;
+					break;
+				case "Adopter":
+					r = 1;
+					break;
+				case "ShelterStaff":
+					r = 2;
+					break;
+				default:
+					break;
+			}
+			if(r != -1)
+			{
+				return await _userRepository.GetUser(id, r);
+			}
+			return null; //something went wrong 
 		}
 	}
 }

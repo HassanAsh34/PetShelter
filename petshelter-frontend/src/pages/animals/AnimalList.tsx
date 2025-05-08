@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -60,17 +60,18 @@ interface Category {
 const AnimalList = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const [searchName, setSearchName] = useState('');
   const [selectedShelter, setSelectedShelter] = useState<number | ''>('');
   const [selectedCategory, setSelectedCategory] = useState<number | ''>('');
   const [filteredAnimals, setFilteredAnimals] = useState<Animal[]>([]);
 
-  // Fetch all animals
+  // Fetch all animals with authentication state in query key
   const { data: animals, isLoading, error } = useQuery<Animal[]>({
-    queryKey: ['animals', searchName],
+    queryKey: ['animals', searchName, isAuthenticated],
     queryFn: async () => {
       try {
-        const response = await animalsApi.getAll(searchName);
+        const response = await animalsApi.getAll({ name: searchName });
         console.log('Animals list full response:', {
           data: response.data,
           firstAnimal: response.data?.[0],
@@ -85,6 +86,11 @@ const AnimalList = () => {
     retry: 1,
     refetchOnWindowFocus: false
   });
+
+  // Effect to invalidate query when auth state changes
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['animals'] });
+  }, [isAuthenticated, queryClient]);
 
   // Extract unique shelters and categories from animals
   const shelters = React.useMemo(() => {

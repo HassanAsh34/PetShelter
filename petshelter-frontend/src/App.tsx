@@ -28,6 +28,17 @@ const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Protected Profile Route Component
+const ProtectedProfileRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: '/profile' }} replace />;
+  }
+  
+  return <>{children}</>;
+};
+
 function App() {
   const { isAuthenticated, isAdmin } = useAuth();
 
@@ -41,6 +52,14 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/animals/:id" element={<AnimalDetails />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedProfileRoute>
+                <UserDetailsPage />
+              </ProtectedProfileRoute>
+            }
+          />
           <Route
             path="/admin"
             element={

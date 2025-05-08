@@ -23,7 +23,7 @@ namespace PetShelter.Repository
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
-        public async Task<User> GetUserDetails(string email)
+        public async Task<User> Login(string email)
         {
             //await _context.Users.FirstOrDefaultAsync(u => u.Email.Equals(email));
             var User = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower().Trim() == email);
@@ -148,5 +148,76 @@ namespace PetShelter.Repository
             }
 			return await _context.SaveChangesAsync();
 		}
-    }
+
+		public async Task<UserDto> GetUser(int id, int role)
+		{
+			//var user = await _context.Users.Where(user => user.Id == id && user.Role == role).FirstOrDefaultAsync();
+			//if (role)
+			//{
+			switch (role)
+			{
+				case (int)User.UserType.Admin:
+					Admin admin = await _context.Admins.Where(admin => admin.Id == id).FirstOrDefaultAsync();
+					if (admin != null)
+					{
+						return new AdminDto
+						{
+							Id = admin.Id,
+							Uname = admin.Uname,
+							Email = admin.Email,
+							Activated = admin.Activated,
+							adminType = (Admin.AdminTypes)admin.AdminType,
+							Role = User.UserType.Admin,
+							CreatedAt = admin.CreatedAt
+						};
+					}
+					else
+						return null;
+				case (int)User.UserType.Adopter:
+					Adopter adopter = await _context.Adopters.Where(adopter => adopter.Id == id).FirstOrDefaultAsync();
+					if (adopter != null)
+					{
+						return new AdopterDto
+						{
+							Id = adopter.Id,
+							Uname = adopter.Uname,
+							Email = adopter.Email,
+							Activated = adopter.Activated,
+							Role = User.UserType.Adopter,
+							Address = adopter.Address,
+							Phone = adopter.Phone,
+							CreatedAt = adopter.CreatedAt
+						};
+					}
+					else
+						return null;
+				case (int)User.UserType.ShelterStaff:
+					ShelterStaff staff = await _context.Staff.Where(adopter => adopter.Id == id).Include(s => s.Shelter).FirstOrDefaultAsync();
+					if (staff != null)
+					{
+						return new StaffDto
+						{
+							Id = staff.Id,
+							Uname = staff.Uname,
+							Email = staff.Email,
+							Role = (User.UserType)staff.Role,
+							Phone = staff.Phone,
+							StaffType = (ShelterStaff.StaffTypes)staff.StaffType,
+							Activated = staff.Activated,
+							HiredDate = staff.HiredDate,
+							CreatedAt = staff.CreatedAt,
+							Shelter = new ShelterDto
+							{
+								ShelterId = staff.Shelter.ShelterID,
+								ShelterName = staff.Shelter.ShelterName
+							}
+						};
+					}
+					else
+						return null;
+				default:
+					return null;
+			}
+		}
+	}
 }

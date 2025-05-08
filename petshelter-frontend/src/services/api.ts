@@ -1,6 +1,31 @@
 import axios from 'axios';
 import { getToken, removeToken, parseJwt } from '../utils/tokenUtils';
 
+// Define UserDto interface
+interface UserDto {
+  id: number;
+  uname: string;
+  email: string;
+  role: number;
+  activated: number;
+  banned: boolean;
+  createdAt: string;
+  updatedAt: string;
+  activatedAt?: string;
+  bannedAt?: string;
+  adminType?: number;
+  staffType?: number;
+  phone?: string;
+  address?: string;
+  hiredDate?: string;
+  shelter?: {
+    shelterId: number;
+    shelterName: string;
+    shelterLocation: string;
+    shelterPhone: string;
+  };
+}
+
 const baseURL = 'http://localhost:5291';
 
 const api = axios.create({
@@ -58,6 +83,14 @@ export const authApi = {
   logout: () => {
     removeToken();
   },
+  updateUserDetails: async (userData: UserDto): Promise<UserDto> => {
+    const response = await api.put('/AuthApi/EditUserDetails', userData);
+    return response.data;
+  },
+  getCurrentUser: async (): Promise<UserDto> => {
+    const response = await api.get('/View-Profile');
+    return response.data;
+  }
 };
 
 // Animals API
