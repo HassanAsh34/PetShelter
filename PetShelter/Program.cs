@@ -14,7 +14,7 @@ using PetShelter.Hubs;
 
 public class Program
 {
-	public static void Main(string[] args)
+	public static async Task Main(string[] args)
 	{
 		var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +27,8 @@ public class Program
 		builder.Services.AddScoped<ShelterStaffServices>();
 		builder.Services.AddScoped<AdoptionRepository>();
 		builder.Services.AddScoped<AdoptionServices>();
+		builder.Services.AddScoped<SeedRepository>();
+
 		//builder.Services.AddScoped<Db_Context>();
 		// Configure JWT options
 		var configuration = builder.Configuration;
@@ -122,7 +124,14 @@ public class Program
 		
 		// Add SignalR hub endpoints
 		app.MapHub<UserNotificationHub>("/userNotificationHub");
-		
+
+		using (var scope = app.Services.CreateScope())
+		{
+			var seeder = scope.ServiceProvider.GetRequiredService<SeedRepository>();
+			await seeder.SeedInitialDataAsync();
+		}
+
+
 		app.Run();
 	}
 }

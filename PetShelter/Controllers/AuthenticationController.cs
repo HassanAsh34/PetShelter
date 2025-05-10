@@ -149,6 +149,20 @@ namespace PetShelter.Controllers
 				return NotFound();
 			}
 		}
+
+		[Authorize]
+		[HttpGet("/UpdateProfile")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<ActionResult<UserDto>> editUserDetails([FromBody] UserDto U)
+		{
+			var u = await _userService.UpdateUserDetails(U);
+			if (u == true)
+				return Ok(U);
+			else
+				return BadRequest(new { message = "Update Failed" });
+		}
 	}
 }
 	

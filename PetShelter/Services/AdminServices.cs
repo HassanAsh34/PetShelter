@@ -161,9 +161,37 @@ namespace PetShelter.Services
 				return -1; //indicates that the shelter does not exist
 		}
 
-		public async Task<IEnumerable<ShelterCategory>> ListCategories()
+		public async Task<IEnumerable<CategoryDto>> ListCategories(int ? id =0)
 		{
-			return await _adminRepository.ListShelterCategories();
+			List<ShelterCategory> categories = await _adminRepository.ListShelterCategories(id);
+			List<CategoryDto> categoryDtos = new List<CategoryDto>();
+			categories.ForEach(c =>
+			{
+				categoryDtos.Add(new CategoryDto()
+				{
+					CategoryName = c.CategoryName,
+					CategoryId = c.CategoryId,
+					AnimalCount = c.Animal?.Count() ?? 0,
+					Shelter = new ShelterDto
+					{
+						ShelterId = c.Shelter.ShelterID,
+						ShelterName = c.Shelter.ShelterName
+					}
+				});
+			});
+			return categoryDtos;
+		}
+
+		public async Task<bool> EditCategory(ShelterCategory category)
+		{
+			var res = await _adminRepository.EditCategory(category);
+			if (res > 0)
+			{
+				var stats = await GetDashboardStats();
+				await NotifyDashboardUpdate(stats);
+				return true;
+			}
+			return false;
 		}
 
 		public async Task<bool> deleteCategory(ShelterCategory category)
@@ -183,7 +211,7 @@ namespace PetShelter.Services
 
 		//shelter
 
-		public async Task<ShelterDto> addShelter(Shelter shelter)
+		public async Task<Object> addShelter(Shelter shelter)
 		{
 			if (shelter != null)
 			{
@@ -204,7 +232,7 @@ namespace PetShelter.Services
 					return null; // indicates that the shelter exists
 			}
 			else
-				return null;
+				return -1;
 		}
 
 		public async Task<int> AssignToShelter(StaffDto staff)

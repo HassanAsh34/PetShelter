@@ -189,7 +189,7 @@ const AdminDashboard = () => {
                       <Typography color="textSecondary" gutterBottom>
                         Adoptions This Month
                       </Typography>
-                      <Typography variant="h4">{stats?.adoptionsThisMonth || 0}</Typography>
+                      <Typography variant="h4">{stats?.approvedAdoptions || 0}</Typography>
                     </CardContent>
                   </Card>
                 </Grid>
@@ -205,25 +205,20 @@ const AdminDashboard = () => {
                   Recent Adoptions
                 </Typography>
                 <List>
-                  <ListItem>
-                    <ListItemIcon>
-                      <Pets />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Max adopted by John Doe"
-                      secondary="2 hours ago"
-                    />
-                  </ListItem>
-                  <Divider />
-                  <ListItem>
-                    <ListItemIcon>
-                      <Pets />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Luna adopted by Jane Smith"
-                      secondary="5 hours ago"
-                    />
-                  </ListItem>
+                  {stats?.recentRequests?.map((adoption: any) => (
+                    <React.Fragment key={adoption.id}>
+                      <ListItem>
+                        <ListItemIcon>
+                          <Pets />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={`${adoption.petName} adopted by ${adoption.adopterName}`}
+                          secondary={new Date(adoption.approvedAt).toLocaleString()}
+                        />
+                      </ListItem>
+                      <Divider />
+                    </React.Fragment>
+                  ))}
                 </List>
               </Paper>
             </Grid>

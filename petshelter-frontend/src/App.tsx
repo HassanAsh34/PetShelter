@@ -12,6 +12,11 @@ import { AdminDashboard, AdminUsers, AdminShelters } from './pages/admin';
 import UserDetailsPage from './pages/admin/UserDetailsPage';
 import Shelters from './pages/admin/Shelters';
 import ShelterDetails from './pages/admin/ShelterDetails';
+import AddShelterPage from './pages/admin/AddShelterPage';
+import Categories from './pages/admin/Categories';
+import AddCategoryPage from './pages/admin/AddCategoryPage';
+import EditCategoryPage from './pages/admin/EditCategoryPage';
+import CategoryDetails from './pages/admin/CategoryDetails';
 
 // Protected Route Component
 const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
@@ -85,6 +90,38 @@ function App() {
             }
           />
           <Route
+            path="/admin/shelters/add"
+            element={
+              <ProtectedAdminRoute>
+                <AddShelterPage />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/categories"
+            element={
+              <ProtectedAdminRoute>
+                <Categories />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/categories/add"
+            element={
+              <ProtectedAdminRoute>
+                <AddCategoryPage />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/categories/edit/:categoryId"
+            element={
+              <ProtectedAdminRoute>
+                <EditCategoryPage />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
             path="/admin/shelters/:id"
             element={
               <ProtectedAdminRoute>
@@ -105,6 +142,14 @@ function App() {
             element={
               <ProtectedAdminRoute>
                 <AdminDashboard />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/categories/:categoryId"
+            element={
+              <ProtectedAdminRoute>
+                <CategoryDetails />
               </ProtectedAdminRoute>
             }
           />

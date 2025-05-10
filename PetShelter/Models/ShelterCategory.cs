@@ -21,10 +21,10 @@ namespace PetShelter.Models
 		public string CategoryName { get; set; }
 
 
-		[MaxLength(255)]
-		[MinLength(20, ErrorMessage = "please write at least a breif description of that category")]
+		//[MaxLength(255)]
+		//[MinLength(20, ErrorMessage = "please write at least a breif description of that category")]
 		[Required]
-		public string CategoryDescription { get; set; }
+		//public string CategoryDescription { get; set; }
 
 		public int Shelter_FK { get; set; } // foreign key
 

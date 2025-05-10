@@ -84,7 +84,7 @@ export const authApi = {
     removeToken();
   },
   updateUserDetails: async (userData: UserDto): Promise<UserDto> => {
-    const response = await api.put('/AuthApi/EditUserDetails', userData);
+    const response = await api.put('/UpdateProfile', userData);
     return response.data;
   },
   getCurrentUser: async (): Promise<UserDto> => {
@@ -143,16 +143,13 @@ export const adminApi = {
   },
   updateShelter: (id: number, data: any) => api.put(`/Admin/Edit-Shelter/${id}`, data),
   deleteShelter: async (shelterId: number) => {
-    const response = await api.delete('/Admin/Delete-Shelter', {
-      data: { 
-        ShelterID: shelterId,
-        ShelterName: "Temp Name",
-        Location: "Temp Location",
-        Phone: "1234567890",
-        Description: "Temporary description for deletion"
-      }
-    });
-    return response.data;
+    try {
+      const response = await api.delete(`/Admin/Delete-Shelter/${shelterId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting shelter:', error);
+      throw error;
+    }
   },
   
   getUsers: () => api.get('/Admin/List-Users').then(res => res.data),
@@ -307,6 +304,80 @@ export const adminApi = {
           data: error.response.data
         });
       }
+      throw error;
+    }
+  },
+  getCategories: async (shelterId?: number) => {
+    try {
+      const response = await api.get(`/Admin/Show-Categories${shelterId ? `?shelterId=${shelterId}` : ''}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      throw error;
+    }
+  },
+  addCategory: async (data: { CategoryName: string; CategoryDescription: string; Shelter_FK: number }) => {
+    try {
+      const requestData = {
+        categoryName: data.CategoryName,
+        categoryDescription: data.CategoryDescription,
+        shelter_FK: data.Shelter_FK
+      };
+      console.log('API - Adding category with data:', requestData);
+      const response = await api.post('/Admin/Add-Category', requestData);
+      console.log('API - Add category response:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error adding category:', error);
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        throw new Error(error.response.data.message || 'Failed to add category');
+      }
+      throw error;
+    }
+  },
+  updateCategory: async (data: { CategoryId: number; CategoryName: string; CategoryDescription: string; Shelter_FK: number }) => {
+    try {
+      const requestData = {
+        categoryId: data.CategoryId,
+        categoryName: data.CategoryName,
+        categoryDescription: data.CategoryDescription,
+        shelter_FK: data.Shelter_FK
+      };
+      console.log('API - Updating category with data:', requestData);
+      const response = await api.put('/Admin/Edit-Category', requestData);
+      console.log('API - Update category response:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating category:', error);
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        throw new Error(error.response.data.message || 'Failed to update category');
+      }
+      throw error;
+    }
+  },
+  deleteCategory: async (data: { CategoryId: number; CategoryName: string; CategoryDescription: string; Shelter_FK: number }) => {
+    try {
+      console.log('API - Deleting category:', data);
+      const response = await api.delete('/Admin/Delete-Category', { data });
+      console.log('API - Delete category response:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error deleting category:', error);
+      if (error.response) {
+        console.error('Error response data:', error.response.data);
+        throw new Error(error.response.data.message || 'Failed to delete category');
+      }
+      throw error;
+    }
+  },
+  getCategoryDetails: async (categoryId: number) => {
+    try {
+      const response = await api.get(`/Admin/Category-Details/${categoryId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching category details:', error);
       throw error;
     }
   },

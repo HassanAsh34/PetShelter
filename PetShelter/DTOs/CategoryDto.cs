@@ -9,5 +9,7 @@ namespace PetShelter.DTOs
 		public string CategoryName { get; set; }
 
 		public ShelterDto? Shelter { get; set; }
+
+		public int AnimalCount { get; set; }
 	}
 }

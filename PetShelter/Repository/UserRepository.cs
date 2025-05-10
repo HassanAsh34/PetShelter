@@ -112,7 +112,7 @@ namespace PetShelter.Repository
             return null;
         }
 
-        public async Task<int> UpdateUser(UserDto user)
+        public async Task<int> UpdateUser(UserDto user, bool ? deleted = false)
         {
             switch (user)
             {
@@ -123,6 +123,10 @@ namespace PetShelter.Repository
                     A.Uname = admin.Uname;
                     A.AdminType = (int)admin.adminType;
                     A.UpdatedAt = DateTime.Now;
+                    if(deleted == true)
+                    {
+                        A.Deleted_At = DateTime.Now;
+                    }
                     //return await _context.SaveChangesAsync();
                     break;
                 case StaffDto staff:
@@ -132,15 +136,22 @@ namespace PetShelter.Repository
                     S.Uname = staff.Uname;
                     S.StaffType = (int)staff.StaffType;
                     S.UpdatedAt = DateTime.Now;
-                    //return await _context.SaveChangesAsync();
-                    break;
+					if (deleted == true)
+					{
+						S.Deleted_At = DateTime.Now;
+					}
+					//return await _context.SaveChangesAsync();
+					break;
                 case AdopterDto adopter:
 					Adopter a = await _context.Adopters.FirstOrDefaultAsync(a => a.Id == user.Id);
 					a.Phone = adopter.Phone;
 					a.Uname = adopter.Uname;
 					a.Address = adopter.Address;
 					a.UpdatedAt = DateTime.Now;
-
+					if (deleted == true)
+					{
+						a.Deleted_At = DateTime.Now;
+					}
 					//return await _context.SaveChangesAsync();
 					break;
 				default:
@@ -149,7 +160,12 @@ namespace PetShelter.Repository
 			return await _context.SaveChangesAsync();
 		}
 
-		public async Task<UserDto> GetUser(int id, int role)
+        public async Task<int> DeleteUser(UserDto user)
+        {
+            return await UpdateUser(user, true);
+        }
+
+        public async Task<UserDto> GetUser(int id, int role)
 		{
 			//var user = await _context.Users.Where(user => user.Id == id && user.Role == role).FirstOrDefaultAsync();
 			//if (role)

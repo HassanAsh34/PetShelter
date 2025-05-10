@@ -279,16 +279,38 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<IEnumerable<ShelterCategory>>> getCategories()
+		public async Task<ActionResult<IEnumerable<CategoryDto>>> getCategories([FromQuery] int? SH_FK = 0)
 		{
 			if (Authorize(3))
 			{
-				IEnumerable<ShelterCategory> Categories = await _adminServices.ListCategories();
+				IEnumerable<CategoryDto> Categories = await _adminServices.ListCategories(SH_FK);
 				if (Categories == null)
 				{
 					return NoContent();
 				}
 				return Ok(Categories);
+			}
+			else
+				return Unauthorized();
+		}
+
+		[HttpPut("Edit-Category")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<ActionResult<bool>> EditCategory([FromBody] ShelterCategory category)//done
+		{
+			if (Authorize(3))
+			{
+				var res = await _adminServices.EditCategory(category);
+				if (res == true)
+				{
+					return Ok(new { message = "the Category was updated successfully" });
+				}
+				else
+				{
+					return BadRequest(new { message = "something went wrong" });
+				}
 			}
 			else
 				return Unauthorized();
@@ -326,13 +348,16 @@ namespace PetShelter.Controllers
 			if (Authorize(1))
 			{
 				var res = await _adminServices.addShelter(shelter);
-				if (res != null)
+				if (res is ShelterDto)
 				{
 					return Ok(res);
 				}
 				else
 				{
-					return BadRequest(new { message = "Shelter already exists" });
+					if (res == null)
+						return BadRequest(new { message = "Shelter already exists" });
+					else
+						return BadRequest(new { message = "failed to add shelter" });
 				}
 			}
 			else

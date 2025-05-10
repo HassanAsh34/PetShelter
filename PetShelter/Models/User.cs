@@ -41,6 +41,8 @@ namespace PetShelter.Models
 		public int Activated { get; set; } = 0;
 
 		public DateOnly ?Banned_At { get; set; }
+
+		public DateTime? Deleted_At { get; set; }
 		public DateTime ?ActivatedAt { get; set; }
 		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 		public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

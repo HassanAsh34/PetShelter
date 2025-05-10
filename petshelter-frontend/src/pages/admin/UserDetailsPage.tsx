@@ -193,14 +193,33 @@ const UserDetailsPage = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
+  const handleEditClick = () => {
+    setEditedUser(user);
+    setIsEditDialogOpen(true);
+  };
+
   const updateUserMutation = useMutation({
-    mutationFn: (data: any) => adminApi.updateUser(data),
+    mutationFn: async (data: any) => {
+      console.log('Updating user with data:', {
+        isProfileRoute,
+        endpoint: isProfileRoute ? '/AuthApi/EditUserDetails' : '/Admin/EditUserDetails',
+        userData: data
+      });
+      
+      if (isProfileRoute) {
+        return await authApi.updateUserDetails(data);
+      } else {
+        const response = await adminApi.updateUser(data);
+        return response.data;
+      }
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user', userId, userRole] });
+      queryClient.invalidateQueries({ queryKey: ['user', userId, userRole, isProfileRoute] });
       setIsEditDialogOpen(false);
       setError(null);
     },
     onError: (error: any) => {
+      console.error('Error updating user:', error);
       setError(error.response?.data?.message || 'Failed to update user');
     },
   });
@@ -216,13 +235,49 @@ const UserDetailsPage = () => {
     },
   });
 
-  const handleEditClick = () => {
-    setEditedUser(user);
-    setIsEditDialogOpen(true);
-  };
-
   const handleEditSubmit = () => {
-    updateUserMutation.mutate(editedUser);
+    const baseDto = {
+      id: userId,
+      role: userRole,
+      uname: editedUser.uname,
+      email: editedUser.email,
+      activated: editedUser.activated,
+      banned: editedUser.banned
+    };
+
+    let userDto;
+    switch (userRole) {
+      case 0: // Admin
+        userDto = {
+          ...baseDto,
+          adminType: editedUser.adminType
+        };
+        break;
+      case 1: // Adopter
+        userDto = {
+          ...baseDto,
+          phone: editedUser.phone,
+          address: editedUser.address
+        };
+        break;
+      case 2: // Staff
+        userDto = {
+          ...baseDto,
+          staffType: editedUser.staffType,
+          phone: editedUser.phone,
+          hiredDate: editedUser.hiredDate
+        };
+        break;
+      default:
+        userDto = baseDto;
+    }
+
+    console.log('Sending user DTO:', {
+      role: UserRole[userRole],
+      dto: userDto
+    });
+
+    updateUserMutation.mutate(userDto);
   };
 
   const handleInputChange = (field: string, value: any) => {

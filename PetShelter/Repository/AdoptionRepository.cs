@@ -29,6 +29,8 @@ namespace PetShelter.Repository
 			return await  _shelterRepository.ListPets(CatId,ShelterID,catname,petids);
 		}
 
+
+
 		public async Task<bool> RequestExistence(AdoptionRequest adoption)
 		{
 			var res = await _context.AdoptionRequest.FirstOrDefaultAsync(a => a.PetId_FK == adoption.PetId_FK && a.AdopterId_FK == adoption.AdopterId_FK);

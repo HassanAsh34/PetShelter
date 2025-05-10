@@ -1,0 +1,103 @@
+import React from 'react';
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
+  CircularProgress,
+  Alert,
+} from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
+import { animalsApi } from '../../services/api';
+
+interface AdoptionRequest {
+  id: number;
+  petName: string;
+  status: string;
+  requestDate: string;
+  approvedAt?: string;
+  shelterName: string;
+}
+
+const AdoptionHistory = () => {
+  const { data: adoptionHistory, isLoading, error } = useQuery({
+    queryKey: ['adoptionHistory'],
+    queryFn: () => animalsApi.getAdoptionHistory(),
+  });
+
+  const getStatusChip = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'approved':
+        return <Chip label="Approved" color="success" />;
+      case 'pending':
+        return <Chip label="Pending" color="warning" />;
+      case 'rejected':
+        return <Chip label="Rejected" color="error" />;
+      default:
+        return <Chip label={status} />;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Alert severity="error">Error loading adoption history</Alert>
+      </Container>
+    );
+  }
+
+  return (
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom>
+        My Adoption History
+      </Typography>
+      
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Pet Name</TableCell>
+              <TableCell>Shelter</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Request Date</TableCell>
+              <TableCell>Approved Date</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {adoptionHistory?.map((adoption: AdoptionRequest) => (
+              <TableRow key={adoption.id}>
+                <TableCell>{adoption.petName}</TableCell>
+                <TableCell>{adoption.shelterName}</TableCell>
+                <TableCell>{getStatusChip(adoption.status)}</TableCell>
+                <TableCell>{new Date(adoption.requestDate).toLocaleDateString()}</TableCell>
+                <TableCell>
+                  {adoption.approvedAt 
+                    ? new Date(adoption.approvedAt).toLocaleDateString()
+                    : '-'
+                  }
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
+  );
+};
+
+export default AdoptionHistory; 

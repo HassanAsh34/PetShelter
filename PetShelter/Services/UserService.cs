@@ -143,12 +143,14 @@ namespace PetShelter.Services
 		{
 			var U = await _userRepository.UpdateUser(u);
 			if (U > 0)
+			{
+				//var stats = await GetDashboardStats();
+				//await NotifyDashboardUpdate(stats);
 				return true;
+			}
 			else
 				return false;
-			//return null;
 		}
-
 		public User.UserType getType(int type)
 		{
 			return (User.UserType)type;
