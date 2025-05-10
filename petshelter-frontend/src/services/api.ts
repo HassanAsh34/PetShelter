@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getToken, removeToken, parseJwt } from '../utils/tokenUtils';
+import AdoptionRequestsButton from '../components/AdoptionRequestsButton';
 
 interface UserDto {
   id: number;
@@ -95,16 +96,7 @@ export const animalsApi = {
     api.post('/Adoption/Adopt', data),
   cancelAdoption: (id: number) => api.post(`/Adoption/Cancel-Adoption/${id}`),
   getAdoptionHistory: () => {
-    console.log('Fetching adoption history...');
-    return api.get('/Adoption/Adoption-History')
-      .then(response => {
-        console.log('Adoption history response:', response.data);
-        return response.data;
-      })
-      .catch(error => {
-        console.error('Error fetching adoption history:', error);
-        throw error;
-      });
+    return api.get('/Adoption/Adoption-History').then((res) => res.data);
   },
 };
 
@@ -147,15 +139,17 @@ export const adminApi = {
 };
 
 export const staffApi = {
-  getShelterPets: () => api.get('/Staff/Get-Shelter-Pets').then((res) => res.data),
-  getPetDetails: (id: number) => api.get(`/Staff/Get-Pet-Details/${id}`).then((res) => res.data),
-  getCategories: () => api.get('/Staff/Get-Categories').then((res) => res.data),
-  addPet: (data: any) => api.post('/Staff/Add-Pet', data).then((res) => res.data),
-  updatePet: (data: any) => api.put('/Staff/Update-Pet', data).then((res) => res.data),
-  deletePet: (id: number) => api.delete(`/Staff/Delete-Pet/${id}`).then((res) => res.data),
-  getAdoptionRequests: () => api.get('/Staff/Get-Adoption-Requests').then((res) => res.data),
-  handleAdoptionRequest: (requestId: number, approved: boolean, reason?: string) =>
-    api.put(`/Staff/Handle-Adoption-Request/${requestId}`, { approved, reason }).then((res) => res.data),
+  getShelterPets: () => api.get('/Shelter-Management/List-Pets').then((res) => res.data),
+  getPetDetails: (id: number) => api.get(`/Shelter-Management/View-Pet//${id}`).then((res) => res.data),
+  getCategories: () => api.get('/Shelter-Management/Show-Categories').then((res) => res.data),
+  addPet: (data: any) => api.post('/Shelter-Management/Add-Pet', data).then((res) => res.data),
+  updatePet: (data: any) => api.put('/Shelter-Management/Update-Pet', data).then((res) => res.data),
+  deletePet: (id: number) => api.delete(`/Shelter-Management/Delete-Pet/${id}`).then((res) => res.data),
+  getAdoptionRequests: () => api.get(`/Shelter-Management/Show-Adoption-Requests`).then((res) => res.data),
+  approveAdoptionRequest: (requestId: number) => 
+    api.put(`/Shelter-Management/Approve-Adoption-Request/${requestId}`).then((res) => res.data)
+  // handleAdoptionRequest: (requestId: number, approved: boolean, reason?: string) =>
+  //   api.put(`/Staff/Handle-Adoption-Request/${requestId}`, { approved, reason }).then((res) => res.data),
 };
 
 export interface RegisterData {

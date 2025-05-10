@@ -34,14 +34,33 @@ interface AdoptionRequest {
 const AdoptionHistory = () => {
   const { data: adoptionHistory, isLoading, error } = useQuery({
     queryKey: ['adoptionHistory'],
-    queryFn: () => animalsApi.getAdoptionHistory(),
-    staleTime: 5 * 60 * 1000, // Data stays fresh for 5 minutes
-    gcTime: 10 * 60 * 1000, // Cache is kept for 10 minutes
-    refetchOnWindowFocus: false, // Disable refetch on window focus
+    queryFn: async () => {
+      try {
+        const response = await animalsApi.getAdoptionHistory();
+        console.log('Raw Adoption History Response:', JSON.stringify(response, null, 2));
+        console.log('Response Type:', typeof response);
+        console.log('Is Array:', Array.isArray(response));
+        console.log('Response Length:', Array.isArray(response) ? response.length : 'Not an array');
+        
+        if (Array.isArray(response)) {
+          console.log('First Request:', JSON.stringify(response[0], null, 2));
+          console.log('Request Status:', response[0]?.status);
+          console.log('Request Animal:', JSON.stringify(response[0]?.animal, null, 2));
+          console.log('Request Shelter:', JSON.stringify(response[0]?.shelter, null, 2));
+        }
+        return response;
+      } catch (error) {
+        console.error('Error fetching adoption history:', error);
+        throw error;
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   // Add debug logging
-  console.log('Adoption History Data:', adoptionHistory);
+  console.log('Processed Adoption History Data:', JSON.stringify(adoptionHistory, null, 2));
   console.log('Adoption History Loading:', isLoading);
   console.log('Adoption History Error:', error);
 
@@ -74,8 +93,10 @@ const AdoptionHistory = () => {
     );
   }
 
-  // Ensure adoptionHistory is an array
+  // Ensure adoptionHistory is an array and has data
   const history = Array.isArray(adoptionHistory) ? adoptionHistory : [];
+  console.log('Final History Array:', JSON.stringify(history, null, 2));
+  console.log('History Length:', history.length);
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -83,7 +104,7 @@ const AdoptionHistory = () => {
         My Adoption History
       </Typography>
       
-      {history.length === 0 ? (
+      {!history || history.length === 0 ? (
         <Alert severity="info" sx={{ mt: 2 }}>
           You haven't made any adoption requests yet.
         </Alert>
@@ -102,8 +123,8 @@ const AdoptionHistory = () => {
             <TableBody>
               {history.map((adoption: AdoptionRequest) => (
                 <TableRow key={adoption.requestId}>
-                  <TableCell>{adoption.animal?.name}</TableCell>
-                  <TableCell>{adoption.shelter?.shelterName}</TableCell>
+                  <TableCell>{adoption.animal?.name || 'N/A'}</TableCell>
+                  <TableCell>{adoption.shelter?.shelterName || 'N/A'}</TableCell>
                   <TableCell>{getStatusChip(adoption.status)}</TableCell>
                   <TableCell>{new Date(adoption.requestDate).toLocaleDateString()}</TableCell>
                   <TableCell>

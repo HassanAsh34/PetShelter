@@ -22,7 +22,7 @@ namespace PetShelter.Repository
 
 		private async Task<List<AdoptionRequestDto>> RequestDtos(bool ? flag = false)
 		{
-			List<AdoptionRequest> AdoptionReq = await _context.AdoptionRequest.Where(a=> flag == false || a.Approved_At != null).ToListAsync();
+			List<AdoptionRequest> AdoptionReq = await _context.AdoptionRequest.Include(a=>a.Adopter).Include(a=>a.Pet).Where(a=> flag == false || a.Approved_At != null).ToListAsync();
 			List<AdoptionRequestDto> RecentRequests = new List<AdoptionRequestDto>();
 			AdoptionReq.ForEach(r =>
 			{

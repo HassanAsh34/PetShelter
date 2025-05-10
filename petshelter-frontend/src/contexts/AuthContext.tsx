@@ -4,14 +4,42 @@ import { getToken, setToken, removeToken, isTokenValid, parseJwt } from '../util
 
 interface User {
   id: number;
+  uname: string;
   email: string;
-  role: string;
-  firstName: string;
-  lastName: string;
+  role: number;
   activated: number;
+  banned: boolean;
   adminType?: number;
-  staffType?: string;
-  shelterId?: number;
+  staffType?: number;
+  phone?: string;
+  address?: string;
+  hiredDate?: string;
+  shelter?: {
+    shelterId: number;
+    shelterName: string;
+    shelterLocation: string;
+    shelterPhone: string;
+  };
+}
+
+interface DecodedToken {
+  id: number;
+  uname: string;
+  email: string;
+  role: number;
+  activated: number;
+  banned: boolean;
+  adminType?: number;
+  staffType?: number;
+  phone?: string;
+  address?: string;
+  hiredDate?: string;
+  shelter?: {
+    shelterId: number;
+    shelterName: string;
+    shelterLocation: string;
+    shelterPhone: string;
+  };
 }
 
 interface AuthContextType {
@@ -101,13 +129,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const userData: User = {
         id: decodedToken?.id || 0,
+        uname: decodedToken?.uname || '',
         email: decodedToken?.email || '',
-        role: convertRole(decodedToken?.role || ''),
-        firstName: decodedToken?.firstName || '',
-        lastName: decodedToken?.lastName || '',
+        role: decodedToken?.role || 0,
         activated: 1,
+        banned: false,
         adminType: adminTypeValue,
-        staffType: decodedToken?.staffType || (decodedToken?.role === 'ShelterStaff' ? 'staff' : undefined)
+        staffType: decodedToken?.staffType || (decodedToken?.role === 'ShelterStaff' ? 'staff' : undefined),
+        phone: decodedToken?.phone || '',
+        address: decodedToken?.address || '',
+        hiredDate: decodedToken?.hiredDate || '',
+        shelter: decodedToken?.shelter ? {
+          shelterId: decodedToken.shelter.shelterId,
+          shelterName: decodedToken.shelter.shelterName,
+          shelterLocation: decodedToken.shelter.shelterLocation,
+          shelterPhone: decodedToken.shelter.shelterPhone,
+        } : undefined,
       };
 
       console.log('Setting user state:', {

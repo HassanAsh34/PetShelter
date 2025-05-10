@@ -3,11 +3,19 @@ interface DecodedToken {
   id?: number;     // Keep for backward compatibility
   email: string;
   role: string;
-  firstName: string;
-  lastName: string;
+  uname: string;
   exp: number;
   AdminType?: string | number;
   staffType?: string;
+  phone?: string;
+  address?: string;
+  hiredDate?: string;
+  shelter?: {
+    shelterId: number;
+    shelterName: string;
+    shelterLocation: string;
+    shelterPhone: string;
+  };
 }
 
 export const getToken = (): string | null => {

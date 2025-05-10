@@ -51,8 +51,10 @@ const AdoptionRequests = () => {
   });
 
   const handleRequestMutation = useMutation({
-    mutationFn: ({ requestId, approved, reason }: { requestId: number; approved: boolean; reason?: string }) =>
-      staffApi.handleAdoptionRequest(requestId, approved, reason),
+    mutationFn: ( requestId : number) => {
+      console.log('Approving request with ID:', requestId); // Log the ID
+      return staffApi.approveAdoptionRequest(requestId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adoptionRequests'] });
       setSelectedRequest(null);
@@ -64,7 +66,7 @@ const AdoptionRequests = () => {
   });
 
   const handleApprove = (request: AdoptionRequest) => {
-    handleRequestMutation.mutate({ requestId: request.id, approved: true });
+    handleRequestMutation.mutate(request.id);
   };
 
   const handleReject = (request: AdoptionRequest) => {

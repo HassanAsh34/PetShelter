@@ -212,7 +212,7 @@ const AdminDashboard = () => {
                           <Pets />
                         </ListItemIcon>
                         <ListItemText
-                          primary={`${adoption.petName} adopted by ${adoption.adopterName}`}
+                          primary={`${adoption.pet?.name || 'Unknown Pet'} adopted by ${adoption.user?.Uname || 'Unknown'}''}`}
                           secondary={new Date(adoption.approvedAt).toLocaleString()}
                         />
                       </ListItem>

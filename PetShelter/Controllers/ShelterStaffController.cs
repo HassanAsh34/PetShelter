@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 
 namespace PetShelter.Controllers
 {
-	[Route("/Shelter Management")]
+	[Route("/Shelter-Management")]
 	[ApiController]
 	[Authorize(Roles = "ShelterStaff")]
 	public class ShelterStaffController : ControllerBase
@@ -83,7 +83,13 @@ namespace PetShelter.Controllers
 				if (animalDtos == null)
 					return NoContent();
 				else
+				{
+                    foreach (var item in animalDtos)
+                    {
+						Console.WriteLine(item.Adoption_State);
+                    }
 					return Ok(animalDtos);
+				}	
 			}
 			else
 			{
@@ -97,6 +103,7 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		public async Task<ActionResult<Animal>> AddPet([FromBody] Animal animal) //done
 		{
+			Console.Write(animal.GetType());
 			if(Authorize(3))
 			{
 				var res = await _shelterStaffServices.AddPet(animal);
@@ -105,10 +112,11 @@ namespace PetShelter.Controllers
 					case 0:
 						return NotFound(new { message = "Category not found" });
 					case AnimalDto animalDto:
-						return Ok(new {animalDto, message = "The pet was added successfully" });
+						return Ok(new { animalDto, message = "The pet was added successfully" });
 					default:
 						return BadRequest(new { message = "Something went wrong" });
 				}
+				//return null;
 			}
 			else
 			{
@@ -203,29 +211,32 @@ namespace PetShelter.Controllers
 			else
 			{
 				int shelter_ID = int.Parse(User.FindFirst("ShelterId")?.Value);
+				Console.WriteLine(shelter_ID);
 				if (shelter_ID == 1)
 					return Unauthorized(new { message = "You are not assigned to a shelter yet" });
 				IEnumerable<AdoptionRequestDto> adoptionRequests = await _shelterStaffServices.ListAdoptionRequests(shelter_ID);
 				if (adoptionRequests == null)
 					return NoContent();
 				else
+				{
 					return Ok(adoptionRequests);
+				}	
 			}
 		}
 
 
 
-		[HttpPut("Approve-Adoption-Request")]
+		[HttpPut("Approve-Adoption-Request/{requestId}")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		public async Task<ActionResult<int>> ApproveAdoptionRequest(int Rid)//done
+		public async Task<ActionResult<int>> ApproveAdoptionRequest(int requestId)//done
 		{
 			if (Authorize(2) == false)
 				return Unauthorized(new { message = "You are not authorized to perform this operation" });
 			else
 			{
-				var res = await _shelterStaffServices.ApproveAdoptionRequest(Rid);
+				var res = await _shelterStaffServices.ApproveAdoptionRequest(requestId);
 				if (res > 0)
 				{
 					return Ok(new { message = "The adoption request was approved successfully" });

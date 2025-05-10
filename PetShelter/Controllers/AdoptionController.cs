@@ -66,18 +66,22 @@ namespace PetShelter.Controllers
 			{
 				// Get the user ID from the token
 				var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-				if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int adopterId))
-				{
-					return Unauthorized(new { message = "Invalid user ID in token" });
-				}
-
-				var history = await _adoptionServices.AdoptionHistory(adopterId);
+				//if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int adopterId))
+				//{
+				//	return Unauthorized(new { message = "Invalid user ID in token" });
+				//}
+				//Console.WriteLine(userId.GetType());
+				int.TryParse(userId, out var adoptionId);
+				Console.WriteLine(adoptionId);
+				if (adoptionId == 0)
+					return BadRequest(new { message = "something went wrong" });
+				var history = await _adoptionServices.AdoptionHistory(adoptionId);
 				if (history == null)
 				{
 					return Ok(new List<AdoptionRequestDto>());
 				}
-
 				return Ok(history);
+				//return Ok(history);
 			}
 			catch (Exception ex)
 			{

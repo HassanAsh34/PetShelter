@@ -19,6 +19,9 @@ import EditCategoryPage from './pages/admin/EditCategoryPage';
 import CategoryDetails from './pages/admin/CategoryDetails';
 import AdoptionHistory from './pages/adopter/AdoptionHistory';
 import StaffDashboard from './pages/staff/StaffDashboard';
+import StaffPetsList from './pages/staff/StaffPetsList';
+import StaffAdoptionRequests from './pages/staff/StaffAdoptionRequests';
+import AddPetPage from './pages/staff/AddPetPage';
 
 // Protected Route Component
 const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
@@ -190,6 +193,30 @@ function App() {
             element={
               <ProtectedStaffRoute>
                 <StaffDashboard />
+              </ProtectedStaffRoute>
+            }
+          />
+          <Route
+            path="/staff/pets"
+            element={
+              <ProtectedStaffRoute>
+                <StaffPetsList />
+              </ProtectedStaffRoute>
+            }
+          />
+          <Route
+            path="/staff/adoption-requests"
+            element={
+              <ProtectedStaffRoute>
+                <StaffAdoptionRequests />
+              </ProtectedStaffRoute>
+            }
+          />
+          <Route
+            path="/staff/pets/add"
+            element={
+              <ProtectedStaffRoute>
+                <AddPetPage />
               </ProtectedStaffRoute>
             }
           />

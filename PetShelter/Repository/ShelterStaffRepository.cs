@@ -191,7 +191,7 @@ namespace PetShelter.Repository
 				animals = await _context.Animals
 					.Include(a => a.ShelterCategory)
 					.Include(a=>a.Shelter)
-					.Where(a => a.Category_FK == CatId)
+					.Where(a => a.Category_FK == CatId && a.Adoption_State != 0)
 					.ToListAsync();
 			}
 			else if(ShelterID != 0)
@@ -318,7 +318,7 @@ namespace PetShelter.Repository
 
 		public async Task<int> ApproveAdoptionRequest(int Rid)
 		{
-			AdoptionRequest adoption = await _context.AdoptionRequest.FirstOrDefaultAsync(a => a.Id == Rid);
+			AdoptionRequest adoption = await _context.AdoptionRequest.Include(r => r.Pet).FirstOrDefaultAsync(a => a.Id == Rid);
 			if (adoption != null)
 			{
 				List<AdoptionRequest> requests = await _context.AdoptionRequest.Where(a => a.PetId_FK == adoption.PetId_FK).ToListAsync();
@@ -335,6 +335,7 @@ namespace PetShelter.Repository
 				}
 				adoption.Status = AdoptionRequest.AdoptionRequestStatus.Approved;
 				adoption.Approved_At = DateTime.Now;
+				adoption.Pet.Adoption_State = 0;
 				//_context.AdoptionRequest.Update(adoption);
 				int res = await _context.SaveChangesAsync();
 				return res > 0 ? res : 0; 

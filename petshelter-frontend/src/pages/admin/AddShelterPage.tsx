@@ -59,7 +59,7 @@ const AddShelterPage = () => {
       navigate('/admin/shelters');
     },
     onError: (error: any) => {
-      if (error.message === 'Shelter already exists') {
+      if (error.response?.data?.message === "Shelter already exists") {
         setErrors({
           ...errors,
           submit: 'A shelter with this name already exists'
