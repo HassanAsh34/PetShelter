@@ -57,7 +57,7 @@ const Login = () => {
         navigate('/admin', { replace: true });
       } else if (result?.role === 'ShelterStaff') {
         console.log('Staff user detected, redirecting to staff dashboard');
-        navigate('/shelter-staff', { replace: true });
+        navigate('/staff/dashboard', { replace: true });
       } else {
         console.log('Regular user, redirecting to:', from);
         navigate(from, { replace: true });

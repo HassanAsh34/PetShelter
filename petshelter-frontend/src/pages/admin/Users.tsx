@@ -107,7 +107,7 @@ const Users = () => {
 
   const { data: users, isLoading, error: queryError } = useQuery({
     queryKey: ['users'],
-    queryFn: () => adminApi.getUsers(),
+    queryFn: () => adminApi.listUsers(),
   });
 
   const addUserMutation = useMutation({
@@ -115,6 +115,7 @@ const Users = () => {
       if (data.role === 0) { // Admin
         return adminApi.addAdmin(data);
       } else {
+        console.log(data);
         return adminApi.addUser(data);
       }
     },

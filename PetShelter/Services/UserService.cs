@@ -179,6 +179,17 @@ namespace PetShelter.Services
 			}
 			return null; //something went wrong 
 		}
+		public async Task<bool> deleteUser(UserDto u)
+		{
+			var res = await _userRepository.DeleteUser(u);
+			if (res > 0)
+			{
+				//var stats = await GetDashboardStats();
+				//await NotifyDashboardUpdate(stats);
+				return true;
+			}
+			return false;
+		}
 	}
 }
 

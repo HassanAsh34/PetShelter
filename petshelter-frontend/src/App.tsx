@@ -17,6 +17,8 @@ import Categories from './pages/admin/Categories';
 import AddCategoryPage from './pages/admin/AddCategoryPage';
 import EditCategoryPage from './pages/admin/EditCategoryPage';
 import CategoryDetails from './pages/admin/CategoryDetails';
+import AdoptionHistory from './pages/adopter/AdoptionHistory';
+import StaffDashboard from './pages/staff/StaffDashboard';
 
 // Protected Route Component
 const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
@@ -44,6 +46,36 @@ const ProtectedProfileRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Protected Adopter Route Component
+const ProtectedAdopterRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isAdopter } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: '/adoption-history' }} replace />;
+  }
+  
+  if (!isAdopter) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+// Protected Staff Route Component
+const ProtectedStaffRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isShelterStaff } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: '/staff/dashboard' }} replace />;
+  }
+  
+  if (!isShelterStaff) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
 function App() {
   const { isAuthenticated, isAdmin } = useAuth();
 
@@ -66,6 +98,14 @@ function App() {
             }
           />
           <Route
+            path="/adoption-history"
+            element={
+              <ProtectedAdopterRoute>
+                <AdoptionHistory />
+              </ProtectedAdopterRoute>
+            }
+          />
+          <Route
             path="/admin"
             element={
               <ProtectedAdminRoute>
@@ -82,10 +122,26 @@ function App() {
             }
           />
           <Route
+            path="/admin/users/:id/:role"
+            element={
+              <ProtectedAdminRoute>
+                <UserDetailsPage />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
             path="/admin/shelters"
             element={
               <ProtectedAdminRoute>
                 <Shelters />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/shelters/:id"
+            element={
+              <ProtectedAdminRoute>
+                <ShelterDetails />
               </ProtectedAdminRoute>
             }
           />
@@ -114,7 +170,7 @@ function App() {
             }
           />
           <Route
-            path="/admin/categories/edit/:categoryId"
+            path="/admin/categories/edit/:id"
             element={
               <ProtectedAdminRoute>
                 <EditCategoryPage />
@@ -122,35 +178,19 @@ function App() {
             }
           />
           <Route
-            path="/admin/shelters/:id"
-            element={
-              <ProtectedAdminRoute>
-                <ShelterDetails />
-              </ProtectedAdminRoute>
-            }
-          />
-          <Route
-            path="/admin/users/:id/:role"
-            element={
-              <ProtectedAdminRoute>
-                <UserDetailsPage />
-              </ProtectedAdminRoute>
-            }
-          />
-          <Route
-            path="/admin/*"
-            element={
-              <ProtectedAdminRoute>
-                <AdminDashboard />
-              </ProtectedAdminRoute>
-            }
-          />
-          <Route
-            path="/admin/categories/:categoryId"
+            path="/admin/categories/:id"
             element={
               <ProtectedAdminRoute>
                 <CategoryDetails />
               </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/staff/dashboard"
+            element={
+              <ProtectedStaffRoute>
+                <StaffDashboard />
+              </ProtectedStaffRoute>
             }
           />
         </Routes>

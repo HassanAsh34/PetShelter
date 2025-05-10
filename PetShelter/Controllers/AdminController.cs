@@ -87,11 +87,12 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<ActionResult<UserDto>> getUserDetails(int id, [FromQuery] int role)
+		public async Task<ActionResult<UserDto>> getUserDetails(int id, [FromQuery] int userRole)
 		{
+			Console.WriteLine(userRole);
 			if (Authorize(2))
 			{
-				var user = await _adminServices.getUserDetails(id, role);
+				var user = await _adminServices.getUserDetails(id, userRole);
 				if (user != null)
 				{
 					return Ok(user);
@@ -219,7 +220,7 @@ namespace PetShelter.Controllers
 				return Unauthorized();
 		}
 
-		[HttpDelete("Delete-User")]
+		[HttpPut("Delete-User")]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -275,15 +276,17 @@ namespace PetShelter.Controllers
 		}
 
 
-		[HttpGet("Show-Categories")]
+		[HttpGet("Show-Categories/{shelterId}")]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<IEnumerable<CategoryDto>>> getCategories([FromQuery] int? SH_FK = 0)
+		public async Task<ActionResult<IEnumerable<CategoryDto>>> getCategories(int? shelterId = 0)
 		{
 			if (Authorize(3))
 			{
-				IEnumerable<CategoryDto> Categories = await _adminServices.ListCategories(SH_FK);
+				//Console.WriteLine(shelterId);
+				IEnumerable<CategoryDto> Categories = await _adminServices.ListCategories(shelterId);
+				//IEnumerable<CategoryDto> Categories = await _adminServices.ListCategories(shelterId);
 				if (Categories == null)
 				{
 					return NoContent();
@@ -354,7 +357,7 @@ namespace PetShelter.Controllers
 				}
 				else
 				{
-					if (res == null)
+					if ((bool)res == false)
 						return BadRequest(new { message = "Shelter already exists" });
 					else
 						return BadRequest(new { message = "failed to add shelter" });
@@ -389,6 +392,7 @@ namespace PetShelter.Controllers
 
 		public async Task<ActionResult<Shelter>> ShowShelter(int id)
 		{
+		
 			if (Authorize(1))
 			{
 				var res = await _adminServices.ShowShelter(id);
@@ -431,10 +435,11 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<int>> DeleteShelter(Shelter shelter)//done
+		public async Task<ActionResult<int>> DeleteShelter([FromBody] ShelterDto shelter)//done
 		{
 			if (Authorize(1))
 			{
+
 				var res = await _adminServices.deleteShelter(shelter);
 				if (res > 0)
 				{

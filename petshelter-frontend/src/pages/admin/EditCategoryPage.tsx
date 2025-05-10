@@ -13,7 +13,7 @@ import {
   MenuItem
 } from '@mui/material';
 import { ArrowBack as BackIcon } from '@mui/icons-material';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -33,6 +33,7 @@ const EditCategoryPage = () => {
   const location = useLocation();
   const { categoryId } = useParams();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [shelters, setShelters] = useState<Shelter[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<EditCategoryData>({
@@ -77,7 +78,10 @@ const EditCategoryPage = () => {
   const updateCategoryMutation = useMutation({
     mutationFn: (data: EditCategoryData) => adminApi.updateCategory(data),
     onSuccess: () => {
-      navigate('/admin/categories');
+      // Invalidate and refetch categories for the specific shelter
+      const shelterId = location.state?.shelterId;
+      queryClient.invalidateQueries({ queryKey: ['categories', shelterId] });
+      navigate(`/admin/categories${shelterId ? `?shelterId=${shelterId}` : ''}`);
     },
     onError: (error: any) => {
       setError(error.response?.data?.message || 'Failed to update category');
@@ -102,7 +106,10 @@ const EditCategoryPage = () => {
       <Box sx={{ mt: 4, mb: 4 }}>
         <Button
           startIcon={<BackIcon />}
-          onClick={() => navigate('/admin/categories')}
+          onClick={() => {
+            const shelterId = location.state?.shelterId;
+            navigate(`/admin/categories${shelterId ? `?shelterId=${shelterId}` : ''}`);
+          }}
           sx={{ mb: 2 }}
         >
           Back to Categories

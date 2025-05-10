@@ -85,38 +85,98 @@ namespace PetShelter.Services
 
 		public async Task<object> AdoptionHistory(int id)
 		{
-			if(id!=0)
+			if (id != 0)
 			{
 				IEnumerable<AdoptionRequest> res = await _adoptionRepository.AdoptionHistory(id);
 				List<AdoptionRequestDto> adoptionRequestDtos = new List<AdoptionRequestDto>();
 				res.ToList().ForEach(adoption =>
 				{
+					//Console.WriteLine(adoption.ToString());
 					adoptionRequestDtos.Add(new AdoptionRequestDto
 					{
+						requestId = adoption.Id,
 						Animal = new AnimalDto
 						{
 							id = adoption.Pet.id,
 							name = adoption.Pet.name,
 						},
-						Adopter = new AdopterDto
-						{
-							Id = adoption.AdopterId_FK,
-							Uname = adoption.Adopter.Uname,
-						},
 						Status = ((AdoptionRequest.AdoptionRequestStatus)adoption.Status).ToString(),
+						RequestDate = adoption.RequestDate,
+						Approved_At = adoption.Approved_At,
+						Shelter = new ShelterDto
+						{
+							ShelterId = adoption.Shelter.ShelterID,
+							ShelterName = adoption.Shelter.ShelterName
+						}
 					});
 				});
-				if (adoptionRequestDtos == null)
+				if (adoptionRequestDtos == null || !adoptionRequestDtos.Any())
 				{
-					return 0; //nothing was found
+					return null; //nothing was found
 				}
 				else
 				{
 					return adoptionRequestDtos;
 				}
 			}
-			return -1;//something went wrong
+			return null;//something went wrong
 		}
+
+		//		public async Task<object> AdoptionHistory(int id)
+		//{
+		//    if(id != 0)
+		//    {
+		//        IEnumerable<AdoptionRequest> res = await _adoptionRepository.AdoptionHistory(id);
+		//        List<AdoptionRequestDto> adoptionRequestDtos = new List<AdoptionRequestDto>();
+
+		//        res.ToList().ForEach(adoption =>
+		//        {
+		//            if (adoption != null)
+		//            {
+		//                // Print detailed information of each adoption
+		//                Console.WriteLine($"Adoption ID: {adoption.Id}");
+		//                Console.WriteLine($"Pet ID: {adoption.Pet?.id}");
+		//                Console.WriteLine($"Pet Name: {adoption.Pet?.name}");
+		//                Console.WriteLine($"Status: {(AdoptionRequest.AdoptionRequestStatus)adoption.Status}");
+		//                Console.WriteLine($"Request Date: {adoption.RequestDate}");
+		//                Console.WriteLine($"Approved At: {adoption.Approved_At}");
+		//                Console.WriteLine($"Shelter ID: {adoption.Shelter?.ShelterID}");
+		//                Console.WriteLine($"Shelter Name: {adoption.Shelter?.ShelterName}");
+		//                Console.WriteLine("-------------");
+
+		//                // Optionally, add to the DTO list
+		//                adoptionRequestDtos.Add(new AdoptionRequestDto
+		//                {
+		//                    requestId = adoption.Id,
+		//                    Animal = new AnimalDto
+		//                    {
+		//                        id = adoption.Pet?.id ?? 0, // Default to 0 if Pet is null
+		//                        name = adoption.Pet?.name ?? "Unknown",
+		//                    },
+		//                    Status = ((AdoptionRequest.AdoptionRequestStatus)adoption.Status).ToString(),
+		//                    RequestDate = adoption.RequestDate,
+		//                    Approved_At = adoption.Approved_At,
+		//                    Shelter = new ShelterDto
+		//                    {
+		//                        ShelterId = adoption.Shelter?.ShelterID ?? 0,
+		//                        ShelterName = adoption.Shelter?.ShelterName ?? "Unknown",
+		//                    }
+		//                });
+		//            }
+		//        });
+
+		//        if (adoptionRequestDtos == null || !adoptionRequestDtos.Any())
+		//        {
+		//            return null; // nothing was found
+		//        }
+		//        else
+		//        {
+		//            return adoptionRequestDtos;
+		//        }
+		//    }
+		//    return null; // something went wrong
+		//}
+
 
 		public async Task<object> ViewAdoption(int id)
 		{

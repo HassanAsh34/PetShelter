@@ -141,24 +141,19 @@ namespace PetShelter.Services
 		//shelter services
 		public async Task<object> addCategory(ShelterCategory category)
 		{
-			if (await _adminRepository.ShelterExistence(new Shelter { ShelterID = category.Shelter_FK }) == true)
+			var res = await _adminRepository.addCategory(category);
+			if (res is ShelterCategory cat)
 			{
-				var res = await _adminRepository.addCategory(category);
-				if (res is ShelterCategory cat)
+				var stats = await GetDashboardStats();
+				await NotifyDashboardUpdate(stats);
+				return new CategoryDto
 				{
-					var stats = await GetDashboardStats();
-					await NotifyDashboardUpdate(stats);
-					return new CategoryDto
-					{
-						CategoryId = cat.CategoryId,
-						CategoryName = cat.CategoryName
-					};
-				}
-				else
-					return 0; //already exists
+					CategoryId = cat.CategoryId,
+					CategoryName = cat.CategoryName
+				};
 			}
 			else
-				return -1; //indicates that the shelter does not exist
+				return res;
 		}
 
 		public async Task<IEnumerable<CategoryDto>> ListCategories(int ? id =0)
@@ -211,53 +206,58 @@ namespace PetShelter.Services
 
 		//shelter
 
-		public async Task<Object> addShelter(Shelter shelter)
+		public async Task<object> addShelter(Shelter shelter)
 		{
 			if (shelter != null)
 			{
-				if (await _adminRepository.ShelterExistence(shelter) != true)
+				var res = await _adminRepository.AddShelter(shelter);
+				if (res is Shelter s)
 				{
-					var res = await _adminRepository.AddShelter(shelter);
 					var stats = await GetDashboardStats();
 					await NotifyDashboardUpdate(stats);
 					return new ShelterDto
 					{
-						ShelterId = res.ShelterID,
-						ShelterName = res.ShelterName,
-						ShelterLocation = res.Location,
-						ShelterPhone = res.Phone,
-					};
+						ShelterId = s.ShelterID,
+						ShelterName = s.ShelterName,
+						ShelterLocation = s.Location,
+						ShelterPhone = s.Phone,
+					};	
 				}
 				else
-					return null; // indicates that the shelter exists
+				{
+					if ((bool)res == false)
+						return false;
+					else
+						return null;//something went wrong
+				}
 			}
 			else
-				return -1;
+				return null; // indicates that the shelter exists
 		}
 
 		public async Task<int> AssignToShelter(StaffDto staff)
 		{
-			if (await _adminRepository.ShelterExistence(new Shelter { ShelterID = staff.Shelter_FK }) == true)
-			{
-				var res = await _adminRepository.AssignToShelter(staff);
-				if (res > 0)
-				{
-					return res;
-				}
-				else
-				{
-					if (res == -1)
-					{
-						return -1; //indicates that the staff does not exist
-					}
-					else
-					{
-						return 0; //indicates that nothing changed
-					}
-				}
-			}
-			else
-				return -2; //indicates that the shelter does not exist
+			var res = await _adminRepository.AssignToShelter(staff);
+			return res;
+			//if (res > 0)
+			//{
+			//	return res;
+			//}
+			//else
+			//{
+			//	if (res == -1)
+			//	{
+			//		return -1; //indicates that the staff does not exist
+			//	}
+			//	else if (res == -2)
+			//	{
+			//		return -2; //indicates that the shelter does not exist
+			//	}
+			//	else
+			//	{
+			//		return 0; //indicates that nothing changed
+			//	}
+			//}
 		}
 
 		public async Task<object> ShowShelter(int? id = 0)
@@ -323,10 +323,10 @@ namespace PetShelter.Services
 		//		return null; //indicates that there are no shelters
 		//}
 
-		public async Task<int> deleteShelter(Shelter shelter)
+		public async Task<int> deleteShelter(ShelterDto shelter)
 		{
-			await _adminRepository.UnassignFromShelter(shelter.ShelterID);
-			await _adminRepository.deleteCategory(null,true,shelter.ShelterID);
+			//await _adminRepository.UnassignFromShelter(shelter.ShelterID);
+			//await _adminRepository.deleteCategory(null,true,shelter.ShelterID);
 			return await _adminRepository.DeleteShelter(shelter);
 		}
 

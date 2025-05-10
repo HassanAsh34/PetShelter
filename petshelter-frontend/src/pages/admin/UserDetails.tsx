@@ -36,14 +36,16 @@ const AdminType = {
 
 interface UserDetailsProps {
   userId: number;
+  userRole: number;
   open: boolean;
   onClose: () => void;
+  isProfileView?: boolean;
 }
 
-const UserDetails = ({ userId, open, onClose }: UserDetailsProps) => {
+const UserDetails = ({ userId, userRole, open, onClose, isProfileView = false }: UserDetailsProps) => {
   const { data: user, isLoading, error } = useQuery({
-    queryKey: ['user', userId],
-    queryFn: () => adminApi.getUserDetails(userId),
+    queryKey: ['user', userId, userRole],
+    queryFn: () => adminApi.getUserDetails(userId, userRole),
     enabled: open,
   });
 
@@ -96,7 +98,23 @@ const UserDetails = ({ userId, open, onClose }: UserDetailsProps) => {
   const handleBanUser = async () => {
     if (!user) return;
     try {
-      await adminApi.banUser({ id: userId, role: user.role });
+      await adminApi.banUser({
+        id: userId,
+        role: userRole,
+        uname: user.uname,
+        email: user.email,
+        activated: user.activated,
+        banned: true,
+        ...(user.role === 0 && { adminType: user.adminType }),
+        ...(user.role === 1 && { 
+          phone: user.phone,
+          address: user.address 
+        }),
+        ...(user.role === 2 && { 
+          staffType: user.staffType,
+          phone: user.phone 
+        })
+      });
       onClose();
     } catch (error) {
       console.error('Error banning user:', error);
@@ -106,7 +124,23 @@ const UserDetails = ({ userId, open, onClose }: UserDetailsProps) => {
   const handleUnbanUser = async () => {
     if (!user) return;
     try {
-      await adminApi.unbanUser({ id: userId, role: user.role });
+      await adminApi.unbanUser({
+        id: userId,
+        role: userRole,
+        uname: user.uname,
+        email: user.email,
+        activated: user.activated,
+        banned: false,
+        ...(user.role === 0 && { adminType: user.adminType }),
+        ...(user.role === 1 && { 
+          phone: user.phone,
+          address: user.address 
+        }),
+        ...(user.role === 2 && { 
+          staffType: user.staffType,
+          phone: user.phone 
+        })
+      });
       onClose();
     } catch (error) {
       console.error('Error unbanning user:', error);
@@ -116,20 +150,26 @@ const UserDetails = ({ userId, open, onClose }: UserDetailsProps) => {
   const handleActivateUser = async () => {
     if (!user) return;
     try {
-      await adminApi.activateUser({ id: userId, role: user.role });
+      await adminApi.toggleActivation({
+        id: userId,
+        role: userRole,
+        uname: user.uname,
+        email: user.email,
+        activated: user.activated === 1 ? 0 : 1,
+        banned: user.banned,
+        ...(user.role === 0 && { adminType: user.adminType }),
+        ...(user.role === 1 && { 
+          phone: user.phone,
+          address: user.address 
+        }),
+        ...(user.role === 2 && { 
+          staffType: user.staffType,
+          phone: user.phone 
+        })
+      });
       onClose();
     } catch (error) {
-      console.error('Error activating user:', error);
-    }
-  };
-
-  const handleDeactivateUser = async () => {
-    if (!user) return;
-    try {
-      await adminApi.deactivateUser({ id: userId, role: user.role });
-      onClose();
-    } catch (error) {
-      console.error('Error deactivating user:', error);
+      console.error('Error toggling user activation:', error);
     }
   };
 
@@ -205,25 +245,25 @@ const UserDetails = ({ userId, open, onClose }: UserDetailsProps) => {
         </Box>
       </DialogContent>
       <DialogActions>
-        {user.banned ? (
-          <Button onClick={handleUnbanUser} color="success">
-            Unban User
-          </Button>
+        {isProfileView ? (
+          <Button onClick={onClose} color="primary">Close</Button>
         ) : (
-          <Button onClick={handleBanUser} color="error">
-            Ban User
-          </Button>
+          <>
+            <Button onClick={() => {/* TODO: handle edit */}} color="primary">Edit</Button>
+            <Button onClick={() => {/* TODO: handle delete */}} color="error">Delete</Button>
+            {user.banned ? (
+              <Button onClick={handleUnbanUser} color="success">Unban</Button>
+            ) : (
+              <Button onClick={handleBanUser} color="error">Ban</Button>
+            )}
+            {user.activated === 1 ? (
+              <Button onClick={handleActivateUser} color="warning">Deactivate</Button>
+            ) : (
+              <Button onClick={handleActivateUser} color="success">Activate</Button>
+            )}
+            <Button onClick={onClose}>Close</Button>
+          </>
         )}
-        {user.activated === 1 ? (
-          <Button onClick={handleDeactivateUser} color="warning">
-            Deactivate User
-          </Button>
-        ) : (
-          <Button onClick={handleActivateUser} color="success">
-            Activate User
-          </Button>
-        )}
-        <Button onClick={onClose}>Close</Button>
       </DialogActions>
     </Dialog>
   );

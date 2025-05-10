@@ -12,12 +12,14 @@ namespace PetShelter.Repository
 	{
 		private readonly Db_Context _context;
 		private readonly UserRepository _userRepository;
-
-		public AdminRepository(Db_Context context, UserRepository userRepository)
+		private readonly ShelterRepository _shelterRepository;
+		private readonly StatsRepository _statsRepository;
+		public AdminRepository(Db_Context context, UserRepository userRepository,ShelterRepository shelterRepository,StatsRepository stats)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
 			_userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-
+			_shelterRepository = shelterRepository ?? throw new ArgumentNullException(nameof(shelterRepository));
+			_statsRepository = stats ?? throw new ArgumentNullException(nameof(stats));
 		}
 
 		//public async Task<IEnumerable<UserDto>> GetUsers(bool UnassignedStaff)
@@ -305,8 +307,7 @@ namespace PetShelter.Repository
 
 		public async Task<List<ShelterCategory>> ListShelterCategories(int ? id = 0,CategoryDto ? category = null)
 		{
-			List<ShelterCategory> shelterCategories = await _context.Categories.Include(c=>c.Shelter).Include(c=>c.Animal).Where(c=>!c.CategoryName.ToLower().Contains("unset") && (id == 0 || c.Shelter_FK == id )).ToListAsync();
-			return shelterCategories;
+			return await _shelterRepository.ListShelterCategories(id, category);
 		}
 
 		//public async Task<ShelterCategory> GetCategories(ShelterCategory Category)
@@ -317,141 +318,43 @@ namespace PetShelter.Repository
 		//categories
 		public async Task<object> addCategory(ShelterCategory shelterCategory)
 		{
-			var res = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryName.ToLower().Contains(shelterCategory.CategoryName.ToLower()) && c.Shelter_FK == shelterCategory.Shelter_FK);
-			if (res == null)
-			{
-				await _context.Categories.AddAsync(shelterCategory);
-				await _context.SaveChangesAsync();
-				return shelterCategory;
-			}
-			else
-				return 0; //which means that category exists
+			return await _shelterRepository.addCategory(shelterCategory);
 		}
 		public async Task<int> EditCategory(ShelterCategory category)
 		{
-			ShelterCategory shelterCategory = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == category.CategoryId);
-			if (shelterCategory == null)
-			{
-				return -1; //incase not found
-			}
-			else
-			{
-				//shelterCategory.CategoryDescription = category.CategoryDescription;
-				shelterCategory.CategoryName = category.CategoryName;
-				return await _context.SaveChangesAsync(); // number of records changed 
-			}
+			return await _shelterRepository.EditCategory(category);
 		}
 
 		public async Task<int> deleteCategory(ShelterCategory? category = null, bool? all = false, int? shelterID = 0)
 		{
-			if (all == true && shelterID != 0)
-			{
-				var allCategories = await _context.Categories.Where(c => c.Shelter_FK == shelterID).ToListAsync();
-				if (allCategories.Any())
-				{
-					_context.Categories.RemoveRange(allCategories);
-					return await _context.SaveChangesAsync();
-				}
-				return 0; // nothing to delete
-			}
-
-			if (category != null)
-			{
-				ShelterCategory res = await _context.Categories.Include(c => c.Animal).Include(c => c.Shelter).FirstOrDefaultAsync(c => c.CategoryId == category.CategoryId);
-
-				if (res != null)
-				{
-					List<Animal> animals = res.Animal;
-					Shelter shelter = res.Shelter;
-					ShelterCategory cat = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryName.ToLower().Contains($"{shelter.ShelterName}-Unset"));
-					animals.ForEach(async a =>
-					{
-						if (a.Adoption_State == (int)Animal.AdoptionState.Adopted)
-						{
-							//a.Shelter_FK = deleted.ShelterID;
-							a.Category_FK = cat.CategoryId;
-						}
-						else
-						{
-							_context.RemoveRange(await _context.AdoptionRequest.Where(r => r.PetId_FK == a.id).ToListAsync());
-							_context.Remove(a);
-						}
-					});
-					_context.Categories.Remove(res);
-					return await _context.SaveChangesAsync();
-				}
-			}
-
-			return -1; // category not found
+			return await _shelterRepository.deleteCategory(category, all, shelterID);
 		}
 
 
 		//shelter
-		public async Task<bool> ShelterExistence(Shelter shelter)
+		//public async Task<bool> ShelterExistence(Shelter shelter)
+		//{
+		//	var res = await _context.Shelters.FirstOrDefaultAsync(a => a.ShelterName.ToLower() == (shelter.ShelterName != null ? shelter.ShelterName.ToLower() : "") || a.ShelterID == shelter.ShelterID);
+		//	if (res != null)
+		//	{
+		//		return true;
+		//	}
+		//	else
+		//		return false;
+		//}
+		public async Task<object> AddShelter(Shelter shelter)
 		{
-			var res = await _context.Shelters.FirstOrDefaultAsync(a => a.ShelterName.ToLower() == (shelter.ShelterName != null ? shelter.ShelterName.ToLower() : "") || a.ShelterID == shelter.ShelterID);
-			if (res != null)
-			{
-				return true;
-			}
-			else
-				return false;
-		}
-		public async Task<Shelter> AddShelter(Shelter shelter)
-		{
-			if (shelter != null)
-			{
-				Shelter s = _context.Shelters.Add(shelter).Entity;
-				await _context.SaveChangesAsync();
-				ShelterCategory category = new ShelterCategory()
-				{
-					Shelter_FK = shelter.ShelterID,
-					CategoryName = $"{shelter.ShelterName}-Unset"
-					
-				};
-				_context.Add(category);
-				await _context.SaveChangesAsync();
-				return shelter;
-			}
-			else
-				return null;
+			return await _shelterRepository.AddShelter(shelter);
 		}
 
 		public async Task<int> AssignToShelter(StaffDto staff)
 		{
-			ShelterStaff s = await _context.Staff.FirstOrDefaultAsync(s => s.Id == staff.Id);
-			if (s != null)
-			{
-				s.Shelter_FK = staff.Shelter_FK;
-				s.HiredDate = DateOnly.FromDateTime(DateTime.Now);
-				return await _context.SaveChangesAsync();
-			}
-			else
-				return -1;//indicates that the staff does not exist
+			return await _shelterRepository.AssignToShelter(staff);
 		}
 
 		public async Task<object> ShowShelter(int ? id = 0)
 		{
-			if(id!=0)
-			{
-				Shelter shelter = await _context.Shelters
-					.Include(s => s.Staff)
-					.Include(s => s.Category)
-					.FirstOrDefaultAsync(s => s.ShelterID == id);
-				if(shelter != null)
-				{
-					return shelter;
-				}
-				else
-					return null; //indicates that the shelter does not exist
-			}
-			else
-			{
-                return await _context.Shelters.Where(s=>!s.ShelterName.ToLower().Contains("deleted")&& !s.ShelterName.ToLower().Contains("unassigned"))
-					.Include(s => s.Staff)
-					.Include(s => s.Category)
-					.ToListAsync();
-            }
+			return await _shelterRepository.ShowShelter(id);
 		}
 
 		//public async Task<IEnumerable<Shelter>> ListShelters()
@@ -459,95 +362,19 @@ namespace PetShelter.Repository
 		//	return await _context.Shelters.ToListAsync();
 		//}
 
-		public async Task<int> DeleteShelter(Shelter shelter)
+		public async Task<int> DeleteShelter(ShelterDto shelter)//done
 		{
-			Shelter Shelter = await _context.Shelters.Include(s=>s.Staff).Include(s=> s.Animals).FirstOrDefaultAsync(s => s.ShelterID == shelter.ShelterID);
-			if(Shelter != null)
-			{
-				Shelter deleted = await _context.Shelters.FirstOrDefaultAsync(s => s.ShelterName.ToLower().Contains("deleted"));
-				List<Animal> animals = Shelter.Animals.ToList();
-				List<AdoptionRequest> requests = await _context.AdoptionRequest.Where(A => A.Shelter_FK == Shelter.ShelterID).ToListAsync();
-				ShelterCategory category = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryName.ToLower().Contains("unset"));
-				animals.ForEach(a =>
-				{
-					if (a.Adoption_State == (int)Animal.AdoptionState.Adopted)
-					{
-						a.Shelter_FK = deleted.ShelterID;
-						a.Category_FK = category.CategoryId;
-						requests.Where(r => r.PetId_FK == a.id).ToList().ForEach(r =>
-						{
-							if (r.Status == AdoptionRequest.AdoptionRequestStatus.Approved)
-								r.Shelter_FK = deleted.ShelterID;
-							else
-								_context.Remove(r);
-						});
-
-					}
-					else
-					{
-						_context.RemoveRange(requests.Where(r => r.PetId_FK == a.id).ToList());
-						_context.Remove(a);
-					}
-				});
-				await deleteCategory(null, true, Shelter.ShelterID);
-				_context.RemoveRange(Shelter.Staff.ToList());
-				_context.Remove(Shelter);
-				return await _context.SaveChangesAsync();
-			}
-			else
-				return -1; //indicates that the shelter does not exist
+			return await _shelterRepository.DeleteShelter(shelter); 
 		}
 
 		public async Task<int> UnassignFromShelter(int id)
 		{
-			List<ShelterStaff> s = await _context.Staff.Where(s=>s.Shelter_FK == id).ToListAsync();
-			s.ForEach(staff =>
-			{
-				staff.Shelter_FK = 1;
-			});
-			return await _context.SaveChangesAsync();
-			//else
-			//	return -1; //indicates that there is no staff in that shelter
+			return await _shelterRepository.UnassignFromShelter(id);
 		}
 
 		public async Task<DashboardStatsDto> GetDashboardStats()
 		{
-			// var startOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-			// var endOfMonth = startOfMonth.AddMonths(1).AddSeconds(-1);
-			List<Shelter> Shelters = await _context.Shelters.Include(s => s.Animals).Where(s => !s.ShelterName.ToLower().Contains("deleted") && !s.ShelterName.ToLower().Contains("unassigned")).ToListAsync();
-			List<AdoptionRequest> AdoptionReq = await _context.AdoptionRequest.Where(a => a.Approved_At != null).ToListAsync();
-			List<AdoptionRequestDto> RecentRequests = new List<AdoptionRequestDto>();
-			AdoptionReq.ForEach(r =>
-			{
-				RecentRequests.Add(new AdoptionRequestDto()
-				{
-					requestId = r.Id,
-					Adopter = new AdopterDto
-					{
-						Id = r.Adopter.Id,
-						Uname = r.Adopter.Uname
-					},
-					Animal = new AnimalDto
-					{
-						id = r.Pet.id,
-						name =r.Pet.name
-					},
-					Approved_At = r.Approved_At
-				});
-			});
-			return new DashboardStatsDto
-			{
-
-				//TotalPets = await _context.Animals.Include(s=>s.Shelter).Where(a=> ).CountAsync(),
-				//TotalPets = await _context.Animals.Include(a => a.Shelter).Where(a => !a.Shelter.ShelterName.ToLower().Contains("deleted")).CountAsync(),
-				TotalShelters = Shelters.Count(),
-				TotalUsers = await _context.Users.Where(u => u.Banned_At == null && u.Deleted_At == null).CountAsync(),
-				ActiveUsers = await _context.Users.CountAsync(u => u.Activated == 1),
-				RecentRequests = RecentRequests,
-				ApprovedAdoptions = AdoptionReq
-					.Count(),
-				TotalAdoptions = await _context.AdoptionRequest.CountAsync()
-			};
+			return await _statsRepository.GetDashboardStats(1);
 		}
 	}
 }

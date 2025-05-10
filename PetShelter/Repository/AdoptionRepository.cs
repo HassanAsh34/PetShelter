@@ -58,7 +58,7 @@ namespace PetShelter.Repository
 
 		public async Task<IEnumerable<AdoptionRequest>> AdoptionHistory(int Aid)
 		{
-			return await _context.AdoptionRequest.Include(a => a.Pet).Include(a=>a.Adopter)  // Eager load the Pet details
+			return await _context.AdoptionRequest.Include(a => a.Pet).Include(a=>a.Adopter).Include(a=>a.Shelter)  // Eager load the Pet details
 			.Where(a => a.AdopterId_FK == Aid)
 			.ToListAsync();
 		}

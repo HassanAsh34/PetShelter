@@ -80,19 +80,19 @@ namespace PetShelter.Controllers
 			}
 		}
 
-		[HttpPut("EditUserDetails")]
-		public ActionResult<object> UpdateUser([FromBody] UserDto user)
-		{
-			var res = _userService.UpdateUserDetails(user);
-			if (res != null)
-			{
-				return Ok(new {user ,message = "User Updated Successfully" });
-			}
-			else
-			{
-				return BadRequest(new { message = "updating user failed" });
-			}
-		}
+		//[HttpPut("EditUserDetails")]
+		//public ActionResult<object> UpdateUser([FromBody] UserDto user)
+		//{
+		//	var res = _userService.UpdateUserDetails(user);
+		//	if (res != null)
+		//	{
+		//		return Ok(new {user ,message = "User Updated Successfully" });
+		//	}
+		//	else
+		//	{
+		//		return BadRequest(new { message = "updating user failed" });
+		//	}
+		//}
 
 		[Authorize]
 		[HttpGet]
@@ -150,8 +150,7 @@ namespace PetShelter.Controllers
 			}
 		}
 
-		[Authorize]
-		[HttpGet("/UpdateProfile")]
+		[HttpPut("UpdateProfile")]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -162,6 +161,28 @@ namespace PetShelter.Controllers
 				return Ok(U);
 			else
 				return BadRequest(new { message = "Update Failed" });
+		}
+
+		[HttpPut("Delete-User")]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public async Task<ActionResult<bool>> DeleteUser(UserDto U)//done
+		{
+			if (U != null)
+			{
+				if (await _userService.deleteUser(U) == true)
+				{
+					return Ok(new { message = "the User was removed successfully" });
+				}
+				else
+				{
+					return BadRequest(new { message = "something went wrong" });
+				}
+			}
+			else
+				return BadRequest(new { message = "something went wrong" });
+
 		}
 	}
 }

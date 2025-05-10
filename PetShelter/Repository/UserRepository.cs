@@ -112,53 +112,64 @@ namespace PetShelter.Repository
             return null;
         }
 
-        public async Task<int> UpdateUser(UserDto user, bool ? deleted = false)
+        public async Task<int> UpdateUser(UserDto user, bool? deleted = false)
         {
-            switch (user)
+            try
             {
-                case AdminDto admin:
-                    Admin A = await _context.Admins.FirstOrDefaultAsync(A => A.Id == user.Id);
-                    //A.Role = (int)admin.Role;
-                    //A.Email = admin.Email;
-                    A.Uname = admin.Uname;
-                    A.AdminType = (int)admin.adminType;
-                    A.UpdatedAt = DateTime.Now;
-                    if(deleted == true)
-                    {
-                        A.Deleted_At = DateTime.Now;
-                    }
-                    //return await _context.SaveChangesAsync();
-                    break;
-                case StaffDto staff:
-                    ShelterStaff S = await _context.Staff.FirstOrDefaultAsync(s => s.Id == user.Id);
-                    S.Phone = staff.Phone;
-                    //S.Email = staff.Email;
-                    S.Uname = staff.Uname;
-                    S.StaffType = (int)staff.StaffType;
-                    S.UpdatedAt = DateTime.Now;
-					if (deleted == true)
-					{
-						S.Deleted_At = DateTime.Now;
-					}
-					//return await _context.SaveChangesAsync();
-					break;
-                case AdopterDto adopter:
-					Adopter a = await _context.Adopters.FirstOrDefaultAsync(a => a.Id == user.Id);
-					a.Phone = adopter.Phone;
-					a.Uname = adopter.Uname;
-					a.Address = adopter.Address;
-					a.UpdatedAt = DateTime.Now;
-					if (deleted == true)
-					{
-						a.Deleted_At = DateTime.Now;
-					}
-					//return await _context.SaveChangesAsync();
-					break;
-				default:
-                    break;
+                switch (user)
+                {
+                    case AdminDto admin:
+                        var adminUser = await _context.Admins.FirstOrDefaultAsync(A => A.Id == user.Id);
+                        if (adminUser != null)
+                        {
+                            adminUser.Uname = admin.Uname;
+                            adminUser.AdminType = (int)admin.adminType;
+                            adminUser.UpdatedAt = DateTime.Now;
+                            if (deleted == true)
+                            {
+                                adminUser.Deleted_At = DateTime.Now;
+                            }
+                        }
+                        break;
+                    case StaffDto staff:
+                        var staffUser = await _context.Staff.FirstOrDefaultAsync(s => s.Id == user.Id);
+                        if (staffUser != null)
+                        {
+                            staffUser.Phone = staff.Phone;
+                            staffUser.Uname = staff.Uname;
+                            staffUser.StaffType = (int)staff.StaffType;
+                            staffUser.UpdatedAt = DateTime.Now;
+                            if (deleted == true)
+                            {
+                                staffUser.Deleted_At = DateTime.Now;
+                            }
+                        }
+                        break;
+                    case AdopterDto adopter:
+                        var adopterUser = await _context.Adopters.FirstOrDefaultAsync(a => a.Id == user.Id);
+                        if (adopterUser != null)
+                        {
+                            adopterUser.Phone = adopter.Phone;
+                            adopterUser.Uname = adopter.Uname;
+                            adopterUser.Address = adopter.Address;
+                            adopterUser.UpdatedAt = DateTime.Now;
+                            if (deleted == true)
+                            {
+                                adopterUser.Deleted_At = DateTime.Now;
+                            }
+                        }
+                        break;
+                    default:
+                        return 0;
+                }
+                return await _context.SaveChangesAsync();
             }
-			return await _context.SaveChangesAsync();
-		}
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating user: {ex.Message}");
+                return 0;
+            }
+        }
 
         public async Task<int> DeleteUser(UserDto user)
         {
@@ -225,7 +236,9 @@ namespace PetShelter.Repository
 							Shelter = new ShelterDto
 							{
 								ShelterId = staff.Shelter.ShelterID,
-								ShelterName = staff.Shelter.ShelterName
+								ShelterName = staff.Shelter.ShelterName,
+                                ShelterLocation = staff.Shelter.Location,
+                                ShelterPhone = staff.Shelter.Phone
 							}
 						};
 					}

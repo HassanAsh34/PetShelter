@@ -23,6 +23,7 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { adminApi, authApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { parseJwt, getToken } from '../../utils/tokenUtils';
+import { Console } from 'console';
 
 // Enum mapping for user roles
 const UserRole = {
@@ -30,6 +31,8 @@ const UserRole = {
   1: 'Adopter',
   2: 'Staff'
 } as const;
+
+type UserRoleType = keyof typeof UserRole;
 
 // Enum mapping for staff types
 const StaffType = {
@@ -77,6 +80,20 @@ interface StaffUser extends BaseUser {
 interface AdopterUser extends BaseUser {
   phone: string;
   address: string;
+}
+
+interface UserDto {
+  id: number;
+  role: number;
+  uname: string;
+  email: string;
+  activated: number;
+  banned: boolean;
+  adminType?: number;
+  staffType?: number;
+  phone?: string;
+  address?: string;
+  hiredDate?: string;
 }
 
 const UserDetailsPage = () => {
@@ -146,8 +163,9 @@ const UserDetailsPage = () => {
     });
   };
 
-  const getUserTypeChip = (role: number) => {
-    const roleName = UserRole[role as keyof typeof UserRole];
+  const getUserTypeChip = (role?: number) => {
+    if (role === undefined) return null;
+    const roleName = UserRole[role as UserRoleType];
     switch (roleName) {
       case 'Admin':
         return <Chip label="Admin" color="primary" />;
@@ -202,15 +220,14 @@ const UserDetailsPage = () => {
     mutationFn: async (data: any) => {
       console.log('Updating user with data:', {
         isProfileRoute,
-        endpoint: isProfileRoute ? '/AuthApi/EditUserDetails' : '/Admin/EditUserDetails',
+        endpoint: isProfileRoute ? '/AuthApi/UpdateProfile' : '/Admin/Update-User',
         userData: data
       });
       
       if (isProfileRoute) {
         return await authApi.updateUserDetails(data);
       } else {
-        const response = await adminApi.updateUser(data);
-        return response.data;
+        return await adminApi.updateUser(data);
       }
     },
     onSuccess: () => {
@@ -225,18 +242,108 @@ const UserDetailsPage = () => {
   });
 
   const deleteUserMutation = useMutation({
-    mutationFn: (data: any) => adminApi.deleteUser(data),
+    mutationFn: (data: any) => {
+      // console.log(data);
+      return adminApi.deleteUser(data)},
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      navigate('/admin/users');
+      // Only navigate if we're not on the profile page
+      if (!isProfileRoute) {
+        navigate('/admin/users');
+      } else {
+        // If it's the user's own profile, log them out
+        authApi.logout();
+        navigate('/login');
+      }
     },
     onError: (error: any) => {
       setError(error.response?.data?.message || 'Failed to delete user');
     },
   });
 
+  const handleBanUser = async () => {
+    if (!user) return;
+    try {
+      await adminApi.banUser({
+        id: userId,
+        role: userRole,
+        uname: user.uname,
+        email: user.email,
+        activated: user.activated,
+        banned: true,
+        ...(user.role === 0 && { adminType: (user as AdminUser).adminType }),
+        ...(user.role === 1 && { 
+          phone: (user as AdopterUser).phone,
+          address: (user as AdopterUser).address 
+        }),
+        ...(user.role === 2 && { 
+          staffType: (user as StaffUser).staffType,
+          phone: (user as StaffUser).phone 
+        })
+      });
+      updateUserStatus({ banned: true });
+      queryClient.invalidateQueries({ queryKey: ['user', userId, userRole, isProfileRoute] });
+    } catch (error) {
+      console.error('Error banning user:', error);
+    }
+  };
+
+  const handleUnbanUser = async () => {
+    if (!user) return;
+    try {
+      await adminApi.unbanUser({
+        id: userId,
+        role: userRole,
+        uname: user.uname,
+        email: user.email,
+        activated: user.activated,
+        banned: false,
+        ...(user.role === 0 && { adminType: (user as AdminUser).adminType }),
+        ...(user.role === 1 && { 
+          phone: (user as AdopterUser).phone,
+          address: (user as AdopterUser).address 
+        }),
+        ...(user.role === 2 && { 
+          staffType: (user as StaffUser).staffType,
+          phone: (user as StaffUser).phone 
+        })
+      });
+      updateUserStatus({ banned: false });
+      queryClient.invalidateQueries({ queryKey: ['user', userId, userRole, isProfileRoute] });
+    } catch (error) {
+      console.error('Error unbanning user:', error);
+    }
+  };
+
+  const handleActivateUser = async () => {
+    if (!user) return;
+    try {
+      await adminApi.toggleActivation({
+        id: userId,
+        role: userRole,
+        uname: user.uname,
+        email: user.email,
+        activated: user.activated === 1 ? 0 : 1,
+        banned: user.banned,
+        ...(user.role === 0 && { adminType: (user as AdminUser).adminType }),
+        ...(user.role === 1 && { 
+          phone: (user as AdopterUser).phone,
+          address: (user as AdopterUser).address 
+        }),
+        ...(user.role === 2 && { 
+          staffType: (user as StaffUser).staffType,
+          phone: (user as StaffUser).phone 
+        })
+      });
+      updateUserStatus({ activated: user.activated === 1 ? 0 : 1 });
+      queryClient.invalidateQueries({ queryKey: ['user', userId, userRole, isProfileRoute] });
+    } catch (error) {
+      console.error('Error toggling user activation:', error);
+    }
+  };
+
   const handleEditSubmit = () => {
-    const baseDto = {
+    const baseDto: UserDto = {
       id: userId,
       role: userRole,
       uname: editedUser.uname,
@@ -245,7 +352,7 @@ const UserDetailsPage = () => {
       banned: editedUser.banned
     };
 
-    let userDto;
+    let userDto: UserDto;
     switch (userRole) {
       case 0: // Admin
         userDto = {
@@ -273,7 +380,7 @@ const UserDetailsPage = () => {
     }
 
     console.log('Sending user DTO:', {
-      role: UserRole[userRole],
+      role: UserRole[userRole as keyof typeof UserRole],
       dto: userDto
     });
 
@@ -291,17 +398,71 @@ const UserDetailsPage = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
-    deleteUserMutation.mutate({
-      id: userId,
-      role: userRole,
-      uname: user.uname,
-      email: user.email,
-      adminType: user.adminType,
-      staffType: user.staffType,
-      phone: user.phone,
-      address: user.address
-    });
+  const handleDeleteConfirm = async () => {
+    if (!user) return;
+    try {
+      console.log('Delete User - Complete User Object:', {
+        user,
+        userId,
+        userRole,
+        userType: UserRole[userRole as keyof typeof UserRole],
+        roleSpecificFields: {
+          adminType: user.role === 0 ? AdminType[user.adminType as keyof typeof AdminType] : null,
+          phone: user.role === 1 || user.role === 2 ? user.phone : null,
+          address: user.role === 1 ? user.address : null,
+          staffType: user.role === 2 ? StaffType[user.staffType as keyof typeof StaffType] : null
+        }
+      });
+
+      const userDto: UserDto = {
+        id: userId,
+        role: userRole,
+        uname: user.uname,
+        email: user.email,
+        activated: user.activated,
+        banned: user.banned,
+        ...(user.role === 0 && { adminType: user.adminType }),
+        ...(user.role === 1 && { 
+          phone: user.phone,
+          address: user.address 
+        }),
+        ...(user.role === 2 && { 
+          staffType: user.staffType,
+          phone: user.phone 
+        })
+      };
+
+      console.log('Delete User - Request DTO:', {
+        dto: userDto,
+        role: UserRole[userRole as keyof typeof UserRole],
+        roleSpecificFields: {
+          adminType: userDto.adminType !== undefined ? AdminType[userDto.adminType as keyof typeof AdminType] : null,
+          phone: userDto.phone,
+          address: userDto.address,
+          staffType: userDto.staffType !== undefined ? StaffType[userDto.staffType as keyof typeof StaffType] : null
+        }
+      });
+
+      await adminApi.deleteUser(userDto);
+  
+      queryClient.invalidateQueries({
+        queryKey: ['user', userId, userRole, isProfileRoute],
+      });
+
+      // Close the delete dialog
+      setIsDeleteDialogOpen(false);
+      
+      // Navigate to users list page
+      navigate('/admin/users');
+    } catch (error: any) {
+      console.error('Error deleting user:', {
+        error,
+        response: error.response?.data,
+        status: error.response?.status,
+        message: error.message
+      });
+      setError(error.response?.data?.message || 'Failed to delete user');
+    }
   };
 
   const handleBackClick = () => {
@@ -395,7 +556,7 @@ const UserDetailsPage = () => {
               </Grid>
             </Grid>
 
-            {user.shelter && user.shelter.shelterName !== 'Unassigned' && (
+            {user.shelter && (
               <Grid item xs={12}>
                 <Typography variant="subtitle1" gutterBottom>
                   Shelter Information
@@ -587,33 +748,7 @@ const UserDetailsPage = () => {
                     <Button
                       variant="contained"
                       color="success"
-                      onClick={async () => {
-                        try {
-                          const response = await adminApi.unbanUser({
-                            id: userId,
-                            role: userRole,
-                            uname: user.uname,
-                            email: user.email,
-                            ...(user.role === 0 && { adminType: (user as AdminUser).adminType }),
-                            ...(user.role === 1 && { 
-                              phone: (user as AdopterUser).phone,
-                              address: (user as AdopterUser).address 
-                            }),
-                            ...(user.role === 2 && { 
-                              staffType: (user as StaffUser).staffType,
-                              phone: (user as StaffUser).phone 
-                            })
-                          });
-                          if (response) {
-                            updateUserStatus({ banned: false, activated: 1 });
-                            queryClient.invalidateQueries({ queryKey: ['user', userId, userRole, isProfileRoute] });
-                            alert('User unbanned successfully');
-                          }
-                        } catch (error) {
-                          console.error('Error unbanning user:', error);
-                          alert('Failed to unban user');
-                        }
-                      }}
+                      onClick={handleUnbanUser}
                     >
                       Unban User
                     </Button>
@@ -621,33 +756,7 @@ const UserDetailsPage = () => {
                     <Button
                       variant="contained"
                       color="error"
-                      onClick={async () => {
-                        try {
-                          const response = await adminApi.banUser({
-                            id: userId,
-                            role: userRole,
-                            uname: user.uname,
-                            email: user.email,
-                            ...(user.role === 0 && { adminType: (user as AdminUser).adminType }),
-                            ...(user.role === 1 && { 
-                              phone: (user as AdopterUser).phone,
-                              address: (user as AdopterUser).address 
-                            }),
-                            ...(user.role === 2 && { 
-                              staffType: (user as StaffUser).staffType,
-                              phone: (user as StaffUser).phone 
-                            })
-                          });
-                          if (response) {
-                            updateUserStatus({ banned: true, activated: 2 });
-                            queryClient.invalidateQueries({ queryKey: ['user', userId, userRole, isProfileRoute] });
-                            alert('User banned successfully');
-                          }
-                        } catch (error) {
-                          console.error('Error banning user:', error);
-                          alert('Failed to ban user');
-                        }
-                      }}
+                      onClick={handleBanUser}
                     >
                       Ban User
                     </Button>
@@ -656,33 +765,7 @@ const UserDetailsPage = () => {
                     <Button
                       variant="contained"
                       color="warning"
-                      onClick={async () => {
-                        try {
-                          const response = await adminApi.deactivateUser({
-                            id: userId,
-                            role: userRole,
-                            uname: user.uname,
-                            email: user.email,
-                            ...(user.role === 0 && { adminType: (user as AdminUser).adminType }),
-                            ...(user.role === 1 && { 
-                              phone: (user as AdopterUser).phone,
-                              address: (user as AdopterUser).address 
-                            }),
-                            ...(user.role === 2 && { 
-                              staffType: (user as StaffUser).staffType,
-                              phone: (user as StaffUser).phone 
-                            })
-                          });
-                          if (response) {
-                            updateUserStatus({ activated: 0 });
-                            queryClient.invalidateQueries({ queryKey: ['user', userId, userRole, isProfileRoute] });
-                            alert('User deactivated successfully');
-                          }
-                        } catch (error) {
-                          console.error('Error deactivating user:', error);
-                          alert('Failed to deactivate user');
-                        }
-                      }}
+                      onClick={handleActivateUser}
                     >
                       Deactivate User
                     </Button>
@@ -690,33 +773,7 @@ const UserDetailsPage = () => {
                     <Button
                       variant="contained"
                       color="success"
-                      onClick={async () => {
-                        try {
-                          const response = await adminApi.activateUser({
-                            id: userId,
-                            role: userRole,
-                            uname: user.uname,
-                            email: user.email,
-                            ...(user.role === 0 && { adminType: (user as AdminUser).adminType }),
-                            ...(user.role === 1 && { 
-                              phone: (user as AdopterUser).phone,
-                              address: (user as AdopterUser).address 
-                            }),
-                            ...(user.role === 2 && { 
-                              staffType: (user as StaffUser).staffType,
-                              phone: (user as StaffUser).phone 
-                            })
-                          });
-                          if (response) {
-                            updateUserStatus({ activated: 1 });
-                            queryClient.invalidateQueries({ queryKey: ['user', userId, userRole, isProfileRoute] });
-                            alert('User activated successfully');
-                          }
-                        } catch (error) {
-                          console.error('Error activating user:', error);
-                          alert('Failed to activate user');
-                        }
-                      }}
+                      onClick={handleActivateUser}
                     >
                       Activate User
                     </Button>
@@ -748,10 +805,10 @@ const UserDetailsPage = () => {
                 fullWidth
                 label="Email"
                 value={editedUser?.email || ''}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                disabled
                 margin="normal"
               />
-              {userRole === 0 && (
+              {!isProfileRoute && userRole === 0 && (
                 <TextField
                   fullWidth
                   select
@@ -767,7 +824,7 @@ const UserDetailsPage = () => {
                   ))}
                 </TextField>
               )}
-              {userRole === 2 && (
+              {!isProfileRoute && userRole === 2 && (
                 <>
                   <TextField
                     fullWidth

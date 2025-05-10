@@ -44,7 +44,7 @@ namespace PetShelter.Controllers
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		public async Task<ActionResult<AdoptionRequestDto>> Adopt([FromBody] AdoptionRequest adoption)//done
 		{
-				var res = await _adoptionServices.Adopt(adoption);
+			var res = await _adoptionServices.Adopt(adoption);
 			switch(res)
 			{
 				case >0:
@@ -59,17 +59,29 @@ namespace PetShelter.Controllers
 		[HttpGet("Adoption-History")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		public async Task<ActionResult<IEnumerable<AdoptionRequestDto>>> AdoptionHistory()//done
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public async Task<ActionResult<IEnumerable<AdoptionRequestDto>>> AdoptionHistory()
 		{
-			var Aid = int.Parse(User.FindFirst("Id")?.Value);
-			var history = await _adoptionServices.AdoptionHistory(Aid);
-			if (history == null)
+			try
 			{
-				return NotFound();
-			}
-			else
-			{
+				// Get the user ID from the token
+				var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+				if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int adopterId))
+				{
+					return Unauthorized(new { message = "Invalid user ID in token" });
+				}
+
+				var history = await _adoptionServices.AdoptionHistory(adopterId);
+				if (history == null)
+				{
+					return Ok(new List<AdoptionRequestDto>());
+				}
+
 				return Ok(history);
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { message = "An error occurred while fetching adoption history", error = ex.Message });
 			}
 		}
 

@@ -84,44 +84,40 @@ interface ShelterDetails {
 const Shelters = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [shelters, setShelters] = useState<Shelter[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchShelters = async () => {
-      try {
-        const data = await adminApi.getShelters();
-        setShelters(data);
-        setError(null);
-      } catch (err) {
-        const error = err as ApiError;
-        setError(error.response?.data?.message || 'Failed to fetch shelters');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data: shelters = [], isLoading } = useQuery<Shelter[]>({
+    queryKey: ['shelters'],
+    queryFn: adminApi.getShelters,
+    staleTime: 30000, // 30 seconds
+    gcTime: 300000, // 5 minutes
+  });
 
-    fetchShelters();
-  }, []);
+  const deleteShelterMutation = useMutation({
+    mutationFn: (shelter: Shelter) => {
+      // const dto = {
+      //   shelterId: shelter.shelterId,
+      //   shelterName: shelter.shelterName
+      // };
+      return adminApi.deleteShelter(shelter);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shelters'] });
+    }
+  });
 
-  const handleViewDetails = (shelterId: number) => {
-    navigate(`/admin/shelters/${shelterId}`);
+  const handleViewDetails = (shelter: Shelter) => {
+    navigate(`/admin/shelters/${shelter.shelterId}`);
   };
 
-  const handleViewCategories = (shelterId: number) => {
-    navigate(`/admin/categories?shelterId=${shelterId}`);
+  const handleViewCategories = (shelter: Shelter) => {
+    navigate(`/admin/categories?shelterId=${shelter.shelterId}`);
   };
 
-  const handleDeleteShelter = async (shelterId: number) => {
+  const handleDeleteShelter = async (shelter: Shelter) => {
     if (window.confirm('Are you sure you want to delete this shelter? This action cannot be undone.')) {
-      try {
-        await adminApi.deleteShelter(shelterId);
-        setShelters(shelters.filter(shelter => shelter.shelterId !== shelterId));
-      } catch (err) {
-        const error = err as ApiError;
-        setError(error.response?.data?.message || 'Failed to delete shelter');
-      }
+      deleteShelterMutation.mutate(shelter);
     }
   };
 
@@ -129,7 +125,7 @@ const Shelters = () => {
     navigate('/admin/shelters/add');
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <CircularProgress />
@@ -147,20 +143,18 @@ const Shelters = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
           Shelters
         </Typography>
-        {user?.adminType === 0 && (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddShelter}
-            startIcon={<AddIcon />}
-          >
-            Add Shelter
-          </Button>
-        )}
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={handleAddShelter}
+        >
+          Add Shelter
+        </Button>
       </Box>
 
       <TableContainer component={Paper}>
@@ -175,7 +169,7 @@ const Shelters = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {shelters.map((shelter) => (
+            {shelters?.map((shelter: Shelter) => (
               <TableRow key={shelter.shelterId}>
                 <TableCell>{shelter.shelterName}</TableCell>
                 <TableCell>{shelter.shelterLocation}</TableCell>
@@ -183,33 +177,20 @@ const Shelters = () => {
                 <TableCell>{shelter.countStaff}</TableCell>
                 <TableCell>
                   <Tooltip title="View Details">
-                    <IconButton
-                      onClick={() => handleViewDetails(shelter.shelterId)}
-                      color="primary"
-                      sx={{ mr: 1 }}
-                    >
+                    <IconButton onClick={() => handleViewDetails(shelter)} color="primary">
                       <ViewIcon />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="View Categories">
-                    <IconButton
-                      onClick={() => handleViewCategories(shelter.shelterId)}
-                      color="secondary"
-                      sx={{ mr: 1 }}
-                    >
+                    <IconButton onClick={() => handleViewCategories(shelter)} color="secondary">
                       <CategoryIcon />
                     </IconButton>
                   </Tooltip>
-                  {user?.adminType === 0 && (
-                    <Tooltip title="Delete Shelter">
-                      <IconButton
-                        onClick={() => handleDeleteShelter(shelter.shelterId)}
-                        color="error"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  )}
+                  <Tooltip title="Delete Shelter">
+                    <IconButton onClick={() => handleDeleteShelter(shelter)} color="error">
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
                 </TableCell>
               </TableRow>
             ))}

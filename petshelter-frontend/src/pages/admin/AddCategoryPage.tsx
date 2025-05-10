@@ -13,7 +13,7 @@ import {
   MenuItem
 } from '@mui/material';
 import { ArrowBack as BackIcon } from '@mui/icons-material';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -31,6 +31,7 @@ const AddCategoryPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [shelters, setShelters] = useState<Shelter[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<AddCategoryData>({
@@ -75,6 +76,8 @@ const AddCategoryPage = () => {
   const addCategoryMutation = useMutation({
     mutationFn: (data: AddCategoryData) => adminApi.addCategory(data),
     onSuccess: () => {
+      // Invalidate and refetch categories for the specific shelter
+      queryClient.invalidateQueries({ queryKey: ['categories', shelterId] });
       navigate(`/admin/categories${shelterId ? `?shelterId=${shelterId}` : ''}`);
     },
     onError: (error: any) => {

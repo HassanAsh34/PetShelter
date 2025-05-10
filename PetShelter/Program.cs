@@ -11,6 +11,7 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
 using PetShelter.Hubs;
+using PetShelter.Converters;
 
 public class Program
 {
@@ -28,6 +29,8 @@ public class Program
 		builder.Services.AddScoped<AdoptionRepository>();
 		builder.Services.AddScoped<AdoptionServices>();
 		builder.Services.AddScoped<SeedRepository>();
+		builder.Services.AddScoped<StatsRepository>();
+		builder.Services.AddScoped<ShelterRepository>();
 
 		//builder.Services.AddScoped<Db_Context>();
 		// Configure JWT options
@@ -44,6 +47,7 @@ public class Program
 		{
 			options.JsonSerializerOptions.Converters.Add(new UserConvertor());
 			options.JsonSerializerOptions.Converters.Add(new UserDtoCovertor());
+			options.JsonSerializerOptions.Converters.Add(new ShelterConverter());
 		});
 
 		//cors origin

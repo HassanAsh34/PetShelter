@@ -19,13 +19,14 @@ import {
   Person,
   ExitToApp,
   Dashboard,
+  History as HistoryIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 
 const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isAuthenticated, isAdmin, isShelterStaff, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, isShelterStaff, isAdopter, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [showDashboard, setShowDashboard] = useState(false);
 
@@ -55,7 +56,12 @@ const Navigation = () => {
 
   const handleDashboard = () => {
     handleClose();
-    navigate(isAdmin ? '/admin' : '/shelter-staff', { replace: true });
+    navigate(isAdmin ? '/admin' : '/staff/dashboard', { replace: true });
+  };
+
+  const handleAdoptionHistory = () => {
+    handleClose();
+    navigate('/adoption-history');
   };
 
   return (
@@ -95,6 +101,16 @@ const Navigation = () => {
                 sx={{ mr: 2 }}
               >
                 Dashboard
+              </Button>
+            )}
+            {isAdopter && (
+              <Button
+                color="inherit"
+                startIcon={<HistoryIcon />}
+                onClick={handleAdoptionHistory}
+                sx={{ mr: 2 }}
+              >
+                Adoption History
               </Button>
             )}
             <Tooltip title="Account settings">
