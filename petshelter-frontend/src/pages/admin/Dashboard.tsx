@@ -19,18 +19,21 @@ import {
   Alert,
 } from '@mui/material';
 import {
-  Pets,
+  Chat as ChatIcon,
   People,
   Business,
   Assessment,
   ExitToApp,
   Menu as MenuIcon,
+  Pets,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../../services/api';
 import UserRegistrationNotification from '../../components/UserRegistrationNotification';
+import DashboardStatsHub from '../../components/DashboardStatsHub';
+import { DashboardStatsDto } from '../../types';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -53,6 +56,11 @@ const AdminDashboard = () => {
     refetchIntervalInBackground: false,
   });
 
+  // Handle real-time stats updates
+  const handleStatsUpdate = (newStats: DashboardStatsDto) => {
+    queryClient.setQueryData(['dashboardStats'], newStats);
+  };
+
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
@@ -61,8 +69,8 @@ const AdminDashboard = () => {
   const menuItems = [
     { text: 'Shelters', icon: <Business />, path: '/admin/shelters' },
     { text: 'Users', icon: <People />, path: '/admin/users' },
-    { text: 'Pets', icon: <Pets />, path: '/admin/pets' },
-    { text: 'Reports', icon: <Assessment />, path: '/admin/reports' },
+    { text: 'Chat', icon: <ChatIcon />, path: '/admin/chat' },
+    { text: 'Reports', icon: <Assessment />, path: '/admin' },
   ];
 
   const handleLogout = () => {
@@ -73,6 +81,7 @@ const AdminDashboard = () => {
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <UserRegistrationNotification />
+      <DashboardStatsHub onStatsUpdate={handleStatsUpdate} />
       {/* Top AppBar */}
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
@@ -89,7 +98,7 @@ const AdminDashboard = () => {
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Typography variant="body2">
-              Welcome, {user?.firstName} {user?.lastName}
+              Welcome, {user?.uname}
             </Typography>
             <IconButton color="inherit" onClick={handleLogout}>
               <ExitToApp />

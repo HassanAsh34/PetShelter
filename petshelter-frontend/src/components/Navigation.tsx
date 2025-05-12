@@ -20,6 +20,7 @@ import {
   ExitToApp,
   Dashboard,
   History as HistoryIcon,
+  Chat as ChatIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -104,14 +105,24 @@ const Navigation = () => {
               </Button>
             )}
             {isAdopter && (
-              <Button
-                color="inherit"
-                startIcon={<HistoryIcon />}
-                onClick={handleAdoptionHistory}
-                sx={{ mr: 2 }}
-              >
-                Adoption History
-              </Button>
+              <>
+                <Button
+                  color="inherit"
+                  startIcon={<HistoryIcon />}
+                  onClick={handleAdoptionHistory}
+                  sx={{ mr: 2 }}
+                >
+                  Adoption History
+                </Button>
+                <Button
+                  color="inherit"
+                  startIcon={<ChatIcon />}
+                  onClick={() => navigate('/talk-to-admin')}
+                  sx={{ mr: 2 }}
+                >
+                  Talk to Admin
+                </Button>
+              </>
             )}
             <Tooltip title="Account settings">
               <IconButton onClick={handleMenu} sx={{ p: 0 }}>

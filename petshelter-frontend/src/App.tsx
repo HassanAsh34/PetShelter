@@ -22,6 +22,8 @@ import StaffDashboard from './pages/staff/StaffDashboard';
 import StaffPetsList from './pages/staff/StaffPetsList';
 import StaffAdoptionRequests from './pages/staff/StaffAdoptionRequests';
 import AddPetPage from './pages/staff/AddPetPage';
+import AdminChat from './pages/admin/Chat';
+import TalkToAdmin from './pages/user/TalkToAdmin';
 
 // Protected Route Component
 const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
@@ -189,6 +191,14 @@ function App() {
             }
           />
           <Route
+            path="/admin/chat"
+            element={
+              <ProtectedAdminRoute>
+                <AdminChat />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
             path="/staff/dashboard"
             element={
               <ProtectedStaffRoute>
@@ -218,6 +228,14 @@ function App() {
               <ProtectedStaffRoute>
                 <AddPetPage />
               </ProtectedStaffRoute>
+            }
+          />
+          <Route
+            path="/talk-to-admin"
+            element={
+              <ProtectedAdopterRoute>
+                <TalkToAdmin />
+              </ProtectedAdopterRoute>
             }
           />
         </Routes>

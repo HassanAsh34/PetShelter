@@ -20,6 +20,8 @@ namespace PetShelter.Data
 		public DbSet<Shelter> Shelters { get; set; }
 		public DbSet<ShelterCategory> Categories { get; set; }
 
+		public DbSet<MessageModel> Messages { get; set; }
+
 		public DbSet<Interview> Interviews { get; set; } // Added DbSet for Interview
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -87,6 +89,8 @@ namespace PetShelter.Data
 			.WithOne()
 			.HasForeignKey<Interview>(i => i.AdoptionRequest_fk)
 			.OnDelete(DeleteBehavior.Cascade);
+
+			modelBuilder.Entity<MessageModel>();
 		}
 	}
 }

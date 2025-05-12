@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getToken, removeToken, parseJwt } from '../utils/tokenUtils';
 import AdoptionRequestsButton from '../components/AdoptionRequestsButton';
+import { MessageModel } from '../types';
 
 interface UserDto {
   id: number;
@@ -98,6 +99,12 @@ export const animalsApi = {
   getAdoptionHistory: () => {
     return api.get('/Adoption/Adoption-History').then((res) => res.data);
   },
+};
+
+export const chatApi = {
+  getMessages: () => api.get('/Chat/GetChats').then((res) => res.data),
+  sendMessage: (message: MessageModel) =>
+    api.post('/Chat/sendMessage', message).then((res) => res.data),
 };
 
 export const adminApi = {

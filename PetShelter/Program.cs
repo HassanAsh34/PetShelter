@@ -31,6 +31,9 @@ public class Program
 		builder.Services.AddScoped<SeedRepository>();
 		builder.Services.AddScoped<StatsRepository>();
 		builder.Services.AddScoped<ShelterRepository>();
+		builder.Services.AddScoped<ChatRepository>();
+		builder.Services.AddScoped<ChatServices>();
+		//builder.Services.AddScoped<ChatHub>();
 
 		//builder.Services.AddScoped<Db_Context>();
 		// Configure JWT options
@@ -128,6 +131,8 @@ public class Program
 		
 		// Add SignalR hub endpoints
 		app.MapHub<UserNotificationHub>("/userNotificationHub");
+		app.MapHub<DashboardHub>("/dashboardHub");
+		app.MapHub<ChatHub>("/chatHub");
 
 		using (var scope = app.Services.CreateScope())
 		{

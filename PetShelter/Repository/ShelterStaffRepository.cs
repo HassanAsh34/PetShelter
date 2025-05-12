@@ -303,7 +303,7 @@ namespace PetShelter.Repository
 
 		public async Task<IEnumerable<AdoptionRequest>> ListAdoptionRequests(int shelterID)
 		{
-			IEnumerable<AdoptionRequest> requests = await _context.AdoptionRequest.Include(ar=>ar.Shelter).Include(ar => ar.Adopter).Include(ar => ar.Pet).ToListAsync();
+			IEnumerable<AdoptionRequest> requests = await _context.AdoptionRequest.Include(ar=>ar.Shelter).Include(ar => ar.Adopter).Include(ar => ar.Pet).Where(s=>s.Shelter_FK==shelterID).ToListAsync();
 			if(requests.Count()!=0)
 			{
 				return requests;
