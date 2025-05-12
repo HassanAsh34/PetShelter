@@ -25,9 +25,10 @@ import {
   FormControl,
   InputLabel,
   Select,
-  Grid
+  Grid,
+  InputAdornment,
 } from '@mui/material';
-import { Visibility as ViewIcon, Add as AddIcon } from '@mui/icons-material';
+import { Visibility as ViewIcon, Add as AddIcon, Visibility, VisibilityOff } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -104,6 +105,7 @@ const Users = () => {
     role: ''
   });
   const [shelters, setShelters] = useState<Array<{ id: number; name: string }>>([]);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { data: users, isLoading, error: queryError } = useQuery({
     queryKey: ['users'],
@@ -257,6 +259,14 @@ const Users = () => {
       ...prev,
       [field]: event.target.value
     }));
+  };
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
   };
 
   const filteredUsers = users?.filter(user => {
@@ -423,13 +433,27 @@ const Users = () => {
             <TextField
               fullWidth
               label="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={newUser.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
               margin="normal"
               required
               error={error?.includes('Password')}
               helperText={error?.includes('Password') ? 'Password must contain at least 8 characters, 1 capital letter, and 1 number' : ''}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={handleMouseDownPassword}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <TextField
               fullWidth

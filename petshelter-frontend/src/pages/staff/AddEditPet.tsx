@@ -63,7 +63,7 @@ const AddEditPet = () => {
         name: petDetails.name,
         breed: petDetails.breed,
         age: petDetails.age,
-        categoryId: petDetails.categoryId,
+        categoryId: petDetails.shelterCategory.categoryId,
         medication_history: petDetails.medication_history || '',
       });
     }
@@ -82,7 +82,15 @@ const AddEditPet = () => {
   });
 
   const updatePetMutation = useMutation({
-    mutationFn: (data: PetFormData) => staffApi.updatePet({ ...data, id: Number(petId) }),
+    mutationFn: (data: PetFormData) => staffApi.updatePet({
+      id: Number(petId),
+      name: data.name,
+      breed: data.breed,
+      age: data.age,
+      Category_FK: data.categoryId,
+      medication_history: data.medication_history,
+      Adoption_State: petDetails?.Adoption_State || 2 // Keep the current adoption state
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staffPets'] });
       queryClient.invalidateQueries({ queryKey: ['categories'] });

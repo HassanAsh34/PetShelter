@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Container,
@@ -13,8 +13,13 @@ import {
   Chip,
   CircularProgress,
   Alert,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { animalsApi } from '../../services/api';
 
 interface AdoptionRequest {
@@ -32,6 +37,10 @@ interface AdoptionRequest {
 }
 
 const AdoptionHistory = () => {
+  const queryClient = useQueryClient();
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<AdoptionRequest | null>(null);
+
   const { data: adoptionHistory, isLoading, error } = useQuery({
     queryKey: ['adoptionHistory'],
     queryFn: async () => {
@@ -59,10 +68,25 @@ const AdoptionHistory = () => {
     refetchOnWindowFocus: false,
   });
 
-  // Add debug logging
-  console.log('Processed Adoption History Data:', JSON.stringify(adoptionHistory, null, 2));
-  console.log('Adoption History Loading:', isLoading);
-  console.log('Adoption History Error:', error);
+  const cancelAdoptionMutation = useMutation({
+    mutationFn: (requestId: number) => animalsApi.cancelAdoption(requestId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['adoptionHistory'] });
+      setCancelDialogOpen(false);
+      setSelectedRequest(null);
+    },
+  });
+
+  const handleCancelClick = (adoption: AdoptionRequest) => {
+    setSelectedRequest(adoption);
+    setCancelDialogOpen(true);
+  };
+
+  const handleCancelConfirm = () => {
+    if (selectedRequest) {
+      cancelAdoptionMutation.mutate(selectedRequest.requestId);
+    }
+  };
 
   const getStatusChip = (status: string) => {
     switch (status.toLowerCase()) {
@@ -118,6 +142,7 @@ const AdoptionHistory = () => {
                 <TableCell>Status</TableCell>
                 <TableCell>Request Date</TableCell>
                 <TableCell>Approved Date</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -133,12 +158,48 @@ const AdoptionHistory = () => {
                       : '-'
                     }
                   </TableCell>
+                  <TableCell>
+                    {adoption.status.toLowerCase() === 'pending' && (
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        onClick={() => handleCancelClick(adoption)}
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
       )}
+
+      {/* Cancel Confirmation Dialog */}
+      <Dialog
+        open={cancelDialogOpen}
+        onClose={() => setCancelDialogOpen(false)}
+      >
+        <DialogTitle>Cancel Adoption Request</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to cancel your adoption request for {selectedRequest?.animal.name}? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCancelDialogOpen(false)}>No, Keep Request</Button>
+          <Button 
+            onClick={handleCancelConfirm} 
+            color="error" 
+            variant="contained"
+            disabled={cancelAdoptionMutation.isPending}
+          >
+            {cancelAdoptionMutation.isPending ? 'Canceling...' : 'Yes, Cancel Request'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

@@ -263,7 +263,7 @@ namespace PetShelter.Repository
 				return null;
 		}
 
-		public async Task<int> UpdatePet(Animal animal)
+		public async Task<object> UpdatePet(Animal animal)
 		{
 			if (animal != null)
 			{
@@ -276,10 +276,10 @@ namespace PetShelter.Repository
 				a.Adoption_State =animal.Adoption_State;
 				a.medication_history = animal.medication_history;
 				a.Category_FK = animal.Category_FK;
-				a.ShelterCategory = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == animal.Category_FK);
+				//a.ShelterCategory = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == animal.Category_FK);
 				_context.Animals.Update(a);
 				int res = await _context.SaveChangesAsync();
-				return res;
+				return animal;
 			}
 			else
 			{
@@ -344,7 +344,20 @@ namespace PetShelter.Repository
 				return -1;//not found
 		}
 
-		public async Task<DateOnly> DayAvailability(DateOnly Requestdate)
+        public async Task<int> RejectAdoptionRequest(int id)
+        {
+            var adoption = await _context.AdoptionRequest.FirstOrDefaultAsync(a => a.Id == id);
+            int res = -1;
+            if (adoption != null)
+            {
+                //_context.AdoptionRequest.Remove(adoption);
+                adoption.Status = AdoptionRequest.AdoptionRequestStatus.Rejected;
+                res = await _context.SaveChangesAsync();
+            }
+            return res;
+        }
+
+        public async Task<DateOnly> DayAvailability(DateOnly Requestdate)
 		{
 			DateOnly Idate = Requestdate.AddDays(5);
 

@@ -17,7 +17,7 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { staffApi } from '../../services/api';
 
 interface Animal {
@@ -46,6 +46,7 @@ interface Animal {
 
 const StaffPetsList = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: pets, isLoading, error } = useQuery<Animal[]>({
     queryKey: ['staffPets'],
     queryFn: async () => {
@@ -77,13 +78,31 @@ const StaffPetsList = () => {
     navigate(`/staff/pets/edit/${petId}`);
   };
 
-  const handleDeletePet = async (petId: number) => {
+  const handleDeletePet = async (pet: Animal) => {
     if (window.confirm('Are you sure you want to delete this pet?')) {
       try {
-        await staffApi.deletePet(petId);
-        window.location.reload();
-      } catch (error) {
+        await staffApi.deletePet({
+          id: pet.id,
+          name: pet.name,
+          breed: pet.breed,
+          age: pet.age,
+          Adoption_State: pet.adoption_State,
+          ShelterCategory: {
+            categoryId: pet.shelterCategory.categoryId,
+            categoryName: pet.shelterCategory.categoryName
+          },
+          shelterDto: {
+            shelterId: pet.shelterDto.shelterId,
+            shelterName: pet.shelterDto.shelterName,
+            shelterLocation: pet.shelterDto.shelterLocation,
+            shelterPhone: pet.shelterDto.shelterPhone
+          }
+        });
+        // Invalidate the pets query to refresh the list
+        queryClient.invalidateQueries({ queryKey: ['staffPets'] });
+      } catch (error: any) {
         console.error('Error deleting pet:', error);
+        alert(error.response?.data?.message || 'Failed to delete pet');
       }
     }
   };
@@ -175,7 +194,7 @@ const StaffPetsList = () => {
                     variant="outlined"
                     color="error"
                     startIcon={<DeleteIcon />}
-                    onClick={() => handleDeletePet(pet.id)}
+                    onClick={() => handleDeletePet(pet)}
                     size="small"
                   >
                     Delete

@@ -95,7 +95,7 @@ export const animalsApi = {
   getById: (id: string) => api.get(`/Adoption/View-Pet/${id}`),
   adopt: (data: { adopterId_FK: number; petId_FK: number; shelter_FK: number }) =>
     api.post('/Adoption/Adopt', data),
-  cancelAdoption: (id: number) => api.post(`/Adoption/Cancel-Adoption/${id}`),
+  cancelAdoption: (id: number) => api.put(`/Adoption/Cancel-Adoption/${id}`),
   getAdoptionHistory: () => {
     return api.get('/Adoption/Adoption-History').then((res) => res.data);
   },
@@ -153,10 +153,14 @@ export const staffApi = {
   updatePet: (data: any) => api.put('/Shelter-Management/Update-Pet', data).then((res) => res.data),
   deletePet: (id: number) => api.delete(`/Shelter-Management/Delete-Pet/${id}`).then((res) => res.data),
   getAdoptionRequests: () => api.get(`/Shelter-Management/Show-Adoption-Requests`).then((res) => res.data),
-  approveAdoptionRequest: (requestId: number) => 
-    api.put(`/Shelter-Management/Approve-Adoption-Request/${requestId}`).then((res) => res.data)
-  // handleAdoptionRequest: (requestId: number, approved: boolean, reason?: string) =>
-  //   api.put(`/Staff/Handle-Adoption-Request/${requestId}`, { approved, reason }).then((res) => res.data),
+  approveAdoptionRequest: async (requestId: number) => {
+    const response = await api.post(`/Shelter-Management/Approve-Adoption-Request/${requestId}`);
+    return response.data;
+  },
+  rejectAdoptionRequest: async (requestId: number) => {
+    const response = await api.put(`/Shelter-Management/Reject-Adoption-Request/${requestId}`);
+    return response.data;
+  },
 };
 
 export interface RegisterData {

@@ -258,27 +258,27 @@ namespace PetShelter.Controllers
 			}
 		}
 
-		//[HttpPut("Reject-Adoption-Request")]
-		//[ProducesResponseType(StatusCodes.Status200OK)]
-		//[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		//[ProducesResponseType(StatusCodes.Status401Unauthorized)]
-		//public Task<ActionResult<bool>> RejectAdoptionRequest(int Rid)
-		//{
-		//	if (Authorize(2) == false)
-		//		return Unauthorized(new { message = "You are not authorized to perform this operation" });
-		//	else
-		//	{
-		//		var res = _shelterStaffServices.RejectAdoptionRequest(Rid);
-		//		if (res)
-		//		{
-		//			return Ok(new { message = "The adoption request was rejected successfully" });
-		//		}
-		//		else
-		//		{
-		//			return BadRequest(new { message = "Something went wrong" });
-		//		}
-		//	}
-		//}
+        [HttpPut("Reject-Adoption-Request/{Rid}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<object>> RejectAdoptionRequest(int Rid)
+        {
+            if (Authorize(2) == false)
+                return Unauthorized(new { message = "You are not authorized to perform this operation" });
+            else
+            {
+                var res = await _shelterStaffServices.RejectAdoptionRequest(Rid);
+                if (res)
+                {
+                    return Ok(new { message = "The adoption request was rejected successfully" });
+                }
+                else
+                {
+                    return BadRequest(new { message = "Something went wrong" });
+                }
+            }
+        }
 
-	}
+    }
 }

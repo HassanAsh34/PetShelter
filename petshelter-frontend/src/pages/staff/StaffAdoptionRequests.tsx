@@ -70,20 +70,30 @@ const StaffAdoptionRequests = () => {
     }
   }, [adoptionRequests, error]);
 
-  const handleAdoptionRequest = async (requestId: number, approved: boolean) => {
+  const handleApproveAdoptionRequest = async (requestId: number) => {
     try {
-      if (approved) {
-        console.log(`Approving adoption request ${requestId}`);
-        const response = await staffApi.approveAdoptionRequest(requestId);
-        console.log('Approve request response:', response);
-        alert('Adoption request approved successfully');
-      } else {
-        // Reject handling will be implemented later
-        console.log('Reject functionality to be implemented');
-      }
+      console.log(`Approving adoption request ${requestId}`);
+      const response = await staffApi.approveAdoptionRequest(requestId);
+      console.log('Approve request response:', response);
+      alert('Adoption request approved successfully');
       queryClient.invalidateQueries({ queryKey: ['adoptionRequests'] });
     } catch (error: any) {
-      console.error('Error handling adoption request:', error);
+      console.error('Error approving adoption request:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to process adoption request. Please try again.';
+      alert(errorMessage);
+    }
+  };
+
+  const handleRejectAdoptionRequest = async (requestId: number) => {
+    try {
+      // Implement your reject logic here
+      console.log(`Rejecting adoption request ${requestId}`);
+      const response = await staffApi.rejectAdoptionRequest(requestId);
+      console.log('Reject request response:', response);
+      alert('Adoption request rejected successfully');
+      queryClient.invalidateQueries({ queryKey: ['adoptionRequests'] });
+    } catch (error: any) {
+      console.error('Error rejecting adoption request:', error);
       const errorMessage = error.response?.data?.message || 'Failed to process adoption request. Please try again.';
       alert(errorMessage);
     }
@@ -139,7 +149,7 @@ const StaffAdoptionRequests = () => {
                       variant="contained"
                       color="success"
                       startIcon={<ApproveIcon />}
-                      onClick={() => handleAdoptionRequest(request.requestId, true)}
+                      onClick={() => handleApproveAdoptionRequest(request.requestId)}
                       size="small"
                     >
                       Approve
@@ -148,9 +158,8 @@ const StaffAdoptionRequests = () => {
                       variant="contained"
                       color="error"
                       startIcon={<RejectIcon />}
-                      onClick={() => handleAdoptionRequest(request.requestId, false)}
+                      onClick={() => handleRejectAdoptionRequest(request.requestId)}
                       size="small"
-                      disabled
                     >
                       Reject
                     </Button>

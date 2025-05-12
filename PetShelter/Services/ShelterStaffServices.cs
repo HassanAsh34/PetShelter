@@ -161,22 +161,22 @@ namespace PetShelter.Services
 				return -3; // category not found
 			}
 			var res = await _shelterStaffRepository.UpdatePet(animal);
-			if (res > 0)
+			if (res is Animal a)
 			{
 				var stats = await _adminServices.GetDashboardStats();
 				await NotifyDashboardUpdate(stats);
 				return new AnimalDto
 				{
-					id = animal.id,
-					name = animal.name,
-					Adoption_State = animal.Adoption_State.ToString(),
-					age = animal.age,
-					breed = animal.breed,
-					ShelterCategory = new CategoryDto
-					{
-						CategoryId = animal.ShelterCategory.CategoryId,
-						CategoryName = animal.ShelterCategory.CategoryName,
-					}
+					id = a.id,
+					name = a.name,
+					Adoption_State = a.Adoption_State.ToString(),
+					age = a.age,
+					breed = a.breed,
+					//ShelterCategory = new CategoryDto
+					//{
+					//	CategoryId = animal.ShelterCategory.CategoryId,
+					//	CategoryName = animal.ShelterCategory.CategoryName,
+					//}
 				};
 			}
 			else
@@ -251,7 +251,23 @@ namespace PetShelter.Services
 			return -2;//something went wrong id is set to 0
 		}
 
-		private async Task<bool> AutomaticScheduleInterview(int Rid)
+        public async Task<bool> RejectAdoptionRequest(int Rid)
+        {
+            if (Rid != 0)
+            {
+                var res = await _shelterStaffRepository.RejectAdoptionRequest(Rid);
+                if (res > 0)
+                {
+                    return true;
+                }
+                else
+                    return false; //adoption request not rejected
+            }
+            else
+                return false; //request id is set to 0
+        }
+
+        private async Task<bool> AutomaticScheduleInterview(int Rid)
 		{
 			//if (Rid != 0)
 			//{

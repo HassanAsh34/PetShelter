@@ -128,14 +128,6 @@ const ShelterDetails = () => {
           <Button
             variant="contained"
             color="primary"
-            startIcon={<AddIcon />}
-            onClick={() => navigate(`/admin/shelters/${id}/add-category`)}
-          >
-            Add Category
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
             startIcon={<EditIcon />}
             onClick={() => navigate(`/admin/shelters/${id}/edit`)}
           >

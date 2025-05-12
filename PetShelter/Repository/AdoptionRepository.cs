@@ -78,8 +78,7 @@ namespace PetShelter.Repository
 			var adoption = await _context.AdoptionRequest.FirstOrDefaultAsync(a => a.Id == id);
 			if (adoption != null)
 			{
-				//_context.AdoptionRequest.Remove(adoption);
-				adoption.Status = AdoptionRequest.AdoptionRequestStatus.Rejected;
+				_context.AdoptionRequest.Remove(adoption);
 				int res = await _context.SaveChangesAsync();
 				if (res > 0)
 					return true;
