@@ -23,46 +23,49 @@ namespace PetShelter.Services
 			{
 				if (BCrypt.Net.BCrypt.Verify(login.Password, User.Password))
 				{
-					switch(User)
-					{
-						case Admin admin:
-							//case (int)User.UserType.Admin:
-							//admin = User as Admin;
-							return new AdminDto
-							{
-								Id = admin.Id,
-								Email = admin.Email,
-								Uname = admin.Uname,
-								Role = (Models.User.UserType)admin.Role,
-								Activated = admin.Activated,
-								adminType = (Admin.AdminTypes)admin.AdminType
-							};//handle token generation for admin and adopter
-						case Adopter adopter:
-							return new AdopterDto
-							{
-								Id = adopter.Id,
-								Email = adopter.Email,
-								Uname = adopter.Uname,
-								Role = (Models.User.UserType)adopter.Role,
-								Activated = adopter.Activated,
-								Address = adopter.Address,
-								Phone = adopter.Phone
-							};
-						case ShelterStaff staff:
-							return new StaffDto
-							{
-								Id = staff.Id,
-								Uname = staff.Uname,
-								Email = staff.Email,
-								Role = (User.UserType)staff.Role,
-								Phone = staff.Phone,
-								StaffType = (ShelterStaff.StaffTypes)staff.StaffType,
-								Activated = staff.Activated,
-								HiredDate = staff.HiredDate,
-								Shelter_FK = staff.Shelter_FK
-							};
-					}
-				}
+                    switch (User)
+                    {
+                        case Admin admin:
+                            //case (int)User.UserType.Admin:
+                            //admin = User as Admin;
+                            return new AdminDto
+                            {
+                                Id = admin.Id,
+                                Email = admin.Email,
+                                Uname = admin.Uname,
+                                Role = (Models.User.UserType)admin.Role,
+                                Activated = admin.Activated,
+                                adminType = (Admin.AdminTypes)admin.AdminType,
+                                Deleted_At = admin.Deleted_At
+                            };//handle token generation for admin and adopter
+                        case Adopter adopter:
+                            return new AdopterDto
+                            {
+                                Id = adopter.Id,
+                                Email = adopter.Email,
+                                Uname = adopter.Uname,
+                                Role = (Models.User.UserType)adopter.Role,
+                                Activated = adopter.Activated,
+                                Address = adopter.Address,
+                                Phone = adopter.Phone,
+                                Deleted_At = adopter.Deleted_At
+                            };
+                        case ShelterStaff staff:
+                            return new StaffDto
+                            {
+                                Id = staff.Id,
+                                Uname = staff.Uname,
+                                Email = staff.Email,
+                                Role = (User.UserType)staff.Role,
+                                Phone = staff.Phone,
+                                StaffType = (ShelterStaff.StaffTypes)staff.StaffType,
+                                Activated = staff.Activated,
+                                HiredDate = staff.HiredDate,
+                                Shelter_FK = staff.Shelter_FK,
+                                Deleted_At = staff.Deleted_At
+                            };
+                    }
+                }
 				return null;
 			}
 			else

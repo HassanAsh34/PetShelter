@@ -162,7 +162,7 @@ const AdminDashboard = () => {
               </Typography>
             ) : (
               <>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} key="shelters">
                   <Card>
                     <CardContent>
                       <Typography color="textSecondary" gutterBottom>
@@ -172,7 +172,7 @@ const AdminDashboard = () => {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} key="pets">
                   <Card>
                     <CardContent>
                       <Typography color="textSecondary" gutterBottom>
@@ -182,7 +182,7 @@ const AdminDashboard = () => {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} key="users">
                   <Card>
                     <CardContent>
                       <Typography color="textSecondary" gutterBottom>
@@ -192,7 +192,7 @@ const AdminDashboard = () => {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={3} key="adoptions">
                   <Card>
                     <CardContent>
                       <Typography color="textSecondary" gutterBottom>

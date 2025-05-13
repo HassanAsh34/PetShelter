@@ -44,29 +44,34 @@ namespace PetShelter.Repository
 			});
 			return RecentRequests;
 		}
-		public async Task<DashboardStatsDto> GetDashboardStats(int Dash)
-		{
-			switch(Dash)
-			{
-				case 1:
-					List<AdoptionRequestDto> RecentRequests = await RequestDtos(true);
-					List<Shelter> shelters = await Shelters();
-					return new DashboardStatsDto
-					{
+        //done//
 
-						//TotalPets = await _context.Animals.Include(s=>s.Shelter).Where(a=> ).CountAsync(),
-						//TotalPets = await _context.Animals.Include(a => a.Shelter).Where(a => !a.Shelter.ShelterName.ToLower().Contains("deleted")).CountAsync(),
-						TotalShelters = shelters.Count(),
-						TotalUsers = await _context.Users.Where(u => u.Banned_At == null && u.Deleted_At == null).CountAsync(),
-						ActiveUsers = await _context.Users.CountAsync(u => u.Activated == 1),
-						RecentRequests = RecentRequests,
-						ApprovedAdoptions = RecentRequests
-					.Count(),
-						TotalAdoptions = await _context.AdoptionRequest.CountAsync()
-					};
-				default:
-					return null;
-			}
-		}
-	}
+        public async Task<DashboardStatsDto> GetDashboardStats(int Dash)
+        {
+            switch (Dash)
+            {
+                case 1:
+                    List<AdoptionRequestDto> RecentRequests = await RequestDtos(true);
+                    List<Shelter> shelters = await Shelters();
+                    return new DashboardStatsDto
+                    {
+
+                        //TotalPets = await _context.Animals.Include(s=>s.Shelter).Where(a=> ).CountAsync(),
+                        //change that//
+                        TotalPets = await _context.Animals.Include(a => a.Shelter).Where(a => !a.Shelter.ShelterName.ToLower().Contains("deleted")).CountAsync(),
+                        //
+                        TotalShelters = shelters.Count(),
+                        TotalUsers = await _context.Users.Where(u => u.Banned_At == null && u.Deleted_At == null).CountAsync(),
+                        ActiveUsers = await _context.Users.CountAsync(u => u.Activated == 1),
+                        RecentRequests = RecentRequests,
+                        ApprovedAdoptions = RecentRequests
+                    .Count(),
+                        TotalAdoptions = await _context.AdoptionRequest.CountAsync()
+                    };
+                default:
+                    return null;
+            }
+        }
+        //
+    }
 }

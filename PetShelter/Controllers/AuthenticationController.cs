@@ -61,19 +61,23 @@ namespace PetShelter.Controllers
 			var res = await _userService.Login(login);
 			if (res != null)
 			{
-				switch (res.Activated)
-				{
-					case 0:
-						return BadRequest(new { message = "Your account is currently inactive" });
-					case 1:
-						var token = _token.GenerateToken(res);
-						return Ok(new { token = token, user = res }); // lowercase keys (token, user) to match frontend
-					case 2:
-						return BadRequest(new { message = "Your account has been suspended" });
-					default:
-						return BadRequest("Something went wrong");
-				}
-			}
+                switch (res.Activated)
+                {
+                    case 0:
+                        return BadRequest(new { message = "Your account is currently inactive" });
+                    case 1:
+                        if (res.Deleted_At == null)
+                        {
+                            var token = _token.GenerateToken(res);
+                            return Ok(new { token = token, user = res }); // lowercase keys (token, user) to match frontend
+                        }
+                        return BadRequest(new { message = "Your account has been suspended" });
+                    case 2:
+                        return BadRequest(new { message = "Your account has been suspended" });
+                    default:
+                        return BadRequest("Something went wrong");
+                }
+            }
 			else
 			{
 				return BadRequest(new { message = "Invalid Email or Password" });

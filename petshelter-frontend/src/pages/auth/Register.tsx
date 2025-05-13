@@ -37,7 +37,7 @@ const Register = () => {
     role: 1, // Default to Adopter
     phone: '',
     address: '',
-    staffType: ''
+    staffType: 0 // Set default staff type to 0 (Manager)
   });
   const [error, setError] = useState<string>('');
 
@@ -51,10 +51,19 @@ const Register = () => {
 
   const handleSelectChange = (e: SelectChangeEvent<number>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (name === 'role' && value === 2) {
+      // When role is changed to Shelter Staff, ensure staffType is set to 0 (Manager)
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        staffType: 0
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleClickShowPassword = () => {
@@ -94,7 +103,7 @@ const Register = () => {
       setError('Phone number is required');
       return false;
     }
-    if (formData.role === 2 && !formData.staffType) {
+    if (formData.role === 2 && formData.staffType === undefined) {
       setError('Staff type is required');
       return false;
     }

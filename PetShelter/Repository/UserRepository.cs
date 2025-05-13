@@ -92,13 +92,21 @@ namespace PetShelter.Repository
                                 staff.ActivatedAt = DateTime.Now;
                                 staff.Shelter_FK = staff.Shelter_FK;
 								staff.Shelter = shelter;
-
 							}
                             else
                             {
                                 staff.Activated = 0;
                                 staff.Shelter_FK = 1;
                                 staff.Shelter = null;
+                            }
+                            // Ensure staff type is properly set and valid
+                            if (staff.StaffType >= 0 && staff.StaffType <= 2)
+                            {
+                                staff.StaffType = staff.StaffType;
+                            }
+                            else
+                            {
+                                throw new ArgumentException("Invalid staff type value");
                             }
 							await _context.Staff.AddAsync(staff);
 							await _context.SaveChangesAsync();

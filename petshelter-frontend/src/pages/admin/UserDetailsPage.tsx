@@ -17,8 +17,11 @@ import {
   TextField,
   MenuItem,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
 } from '@mui/material';
-import { ArrowBack as BackIcon, Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { ArrowBack as BackIcon, Edit as EditIcon, Delete as DeleteIcon, Business as BusinessIcon } from '@mui/icons-material';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { adminApi, authApi } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -96,12 +99,21 @@ interface UserDto {
   hiredDate?: string;
 }
 
+interface Shelter {
+  id: number;
+  name: string;
+}
+
 const UserDetailsPage = () => {
   const { id, role } = useParams<{ id: string; role: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const isProfileRoute = location.pathname === '/profile';
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [selectedShelter, setSelectedShelter] = useState<number>(0);
+  const [shelters, setShelters] = useState<Shelter[]>([]);
+  const [assignError, setAssignError] = useState<string | null>(null);
   
   // Get user data from token for profile route
   const token = getToken();
@@ -152,6 +164,23 @@ const UserDetailsPage = () => {
     },
     enabled: userId > 0 && userRole >= 0,
   });
+
+  // Fetch shelters when component mounts
+  useEffect(() => {
+    const fetchShelters = async () => {
+      try {
+        const data = await adminApi.getShelters();
+        setShelters(data.map((shelter: any) => ({
+          id: shelter.shelterId,
+          name: shelter.shelterName
+        })));
+      } catch (err) {
+        console.error('Error fetching shelters:', err);
+      }
+    };
+
+    fetchShelters();
+  }, []);
 
   const updateUserStatus = (newStatus: { activated?: number; banned?: boolean }) => {
     if (!user) return;
@@ -594,6 +623,38 @@ const UserDetailsPage = () => {
     }
   };
 
+  const handleAssignToShelter = async () => {
+    if (!selectedShelter) {
+      setAssignError('Please select a shelter');
+      return;
+    }
+
+    try {
+      const assignmentData = {
+        id: userId,
+        role: userRole,
+        shelter_FK: selectedShelter,
+        uname: user?.uname,
+        email: user?.email,
+        activated: user?.activated,
+        banned: user?.banned,
+        staffType: user?.staffType,
+        phone: user?.phone
+      };
+
+      console.log('Assigning to shelter with data:', assignmentData);
+      
+      await adminApi.assignToShelter(assignmentData);
+      setIsAssignDialogOpen(false);
+      setAssignError(null);
+      // Refresh user data
+      queryClient.invalidateQueries({ queryKey: ['user', userId, userRole, isProfileRoute] });
+    } catch (error: any) {
+      console.error('Error assigning to shelter:', error);
+      setAssignError(error.response?.data?.message || 'Failed to assign user to shelter');
+    }
+  };
+
   if (isLoading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -782,6 +843,20 @@ const UserDetailsPage = () => {
               )}
             </Box>
           </Grid>
+
+          {/* Add Assign to Shelter button for staff users */}
+          {!isProfileRoute && user?.role === 2 && (
+            <Box sx={{ mt: 2 }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setIsAssignDialogOpen(true)}
+                startIcon={<BusinessIcon />}
+              >
+                Assign to Shelter
+              </Button>
+            </Box>
+          )}
         </Grid>
 
         {/* Edit Dialog */}
@@ -908,6 +983,40 @@ const UserDetailsPage = () => {
               disabled={deleteUserMutation.isPending}
             >
               {deleteUserMutation.isPending ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Assign to Shelter Dialog */}
+        <Dialog open={isAssignDialogOpen} onClose={() => setIsAssignDialogOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Assign to Shelter</DialogTitle>
+          <DialogContent>
+            {assignError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {assignError}
+              </Alert>
+            )}
+            <Box sx={{ mt: 2 }}>
+              <FormControl fullWidth>
+                <InputLabel>Select Shelter</InputLabel>
+                <Select
+                  value={selectedShelter}
+                  onChange={(e) => setSelectedShelter(Number(e.target.value))}
+                  label="Select Shelter"
+                >
+                  {shelters.map((shelter) => (
+                    <MenuItem key={shelter.id} value={shelter.id}>
+                      {shelter.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsAssignDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAssignToShelter} variant="contained" color="primary">
+              Assign
             </Button>
           </DialogActions>
         </Dialog>

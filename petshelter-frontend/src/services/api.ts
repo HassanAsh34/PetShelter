@@ -143,18 +143,44 @@ export const adminApi = {
     api.post('/Admin/Add-User', data).then((res) => res.data),
   addAdmin: (data: RegisterData) =>
     api.post('/Admin/Add-Admin', data).then((res) => res.data),
+  assignToShelter: (data: { id: number; role: number; shelter_FK: number }) =>
+    api.put('/Admin/Assign-To-Shelter', data).then((res) => res.data),
 };
+
+export interface Animal {
+  id: number;
+  name: string;
+  age: number;
+  breed: string;
+  adoption_State: number;
+  category_FK: number;
+  shelter_FK: number;
+  medication_history: string;
+}
+
+export interface AnimalDto extends Animal {
+  shelterCategory: {
+    categoryId: number;
+    categoryName: string;
+  };
+  shelterDto: {
+    shelterId: number;
+    shelterName: string;
+    shelterLocation: string;
+    shelterPhone: string;
+  };
+}
 
 export const staffApi = {
   getShelterPets: () => api.get('/Shelter-Management/List-Pets').then((res) => res.data),
-  getPetDetails: (id: number) => api.get(`/Shelter-Management/View-Pet//${id}`).then((res) => res.data),
+  getPetDetails: (id: number) => api.get(`/Shelter-Management/View-Pet/${id}`).then((res) => res.data),
   getCategories: () => api.get('/Shelter-Management/Show-Categories').then((res) => res.data),
   addPet: (data: any) => api.post('/Shelter-Management/Add-Pet', data).then((res) => res.data),
   updatePet: (data: any) => api.put('/Shelter-Management/Update-Pet', data).then((res) => res.data),
   deletePet: (id: number) => api.delete(`/Shelter-Management/Delete-Pet/${id}`).then((res) => res.data),
-  getAdoptionRequests: () => api.get(`/Shelter-Management/Show-Adoption-Requests`).then((res) => res.data),
+  getAdoptionRequests: () => api.get('/Shelter-Management/Show-Adoption-Requests').then((res) => res.data),
   approveAdoptionRequest: async (requestId: number) => {
-    const response = await api.post(`/Shelter-Management/Approve-Adoption-Request/${requestId}`);
+    const response = await api.put(`/Shelter-Management/Approve-Adoption-Request/${requestId}`);
     return response.data;
   },
   rejectAdoptionRequest: async (requestId: number) => {

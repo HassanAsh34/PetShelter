@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Box,
   Card,
@@ -49,6 +49,7 @@ interface Animal {
 const AnimalDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { isAuthenticated, isAdmin } = useAuth();
   const [currentAnimalIndex, setCurrentAnimalIndex] = React.useState<number>(-1);
 
@@ -91,7 +92,7 @@ const AnimalDetails = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  const handleAdopt = () => {
+  const handleAdopt = async () => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: `/animals/${id}` } });
       return;
@@ -119,8 +120,13 @@ const AnimalDetails = () => {
         shelter_FK: animal.shelterDto.shelterId
       };
 
-      animalsApi.adopt(adoptionData);
-      navigate('/animals');
+      await animalsApi.adopt(adoptionData);
+      
+      // Invalidate the adoption history query to force a refresh
+      await queryClient.invalidateQueries({ queryKey: ['adoptionHistory'] });
+      
+      // Navigate to adoption history page after successful adoption
+      navigate('/adoption-history');
     } catch (err) {
       console.error('Error adopting animal:', err);
     }

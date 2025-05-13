@@ -18,36 +18,12 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { staffApi } from '../../services/api';
-
-interface Animal {
-  id: number;
-  name: string;
-  age: number;
-  breed: string;
-  adoption_State: string;
-  shelterCategory: {
-    categoryId: number;
-    categoryName: string;
-    shelter: null;
-    animalCount: number;
-  };
-  shelterDto: {
-    shelterId: number;
-    shelterName: string;
-    shelterLocation: string;
-    shelterPhone: string;
-    description: null;
-    countStaff: number;
-    categories: null;
-    staff: null;
-  };
-}
+import { staffApi, Animal, AnimalDto } from '../../services/api';
 
 const StaffPetsList = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: pets, isLoading, error } = useQuery<Animal[]>({
+  const { data: pets, isLoading, error } = useQuery<AnimalDto[]>({
     queryKey: ['staffPets'],
     queryFn: async () => {
       const response = await staffApi.getShelterPets();
@@ -78,26 +54,10 @@ const StaffPetsList = () => {
     navigate(`/staff/pets/edit/${petId}`);
   };
 
-  const handleDeletePet = async (pet: Animal) => {
+  const handleDeletePet = async (pet: AnimalDto) => {
     if (window.confirm('Are you sure you want to delete this pet?')) {
       try {
-        await staffApi.deletePet({
-          id: pet.id,
-          name: pet.name,
-          breed: pet.breed,
-          age: pet.age,
-          Adoption_State: pet.adoption_State,
-          ShelterCategory: {
-            categoryId: pet.shelterCategory.categoryId,
-            categoryName: pet.shelterCategory.categoryName
-          },
-          shelterDto: {
-            shelterId: pet.shelterDto.shelterId,
-            shelterName: pet.shelterDto.shelterName,
-            shelterLocation: pet.shelterDto.shelterLocation,
-            shelterPhone: pet.shelterDto.shelterPhone
-          }
-        });
+        await staffApi.deletePet(pet.id);
         // Invalidate the pets query to refresh the list
         queryClient.invalidateQueries({ queryKey: ['staffPets'] });
       } catch (error: any) {
@@ -107,21 +67,29 @@ const StaffPetsList = () => {
     }
   };
 
-  const getStatusColor = (status: string | undefined | null) => {
-    if (!status) return 'default';
-    
-    switch (status.toLowerCase()) {
-      case 'available':
-        return 'success';
-      case 'adopted':
-        return 'error';
-      case 'pending':
-        return 'warning';
-      default:
-        return 'default';
+  const getAdoptionStateString = (state: number): string => {
+    switch (state) {
+      case 0: return 'Available';
+      case 1: return 'Pending';
+      case 2: return 'Adopted';
+      default: return 'Unknown';
     }
   };
-  
+
+  const canEditOrDelete = (pet: AnimalDto) => {
+    // Check if status is pending (1) or adopted (2)
+    return pet.adoption_State === 0; // Only allow edit/delete if available (0)
+  };
+
+  const getStatusColor = (state: number) => {
+    switch (state) {
+      case 0: return 'success';  // Available
+      case 1: return 'warning';  // Pending
+      case 2: return 'error';    // Adopted
+      default: return 'default';
+    }
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
@@ -166,7 +134,7 @@ const StaffPetsList = () => {
                       Status:
                     </Typography>
                     <Chip
-                      label={pet.adoption_State}
+                      label={getAdoptionStateString(pet.adoption_State)}
                       color={getStatusColor(pet.adoption_State)}
                       size="small"
                     />
@@ -187,6 +155,8 @@ const StaffPetsList = () => {
                     startIcon={<EditIcon />}
                     onClick={() => handleEditPet(pet.id)}
                     size="small"
+                    disabled={!canEditOrDelete(pet)}
+                    title={!canEditOrDelete(pet) ? "Cannot edit pet with pending/adopted status" : "Edit pet"}
                   >
                     Edit
                   </Button>
@@ -196,6 +166,8 @@ const StaffPetsList = () => {
                     startIcon={<DeleteIcon />}
                     onClick={() => handleDeletePet(pet)}
                     size="small"
+                    disabled={!canEditOrDelete(pet)}
+                    title={!canEditOrDelete(pet) ? "Cannot delete pet with pending/adopted status" : "Delete pet"}
                   >
                     Delete
                   </Button>

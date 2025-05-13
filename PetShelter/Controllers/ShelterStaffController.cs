@@ -175,31 +175,44 @@ namespace PetShelter.Controllers
 			}
 		}
 
-		[HttpDelete("Delete-Pet")]
-		[ProducesResponseType(StatusCodes.Status200OK)]
-		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        //done//
 
-		public async Task<ActionResult<bool>> DeletePet(AnimalDto animal)//not working
-		{
-			if (Authorize(3) == false)
-				return Unauthorized(new { message = "You are not authorized to perform this operation" });
-			else
-			{
-				var res = await _shelterStaffServices.RemovePet(animal);
-				if (res)
-				{
-					return Ok(new { message = "The pet was deleted successfully" });
-				}
-				else
-				{
-					return BadRequest(new { message = "Something went wrong" });
-				}
-			}
+        [HttpDelete("Delete-Pet")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 
-		}
+        //done//
+        [HttpDelete("Delete-Pet/{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 
-		[HttpGet("Show-Adoption-Requests")]
+        public async Task<ActionResult<bool>> DeletePet(int id)//not working
+        {
+            if (Authorize(3) == false)
+                return Unauthorized(new { message = "You are not authorized to perform this operation" });
+            else
+            {
+                var res = await _shelterStaffServices.RemovePet(id);
+                if (res > 0)
+                {
+                    return Ok(new { message = "The pet was deleted successfully" });
+                }
+                else
+                {
+                    if (res < 0)
+                        return BadRequest(new { message = "that animal got requests" });
+                    else
+                        return BadRequest(new { message = "something went wrong" });
+                }
+            }
+        }
+        //
+        //
+
+
+        [HttpGet("Show-Adoption-Requests")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status204NoContent)]

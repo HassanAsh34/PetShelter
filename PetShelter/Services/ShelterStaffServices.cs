@@ -184,19 +184,21 @@ namespace PetShelter.Services
 				return res;
 			}
 		}
-		public async Task<bool> RemovePet(AnimalDto p)
-		{
-			var res = await _shelterStaffRepository.DeletePet(p.id);
-			if (res > 0)
-			{
-				var stats = await _adminServices.GetDashboardStats();
-				await NotifyDashboardUpdate(stats);
-				return true;
-			}
-			return false;
-		}
+        //done//
+        public async Task<int> RemovePet(int id)
+        {
+            var res = await _shelterStaffRepository.DeletePet(id);
+            if (res > 0)
+            {
+                var stats = await _adminServices.GetDashboardStats();
+                await NotifyDashboardUpdate(stats);
+            }
+            return res;
+        }
+        //
 
-		public async Task<IEnumerable<AdoptionRequestDto>> ListAdoptionRequests(int shelterID)
+
+        public async Task<IEnumerable<AdoptionRequestDto>> ListAdoptionRequests(int shelterID)
 		{
 			var res = await _shelterStaffRepository.ListAdoptionRequests(shelterID);
 			List<AdoptionRequestDto> adoptionRequestDtos = new List<AdoptionRequestDto>();

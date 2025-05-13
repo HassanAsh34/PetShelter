@@ -41,6 +41,7 @@ interface BaseUser {
   role: number;
   activated: number;
   banned: boolean;
+  staffType?: number;
 }
 
 interface AdminUser extends BaseUser {
@@ -62,9 +63,19 @@ interface AdopterUser extends BaseUser {
   address: string;
 }
 
+interface Shelter {
+  id: number;
+  name: string;
+}
+
+interface StaffAssignment {
+  id: number;
+  role: number;
+  shelter_FK: number;
+}
+
 // Enum mapping for user roles
 const UserRole = {
-  0: 'Admin',
   1: 'Adopter',
   2: 'ShelterStaff'
 } as const;
@@ -93,10 +104,10 @@ const Users = () => {
     email: '',
     password: '',
     role: 1, // Default to Adopter
-    adminType: 0,
     staffType: 0,
     phone: '',
     address: '',
+    shelter_FK: 1, // Default shelter ID
   });
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState({
@@ -104,41 +115,47 @@ const Users = () => {
     status: '',
     role: ''
   });
-  const [shelters, setShelters] = useState<Array<{ id: number; name: string }>>([]);
+  const [shelters, setShelters] = useState<Shelter[]>([]);
   const [showPassword, setShowPassword] = useState(false);
 
   const { data: users, isLoading, error: queryError } = useQuery({
-    queryKey: ['users'],
+    queryKey: ['adminUsers'],
     queryFn: () => adminApi.listUsers(),
   });
 
   const addUserMutation = useMutation({
-    mutationFn: (data: any) => {
-      if (data.role === 0) { // Admin
-        return adminApi.addAdmin(data);
-      } else {
-        console.log(data);
-        return adminApi.addUser(data);
+    mutationFn: async (data: any) => {
+      console.log('Sending user data:', data);
+      const response = await adminApi.addUser(data);
+      console.log('API response:', response);
+      
+      // If the user is a shelter staff, assign them to the selected shelter
+      if (data.role === 2) {
+        // Wait a moment to ensure the user is created in the database
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        const assignment = {
+          id: response.id,
+          role: data.role,
+          shelter_FK: data.shelter_FK,
+          uname: data.uname,
+          email: data.email,
+          activated: 1,
+          banned: false,
+          staffType: data.staffType,
+          phone: data.phone
+        };
+        console.log('Sending assignment data:', assignment);
+        try {
+          await adminApi.assignToShelter(assignment);
+        } catch (error) {
+          console.error('Error assigning to shelter:', error);
+          // If assignment fails, we should still return the created user
+          return response;
+        }
       }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      setIsAddDialogOpen(false);
-      setError(null);
-      setNewUser({
-        uname: '',
-        email: '',
-        password: '',
-        role: 1,
-        adminType: 0,
-        staffType: 0,
-        phone: '',
-        address: '',
-      });
-    },
-    onError: (error: any) => {
-      setError(error.response?.data?.message || 'Failed to add user');
-    },
+      return response;
+    }
   });
 
   // Fetch shelters when component mounts
@@ -146,7 +163,7 @@ const Users = () => {
     const fetchShelters = async () => {
       try {
         const data = await adminApi.getShelters();
-        setShelters(data.map(shelter => ({
+        setShelters(data.map((shelter: any) => ({
           id: shelter.shelterId,
           name: shelter.shelterName
         })));
@@ -202,21 +219,59 @@ const Users = () => {
     return errors;
   };
 
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     const errors = validateForm();
     if (errors.length > 0) {
       setError(errors.join('\n'));
       return;
     }
 
-    addUserMutation.mutate(newUser);
+    try {
+      const response = await addUserMutation.mutateAsync(newUser);
+      console.log('Add user response:', response);
+      
+      // Update the cache immediately with the new user data
+      queryClient.setQueryData(['adminUsers'], (oldData: any) => {
+        const newUserData = {
+          id: response.id,
+          uname: newUser.uname,
+          email: newUser.email,
+          role: newUser.role,
+          activated: 1,
+          banned: false,
+          staffType: newUser.staffType
+        };
+        return [...(oldData || []), newUserData];
+      });
+
+      // Close dialog and reset form
+      setIsAddDialogOpen(false);
+      setError(null);
+      setNewUser({
+        uname: '',
+        email: '',
+        password: '',
+        role: 1,
+        staffType: 0,
+        phone: '',
+        address: '',
+        shelter_FK: 1,
+      });
+
+      // Force a refetch of the users list
+      await queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+      
+      // Navigate to users list
+      navigate('/admin/users', { replace: true });
+    } catch (error: any) {
+      console.error('Error adding user:', error);
+      setError(error.response?.data?.message || 'Failed to add user');
+    }
   };
 
   const getUserTypeChip = (role: number) => {
     const roleName = UserRole[role as keyof typeof UserRole];
     switch (roleName) {
-      case 'Admin':
-        return <Chip label="Admin" color="primary" />;
       case 'ShelterStaff':
         return <Chip label="Shelter Staff" color="secondary" />;
       case 'Adopter':
@@ -227,10 +282,6 @@ const Users = () => {
   };
 
   const getAdminType = (user: AdminUser) => {
-    if (UserRole[user.role as keyof typeof UserRole] === 'Admin') {
-      const adminTypeName = AdminType[user.adminType as keyof typeof AdminType];
-      return <Chip label={adminTypeName} variant="outlined" />;
-    }
     return null;
   };
 
@@ -269,7 +320,7 @@ const Users = () => {
     event.preventDefault();
   };
 
-  const filteredUsers = users?.filter(user => {
+  const filteredUsers = users?.filter((user: BaseUser) => {
     return (
       (!filters.type || user.staffType?.toString() === filters.type) &&
       (!filters.status || user.activated?.toString() === filters.status) &&
@@ -355,7 +406,6 @@ const Users = () => {
               label="Role"
             >
               <MenuItem value="">All</MenuItem>
-              <MenuItem value="0">Admin</MenuItem>
               <MenuItem value="1">Adopter</MenuItem>
               <MenuItem value="2">ShelterStaff</MenuItem>
             </Select>
@@ -376,7 +426,7 @@ const Users = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredUsers.map((user) => (
+            {filteredUsers.map((user: BaseUser) => (
               <TableRow key={user.id}>
                 <TableCell>{user.uname}</TableCell>
                 <TableCell>{user.email}</TableCell>
@@ -471,24 +521,6 @@ const Users = () => {
               ))}
             </TextField>
 
-            {newUser.role === 0 && (
-              <TextField
-                fullWidth
-                select
-                label="Admin Type"
-                value={newUser.adminType}
-                onChange={(e) => handleInputChange('adminType', parseInt(e.target.value))}
-                margin="normal"
-                required
-              >
-                {Object.entries(AdminType).map(([value, label]) => (
-                  <MenuItem key={value} value={parseInt(value)}>
-                    {label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            )}
-
             {newUser.role === 2 && (
               <>
                 <TextField
@@ -509,8 +541,8 @@ const Users = () => {
                 <TextField
                   fullWidth
                   select
-                  label="Assigned Shelter"
-                  value={newUser.shelter_FK || ''}
+                  label="Assign to Shelter"
+                  value={newUser.shelter_FK}
                   onChange={(e) => handleInputChange('shelter_FK', parseInt(e.target.value))}
                   margin="normal"
                   required

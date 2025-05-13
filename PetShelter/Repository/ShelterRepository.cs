@@ -159,6 +159,7 @@ namespace PetShelter.Repository
             if (Shelter != null)
             {
                 List<Animal> animals = Shelter.Animals.ToList();
+                Console.WriteLine(animals.Count());
                 await ManageAdoptionRequests(animals, Shelter.ShelterID);
                 await RemoveStaff(Shelter.Staff.ToList());
                 await deleteCategory(null, true, Shelter.ShelterID);
@@ -223,6 +224,7 @@ namespace PetShelter.Repository
 
         private async Task<bool> ManageAdoptionRequests(List<Animal> animals, int ShelterId)
         {
+            Console.WriteLine(animals.Count());
             if (animals.Count > 0)
             {
                 List<AdoptionRequest> adoptionRequests = await _context.AdoptionRequest
@@ -230,10 +232,13 @@ namespace PetShelter.Repository
                     .Where(a => a.Shelter_FK == ShelterId)
                     .ToListAsync();
 
+                Console.WriteLine(adoptionRequests);
+                Console.WriteLine(animals);
+
                 if (adoptionRequests.Count > 0)
                 {
-                    ShelterCategory category = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryName.ToLower().Contains("unset"));
                     Shelter deleted = await _context.Shelters.FirstOrDefaultAsync(s => s.ShelterName.ToLower().Contains("deleted"));
+                    ShelterCategory category = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == deleted.ShelterID);
 
                     // Use ID comparison to avoid EF Core tracking issues
                     List<Animal> AnimalsWithRequests = animals
@@ -261,7 +266,7 @@ namespace PetShelter.Repository
 
                             foreach (var request in relatedRequests)
                             {
-                                request.Pet.Shelter_FK = deleted.ShelterID;
+                                request.Shelter_FK = deleted.ShelterID;
                             }
                         }
                         else

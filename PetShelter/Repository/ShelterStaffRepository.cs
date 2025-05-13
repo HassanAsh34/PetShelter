@@ -286,22 +286,41 @@ namespace PetShelter.Repository
 				return -1;//something went wrong
 			}
 		}
-		public async Task<int> DeletePet(int id)
-		{
-			if (id != 0)
-			{
-				Animal a = await _context.Animals.FirstOrDefaultAsync(a => a.id == id);
-				_context.Animals.Remove(a);
-				int res = await _context.SaveChangesAsync();
-				return res;
-			}
-			else
-			{
-				return 0; //something went wrong
-			}
-		}
+        //done//
+        public async Task<int> DeletePet(int id)
+        {
+            if (id != 0)
+            {
+                Animal a = await _context.Animals.FirstOrDefaultAsync(a => a.id == id);
+                if (a != null)
+                {
+                    List<AdoptionRequest> requests = await _context.AdoptionRequest.Where(r => r.PetId_FK == id).ToListAsync();
+                    if (requests.Count() > 0)
+                    {
+                        if (requests.Any(r => r.Status == AdoptionRequest.AdoptionRequestStatus.Approved))
+                        {
+                            return -1;
+                        }
+                        else
+                        {
+                            _context.RemoveRange(requests);
+                        }
+                    }
+                    _context.Remove(a);
+                    int res = await _context.SaveChangesAsync();
+                    return res;
+                }
+                else
+                    return -2;// animal isnt found
+            }
+            else
+            {
+                return 0; //something went wrong
+            }
+        }
+        //
 
-		public async Task<IEnumerable<AdoptionRequest>> ListAdoptionRequests(int shelterID)
+        public async Task<IEnumerable<AdoptionRequest>> ListAdoptionRequests(int shelterID)
 		{
 			IEnumerable<AdoptionRequest> requests = await _context.AdoptionRequest.Include(ar=>ar.Shelter).Include(ar => ar.Adopter).Include(ar => ar.Pet).Where(s=>s.Shelter_FK==shelterID).ToListAsync();
 			if(requests.Count()!=0)
