@@ -1,0 +1,193 @@
+﻿using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using PetShelter.Data;
+using PetShelter.DTOs;
+using PetShelter.MiddleWare;
+using PetShelter.Models;
+using PetShelter.Services;
+using PetShelter.Hubs;
+using Microsoft.AspNetCore.SignalR;
+
+namespace PetShelter.Controllers
+{
+	[Route("AuthApi")]
+	[ApiController]
+	public class AuthenticationController : ControllerBase
+	{
+		private readonly UserService _userService;
+		private readonly JWT _token;
+		private readonly IHubContext<UserNotificationHub> _hubContext;
+
+		public AuthenticationController(UserService userService, JWT token, IHubContext<UserNotificationHub> hubContext)
+		{
+			_userService = userService ?? throw new ArgumentNullException(nameof(userService));
+			_token = token ?? throw new ArgumentNullException(nameof(token));
+			_hubContext = hubContext;
+		}
+
+		[HttpPost("Register")]
+		[ProducesResponseType(StatusCodes.Status201Created)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<ActionResult<UserDto>> Register([FromBody] User user)
+		{
+			Console.WriteLine($"Received registration request for user: {JsonSerializer.Serialize(user)}");
+			var res = await _userService.Register(user);
+			if (res == null)
+			{
+				Console.WriteLine("Registration failed: User already exists");
+				return BadRequest(new { message = "User already exists" });
+			}
+			else
+			{
+				Console.WriteLine($"Registration successful for user: {JsonSerializer.Serialize(res)}");
+				// Notify admins about new user registration
+				await _hubContext.Clients.Group("Admins").SendAsync("ReceiveNewUserRegistration", res);
+				return StatusCode(StatusCodes.Status201Created, new
+				{
+					res = res,
+					message = "User Created Successfully"
+				});
+			}
+		}
+
+		[HttpPost("Login")]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<ActionResult<UserDto>> Login([FromBody] LoginDto login)
+		{
+			var res = await _userService.Login(login);
+			if (res != null)
+			{
+                switch (res.Activated)
+                {
+                    case 0:
+                        return BadRequest(new { message = "Your account is currently inactive" });
+                    case 1:
+                        if (res.Deleted_At == null)
+                        {
+                            var token = _token.GenerateToken(res);
+                            return Ok(new { token = token, user = res }); // lowercase keys (token, user) to match frontend
+                        }
+                        return BadRequest(new { message = "Your account has been suspended" });
+                    case 2:
+                        return BadRequest(new { message = "Your account has been suspended" });
+                    default:
+                        return BadRequest("Something went wrong");
+                }
+            }
+			else
+			{
+				return BadRequest(new { message = "Invalid Email or Password" });
+			}
+		}
+
+		//[HttpPut("EditUserDetails")]
+		//public ActionResult<object> UpdateUser([FromBody] UserDto user)
+		//{
+		//	var res = _userService.UpdateUserDetails(user);
+		//	if (res != null)
+		//	{
+		//		return Ok(new {user ,message = "User Updated Successfully" });
+		//	}
+		//	else
+		//	{
+		//		return BadRequest(new { message = "updating user failed" });
+		//	}
+		//}
+
+		[Authorize]
+		[HttpGet]
+		public ActionResult<UserDto> Protected()
+		{
+			var currentUser = GetCurrentUser();
+			if (currentUser == null)
+			{
+				return Unauthorized(new { message = "User details not found in token" });
+			}
+
+			return Ok(currentUser);
+		}
+
+		// ➡️ NEW Helper Method for User extraction
+		private UserDto GetCurrentUser()
+		{
+			var userDetailsJson = User.FindFirst(ClaimTypes.UserData)?.Value;
+			if (string.IsNullOrEmpty(userDetailsJson))
+			{
+				return null;
+			}
+
+			try
+			{
+				return JsonSerializer.Deserialize<UserDto>(userDetailsJson);
+			}
+			catch (JsonException)
+			{
+				return null;
+			}
+		}
+
+		[Authorize]
+		[HttpGet("/View-Profile")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status404NotFound)]
+		public async Task<ActionResult<UserDto>> getUserDetails()
+		{
+			int id = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+			//int role = int.Parse(User.FindFirst(ClaimTypes.Role)?.Value ?? "0");
+			string role = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+			var user = await _userService.getUserDetails(id, role);
+			Console.WriteLine(role);
+			//User user = null;
+			if (user != null)
+			{
+				return Ok(user);
+			}
+			else
+			{
+				return NotFound();
+			}
+		}
+
+		[HttpPut("UpdateProfile")]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		public async Task<ActionResult<UserDto>> editUserDetails([FromBody] UserDto U)
+		{
+			var u = await _userService.UpdateUserDetails(U);
+			if (u == true)
+				return Ok(U);
+			else
+				return BadRequest(new { message = "Update Failed" });
+		}
+
+		[HttpPut("Delete-User")]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status204NoContent)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public async Task<ActionResult<bool>> DeleteUser(UserDto U)//done
+		{
+			if (U != null)
+			{
+				if (await _userService.deleteUser(U) == true)
+				{
+					return Ok(new { message = "the User was removed successfully" });
+				}
+				else
+				{
+					return BadRequest(new { message = "something went wrong" });
+				}
+			}
+			else
+				return BadRequest(new { message = "something went wrong" });
+
+		}
+	}
+}
+	
