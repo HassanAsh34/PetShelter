@@ -301,29 +301,39 @@ namespace PetShelter.Services
 				return null;
 		}
 
-		//public async Task<object> ListShelters()
-		//{
-		//	IEnumerable<Shelter> res = await _adminRepository.ListShelters();
-		//	if (res.Count() != 0)
-		//	{
-		//		List<ShelterDto> shelterDtos = new List<ShelterDto>();
-		//		res.ToList().ForEach(shelter =>
-		//		{
-		//			shelterDtos.Add(new ShelterDto
-		//			{
-		//				ShelterId = shelter.ShelterID,
-		//				ShelterName = shelter.ShelterName,
-		//				ShelterLocation = shelter.Location,
-		//				ShelterPhone = shelter.Phone,
-		//			});
-		//		});
-		//		return shelterDtos;
-		//	}
-		//	else
-		//		return null; //indicates that there are no shelters
-		//}
+        //public async Task<object> ListShelters()
+        //{
+        //	IEnumerable<Shelter> res = await _adminRepository.ListShelters();
+        //	if (res.Count() != 0)
+        //	{
+        //		List<ShelterDto> shelterDtos = new List<ShelterDto>();
+        //		res.ToList().ForEach(shelter =>
+        //		{
+        //			shelterDtos.Add(new ShelterDto
+        //			{
+        //				ShelterId = shelter.ShelterID,
+        //				ShelterName = shelter.ShelterName,
+        //				ShelterLocation = shelter.Location,
+        //				ShelterPhone = shelter.Phone,
+        //			});
+        //		});
+        //		return shelterDtos;
+        //	}
+        //	else
+        //		return null; //indicates that there are no shelters
+        //}
 
-		public async Task<int> deleteShelter(ShelterDto shelter)
+        public async Task<int> EditShelter(ShelterDto shelter)
+        {
+            if (shelter == null)
+                return -1;
+            else
+            {
+                return await _adminRepository.EditShelter(shelter);
+            }
+        }
+
+        public async Task<int> deleteShelter(ShelterDto shelter)
 		{
 			//await _adminRepository.UnassignFromShelter(shelter.ShelterID);
 			//await _adminRepository.deleteCategory(null,true,shelter.ShelterID);

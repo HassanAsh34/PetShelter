@@ -67,13 +67,23 @@ namespace PetShelter.Repository
         //shelter
         private async Task<bool> ShelterExistence(Shelter shelter)
         {
-            var res = await _context.Shelters.FirstOrDefaultAsync(a => a.ShelterName.ToLower() == (shelter.ShelterName != null ? shelter.ShelterName.ToLower() : "") || a.ShelterID == shelter.ShelterID);
-            if (res != null)
+            if (shelter == null)
+                return false;
+
+            if (!string.IsNullOrWhiteSpace(shelter.ShelterName))
             {
-                return true;
+                var existingByName = await _context.Shelters
+                    .FirstOrDefaultAsync(a => a.ShelterName.ToLower() == shelter.ShelterName.ToLower());
+
+                return existingByName != null;
             }
             else
-                return false;
+            {
+                var existingById = await _context.Shelters
+                    .FirstOrDefaultAsync(a => a.ShelterID == shelter.ShelterID);
+
+                return existingById != null;
+            }
         }
         public async Task<object> AddShelter(Shelter shelter)
         {
@@ -100,6 +110,30 @@ namespace PetShelter.Repository
             }
             else
                 return null;// something went wrong
+        }
+
+        public async Task<int> EditShelter(ShelterDto shelter)
+        {
+            Shelter s = await _context.Shelters.FirstOrDefaultAsync(s => s.ShelterID == shelter.ShelterId);
+            if (s != null)
+            {
+                if ((s.ShelterName.ToLower()==shelter.ShelterName.ToLower()) != true)
+                {
+                    if (await ShelterExistence(new Shelter { ShelterName = shelter.ShelterName}) == true)
+                    {
+                        return -2; //cant rename the shelter
+                    }
+                    else
+                    {
+                        s.ShelterName = shelter.ShelterName;
+                    }
+                }
+                s.Description = shelter.Description != null ? shelter.Description : s.Description;
+                s.Location = shelter.ShelterLocation != null ? shelter.ShelterLocation : s.Location;
+                return await _context.SaveChangesAsync();
+            }
+            else
+                return -1;
         }
 
         public async Task<int> AssignToShelter(StaffDto staff)

@@ -94,7 +94,7 @@ const AddEditPet = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['staffPets'] });
       queryClient.invalidateQueries({ queryKey: ['categories'] });
-      navigate('/staff/dashboard');
+      navigate('/staff/pets');
     },
     onError: (error: any) => {
       setError(error.response?.data?.message || 'Failed to update pet');

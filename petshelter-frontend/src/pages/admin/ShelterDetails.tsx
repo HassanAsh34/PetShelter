@@ -74,6 +74,8 @@ const ShelterDetails = () => {
     // }
   });
 
+
+
   const handleDelete = () => {
     if (shelter) {
       console.log('Deleting shelter:', {

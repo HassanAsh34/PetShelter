@@ -112,6 +112,8 @@ export const adminApi = {
   getShelters: () => api.get('/Admin/Show-Shelters').then((res) => res.data),
   addShelter: (data: { ShelterID: number; ShelterName: string; Location: string; Phone: string; Description: string }) =>
     api.post('/Admin/Add-Shelter', data).then((res) => res.data),
+  updateShelter: (Shelter : Shelter ) =>
+    api.put('/Admin/Edit-Shelter', Shelter).then((res) => res.data),
   deleteShelter: (Shelter: Shelter): Promise<void> =>
     api.delete('/Admin/Delete-Shelter', { data: Shelter }).then(res => res.data),
   getShelterDetails: (id: number) =>
@@ -130,9 +132,9 @@ export const adminApi = {
   getUserDetails: (userId: number, userRole: number) =>
     api.get(`/Admin/User-Details/${userId}`, { params: { userRole } }).then((res) => res.data),
   banUser: (data: UserDto) =>
-    api.put('/Admin/Ban-User', data).then((res) => res.data),
+    api.put('/Admin/Ban-Account', data).then((res) => res.data),
   unbanUser: (data: UserDto) =>
-    api.put('/Admin/Unban-User', data).then((res) => res.data),
+    api.put('/Admin/Unban-Account', data).then((res) => res.data),
   toggleActivation: (data: UserDto) =>
     api.put('/Admin/Activate-Deactivate-Account', data).then((res) => res.data),
   updateUser: (data: UserDto) =>
@@ -205,14 +207,14 @@ export interface Shelter {
   shelterLocation: string;
   shelterPhone: string;
   description: string | null;
+  
+}
+ 
+export interface ShelterDto extends Shelter {
+
   countStaff: number;
   categories: any[] | null;
   staff: any[] | null;
-}
- 
-export interface ShelterDto {
-  shelterId: number;
-  shelterName: string;
 }
 
 export interface AddShelterData {

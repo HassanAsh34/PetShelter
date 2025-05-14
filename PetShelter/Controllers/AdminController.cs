@@ -431,7 +431,38 @@ namespace PetShelter.Controllers
 				return Unauthorized();
 		}
 
-		[HttpDelete("Delete-Shelter")]
+        [HttpPut("Edit-Shelter")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<int>> EdtiShelter([FromBody] ShelterDto shelter)//done
+        {
+            if (Authorize(1))
+            {
+
+                var res = await _adminServices.EditShelter(shelter);
+                if (res > 0)
+                {
+                    return Ok(new { message = "the Shelter was Updated successfully" });
+                }
+                else
+                {
+                    switch (res)
+                    {
+                        case -1:
+                            return BadRequest(new { message = "something went wrong" });
+                        case -2:
+                            return BadRequest(new { message = "There Another Shelter With that name" });
+                        default:
+                            return Ok(new { message = "nothing cahnged" });
+                    }
+                }
+            }
+            else
+                return Unauthorized();
+        }
+
+        [HttpDelete("Delete-Shelter")]
 		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]

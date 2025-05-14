@@ -14,7 +14,6 @@ import {
   Divider,
 } from '@mui/material';
 import {
-  Menu as MenuIcon,
   Pets,
   Person,
   ExitToApp,
@@ -68,17 +67,6 @@ const Navigation = () => {
   return (
     <AppBar position="static">
       <Toolbar>
-        <IconButton
-          size="large"
-          edge="start"
-          color="inherit"
-          aria-label="menu"
-          sx={{ mr: 2 }}
-          onClick={() => navigate('/')}
-        >
-          <MenuIcon />
-        </IconButton>
-
         <Pets sx={{ mr: 1 }} />
         <Typography
           variant="h6"

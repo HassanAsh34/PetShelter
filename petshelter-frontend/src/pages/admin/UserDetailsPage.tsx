@@ -292,55 +292,63 @@ const UserDetailsPage = () => {
 
   const handleBanUser = async () => {
     if (!user) return;
+    
     try {
-      await adminApi.banUser({
-        id: userId,
-        role: userRole,
+      const userData: UserDto = {
+        id: user.id,
+        role: user.role,
         uname: user.uname,
         email: user.email,
         activated: user.activated,
         banned: true,
-        ...(user.role === 0 && { adminType: (user as AdminUser).adminType }),
-        ...(user.role === 1 && { 
-          phone: (user as AdopterUser).phone,
-          address: (user as AdopterUser).address 
-        }),
-        ...(user.role === 2 && { 
-          staffType: (user as StaffUser).staffType,
-          phone: (user as StaffUser).phone 
-        })
-      });
+        adminType: user.adminType,
+        staffType: user.staffType,
+        phone: user.phone,
+        address: user.address,
+        hiredDate: user.hiredDate
+      };
+
+      await adminApi.banUser(userData);
+      
+      // Update the user object in the cache
       updateUserStatus({ banned: true });
-      queryClient.invalidateQueries({ queryKey: ['user', userId, userRole, isProfileRoute] });
-    } catch (error) {
+      
+      // Show success message
+      alert('User has been banned successfully');
+    } catch (error: any) {
       console.error('Error banning user:', error);
+      alert(error.response?.data?.message || 'Failed to ban user');
     }
   };
 
   const handleUnbanUser = async () => {
     if (!user) return;
+    
     try {
-      await adminApi.unbanUser({
-        id: userId,
-        role: userRole,
+      const userData: UserDto = {
+        id: user.id,
+        role: user.role,
         uname: user.uname,
         email: user.email,
         activated: user.activated,
         banned: false,
-        ...(user.role === 0 && { adminType: (user as AdminUser).adminType }),
-        ...(user.role === 1 && { 
-          phone: (user as AdopterUser).phone,
-          address: (user as AdopterUser).address 
-        }),
-        ...(user.role === 2 && { 
-          staffType: (user as StaffUser).staffType,
-          phone: (user as StaffUser).phone 
-        })
-      });
+        adminType: user.adminType,
+        staffType: user.staffType,
+        phone: user.phone,
+        address: user.address,
+        hiredDate: user.hiredDate
+      };
+
+      await adminApi.unbanUser(userData);
+      
+      // Update the user object in the cache
       updateUserStatus({ banned: false });
-      queryClient.invalidateQueries({ queryKey: ['user', userId, userRole, isProfileRoute] });
-    } catch (error) {
+      
+      // Show success message
+      alert('User has been unbanned successfully');
+    } catch (error: any) {
       console.error('Error unbanning user:', error);
+      alert(error.response?.data?.message || 'Failed to unban user');
     }
   };
 

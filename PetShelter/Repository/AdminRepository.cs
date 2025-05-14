@@ -357,12 +357,13 @@ namespace PetShelter.Repository
 			return await _shelterRepository.ShowShelter(id);
 		}
 
-		//public async Task<IEnumerable<Shelter>> ListShelters()
-		//{
-		//	return await _context.Shelters.ToListAsync();
-		//}
+        public async Task<int> EditShelter(ShelterDto shelter)
+        {
+            return await _shelterRepository.EditShelter(shelter);
+        }
 
-		public async Task<int> DeleteShelter(ShelterDto shelter)//done
+
+        public async Task<int> DeleteShelter(ShelterDto shelter)//done
 		{
 			return await _shelterRepository.DeleteShelter(shelter); 
 		}

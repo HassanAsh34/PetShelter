@@ -13,6 +13,7 @@ import UserDetailsPage from './pages/admin/UserDetailsPage';
 import Shelters from './pages/admin/Shelters';
 import ShelterDetails from './pages/admin/ShelterDetails';
 import AddShelterPage from './pages/admin/AddShelterPage';
+import EditShelterPage from './pages/admin/EditShelterPage';
 import Categories from './pages/admin/Categories';
 import AddCategoryPage from './pages/admin/AddCategoryPage';
 import EditCategoryPage from './pages/admin/EditCategoryPage';
@@ -25,6 +26,7 @@ import AddPetPage from './pages/staff/AddPetPage';
 import AdminChat from './pages/admin/Chat';
 import TalkToAdmin from './pages/user/TalkToAdmin';
 import AddEditPet from './pages/staff/AddEditPet';
+import NotFound from './pages/NotFound';
 
 // Protected Route Component
 const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
@@ -151,6 +153,14 @@ function App() {
               </ProtectedAdminRoute>
             }
           />
+           <Route
+            path="/admin/shelters/:id/edit"
+            element={
+              <ProtectedAdminRoute>
+                <EditShelterPage />
+              </ProtectedAdminRoute>
+            }
+          />
           <Route
             path="/admin/shelters/add"
             element={
@@ -247,6 +257,8 @@ function App() {
               </ProtectedAdopterRoute>
             }
           />
+          {/* Catch-all route for 404 */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Box>
     </Box>
