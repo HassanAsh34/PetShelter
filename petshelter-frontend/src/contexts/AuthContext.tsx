@@ -1,16 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authApi } from '../services/api';
 import { getToken, setToken, removeToken, isTokenValid, parseJwt } from '../utils/tokenUtils';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface User {
   id: number;
   uname: string;
   email: string;
-  role: number;
+  role: string;
   activated: number;
   banned: boolean;
   adminType?: number;
-  staffType?: number;
+  staffType?: string;
   phone?: string;
   address?: string;
   hiredDate?: string;
@@ -26,11 +27,11 @@ interface DecodedToken {
   id: number;
   uname: string;
   email: string;
-  role: number;
+  role: string;
   activated: number;
   banned: boolean;
-  adminType?: number;
-  staffType?: number;
+  AdminType?: number;
+  StaffType?: string;
   phone?: string;
   address?: string;
   hiredDate?: string;
@@ -40,18 +41,19 @@ interface DecodedToken {
     shelterLocation: string;
     shelterPhone: string;
   };
+  exp: number;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<User>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isShelterStaff: boolean;
   isAdopter: boolean;
-  adminType?: number;
-  staffType?: string;
+  adminType: number | undefined;
+  staffType: string | undefined;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -59,6 +61,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isShelterStaff, setIsShelterStaff] = useState(false);
+  const [isAdopter, setIsAdopter] = useState(false);
+  const [adminType, setAdminType] = useState<number | undefined>(undefined);
+  const [staffType, setStaffType] = useState<string | undefined>(undefined);
+  const queryClient = useQueryClient();
 
   // Add helper function to convert role
   const convertRole = (role: string | number) => {
@@ -82,6 +89,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         removeToken();
         setUser(null);
         setIsAdmin(false);
+        setIsShelterStaff(false);
+        setIsAdopter(false);
+        setAdminType(undefined);
+        setStaffType(undefined);
         return;
       }
 
@@ -98,71 +109,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const parseToken = (token: string) => {
     try {
-      const decodedToken = parseJwt(token);
-      console.log('Raw token data:', decodedToken);
-      
-      // Convert adminType to number if it exists
-      let adminTypeValue: number | undefined;
-      if (decodedToken?.AdminType !== undefined) {
-        // First try to parse as number
-        if (typeof decodedToken.AdminType === 'string') {
-          const parsedValue = parseInt(decodedToken.AdminType, 10);
-          adminTypeValue = isNaN(parsedValue) ? undefined : parsedValue;
-        } else if (typeof decodedToken.AdminType === 'number') {
-          adminTypeValue = decodedToken.AdminType;
-        }
-        
-        console.log('AdminType conversion:', {
-          original: decodedToken.AdminType,
-          type: typeof decodedToken.AdminType,
-          converted: adminTypeValue,
-          convertedType: typeof adminTypeValue,
-          isSuperAdmin: adminTypeValue === 0
-        });
-      }
-
-      // If we're an admin but don't have an adminType, set it to 0 (SuperAdmin)
-      if (decodedToken?.role === 'Admin' && adminTypeValue === undefined) {
-        adminTypeValue = 0;
-        console.log('Setting default adminType to 0 for Admin role');
-      }
-
+      const raw = parseJwt(token);
+      if (!raw) throw new Error('Invalid token');
+      const decodedToken = raw as unknown as DecodedToken;
       const userData: User = {
-        id: decodedToken?.id || 0,
-        uname: decodedToken?.uname || '',
-        email: decodedToken?.email || '',
-        role: decodedToken?.role || 0,
-        activated: 1,
-        banned: false,
-        adminType: adminTypeValue,
-        staffType: decodedToken?.staffType || (decodedToken?.role === 'ShelterStaff' ? 'staff' : undefined),
-        phone: decodedToken?.phone || '',
-        address: decodedToken?.address || '',
-        hiredDate: decodedToken?.hiredDate || '',
-        shelter: decodedToken?.shelter ? {
-          shelterId: decodedToken.shelter.shelterId,
-          shelterName: decodedToken.shelter.shelterName,
-          shelterLocation: decodedToken.shelter.shelterLocation,
-          shelterPhone: decodedToken.shelter.shelterPhone,
-        } : undefined,
+        id: decodedToken.id || 0,
+        uname: decodedToken.uname || '',
+        email: decodedToken.email || '',
+        role: decodedToken.role || '',
+        activated: decodedToken.activated || 0,
+        banned: decodedToken.banned || false,
+        adminType: decodedToken.AdminType,
+        staffType: decodedToken.StaffType,
+        phone: decodedToken.phone,
+        address: decodedToken.address,
+        hiredDate: decodedToken.hiredDate,
+        shelter: decodedToken.shelter
       };
-
-      console.log('Setting user state:', {
-        ...userData,
-        isSuperAdmin: userData.adminType === 0,
-        adminTypeType: typeof userData.adminType
-      });
-
       setUser(userData);
-      setIsAdmin(decodedToken?.role === 'Admin');
+      setIsAdmin(decodedToken.role === 'Admin');
+      setIsShelterStaff(decodedToken.role === 'ShelterStaff');
+      setIsAdopter(decodedToken.role === 'Adopter');
+      setAdminType(decodedToken.AdminType);
+      setStaffType(decodedToken.StaffType);
     } catch (error) {
       console.error('Error parsing token:', error);
       setUser(null);
       setIsAdmin(false);
+      setIsShelterStaff(false);
+      setIsAdopter(false);
+      setAdminType(undefined);
+      setStaffType(undefined);
     }
   };
 
-  const login = async (email: string, password: string): Promise<User> => {
+  const login = async (email: string, password: string): Promise<void> => {
     try {
       const response = await authApi.login({ email, password });
       const { token, user: userData } = response;
@@ -223,7 +204,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(token);
       setUser(userWithRole);
       setIsAdmin(userWithRole.role === 'Admin');
-      return userWithRole;
+      setIsShelterStaff(userWithRole.role === 'ShelterStaff');
+      setIsAdopter(userWithRole.role === 'Adopter');
+      setAdminType(userWithRole.adminType);
+      setStaffType(userWithRole.staffType);
     } catch (error) {
       console.error('Login error in context:', error);
       throw error;
@@ -231,10 +215,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    authApi.logout();
+    removeToken();
     setUser(null);
     setIsAdmin(false);
-    // No redirection here - let the component handle it
+    setIsShelterStaff(false);
+    setIsAdopter(false);
+    setAdminType(undefined);
+    setStaffType(undefined);
+    queryClient.clear();
   };
 
   const value = {
@@ -243,10 +231,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
     isAuthenticated: !!user,
     isAdmin: isAdmin,
-    isShelterStaff: user?.role === 'ShelterStaff',
-    isAdopter: user?.role === 'Adopter',
-    adminType: user?.adminType,
-    staffType: user?.staffType,
+    isShelterStaff: isShelterStaff,
+    isAdopter: isAdopter,
+    adminType: adminType,
+    staffType: staffType,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -54,8 +54,9 @@ const ShelterDetails = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const { data: shelter, isLoading, error } = useQuery<Shelter>({
+  const { data: shelter, isLoading, error: queryError } = useQuery<Shelter>({
     queryKey: ['shelter', id],
     queryFn: () => adminApi.getShelterDetails(Number(id)),
     enabled: !!id,
@@ -67,23 +68,17 @@ const ShelterDetails = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shelters'] });
+      navigate('/admin/shelters');
+    },
+    onError: (error: any) => {
+      setError(error.response?.data?.message || 'Failed to delete shelter');
     }
-    // },
-    // onError: (error: any) => {
-    //   setError(error.response?.data?.message || 'Failed to delete shelter');
-    // }
   });
-
-
 
   const handleDelete = () => {
     if (shelter) {
-      console.log('Deleting shelter:', {
-        shelterId: shelter.shelterId,
-        shelterName: shelter.shelterName,
-        requestData: { ShelterId: shelter.shelterId }
-      });
       deleteShelterMutation.mutate(shelter);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -95,7 +90,7 @@ const ShelterDetails = () => {
     );
   }
 
-  if (error) {
+  if (queryError) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Alert severity="error">Error loading shelter details. Please try again.</Alert>

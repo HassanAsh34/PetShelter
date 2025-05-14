@@ -1,4 +1,5 @@
-﻿using PetShelter.Models;
+﻿using System.Text.Json.Serialization;
+using PetShelter.Models;
 
 namespace PetShelter.DTOs
 {
@@ -6,11 +7,18 @@ namespace PetShelter.DTOs
 	{
 		public int id { get; set; }
 
-		public AdopterDto? Adopter { get; set; } // navigation property
 
-		public AdoptionRequestDto? AdoptionRequest { get; set; }// navigation property
- 
+        [JsonIgnore]
+        public AdopterDto? Adopter { get; set; } // navigation property
 
-		public DateTime? InterviewDate { get; set; }
+        [JsonIgnore]
+        public AdoptionRequestDto? AdoptionRequest { get; set; }// navigation property
+
+        ////////////////////////////////////////////////
+        [JsonIgnore]
+        public AnimalDto? animal { get; set; }
+        /////////////////////////////////////////////////
+
+        public DateOnly? InterviewDate { get; set; }
 	}
 }

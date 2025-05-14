@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getToken, removeToken, parseJwt } from '../utils/tokenUtils';
 import AdoptionRequestsButton from '../components/AdoptionRequestsButton';
-import { MessageModel } from '../types';
+import { AdoptionRequestDto, MessageModel } from '../types';
 
 interface UserDto {
   id: number;
@@ -224,4 +224,32 @@ export interface AddShelterData {
   description: string;
 }
 
+export interface Interview{
+  id : number;
+  interviewDate : Date;
+}
+
+export interface AdopterDto{
+  id : number;
+  name : string;
+  email : string;
+  phone : string;
+  address : string;
+}
+
+export interface PetDto{
+  id : number;
+  name : string;
+  age : number;
+  breed : string;
+  adoption_State : string;
+}
+
+
+export interface InterviewDto extends Interview
+{
+  AdoptionRequestDto : AdoptionRequestDto;
+  adopterDto : AdopterDto;
+  petDto : PetDto;
+}
 export type {};

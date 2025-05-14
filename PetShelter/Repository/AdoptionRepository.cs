@@ -94,6 +94,24 @@ namespace PetShelter.Repository
 			return await _shelterStaffRepository.ViewPet(id);
 		}
 
-	}
+        public async Task<object> getInterview(int? Rid = 0, int? Sid = 0)
+        {
+            if (Rid != 0)
+            {
+                Interview interview = await _context.Interviews.Include(i => i.AdoptionRequest).FirstOrDefaultAsync(r=> r.AdoptionRequest.Status == AdoptionRequest.AdoptionRequestStatus.Approved && r.AdoptionRequest_fk == Rid);
+                if (interview != null)
+                    return interview;
+                else
+                    return 0;
+            }
+            else
+            {
+                List<Interview> interviews = await _context.Interviews.Include(i => i.AdoptionRequest).Include(r => r.AdoptionRequest.Adopter).Include(r => r.AdoptionRequest.Pet).Where(r => r.AdoptionRequest.Shelter_FK == Sid && r.AdoptionRequest.Status == AdoptionRequest.AdoptionRequestStatus.Approved).ToListAsync();
+                if (interviews.Count() > 0)
+                    return interviews;
+                return 0;//nothing was found
+            }
+        }
+    }
 
 }

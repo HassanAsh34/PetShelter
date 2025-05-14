@@ -208,36 +208,26 @@ const AdminDashboard = () => {
 
           {/* Recent Activity */}
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <Typography variant="h6" gutterBottom>
                   Recent Adoptions
                 </Typography>
                 <List>
                   {stats?.recentRequests?.map((adoption: any) => (
-                    <React.Fragment key={adoption.id}>
+                    <React.Fragment key={adoption.requestId}>
                       <ListItem>
                         <ListItemIcon>
                           <Pets />
                         </ListItemIcon>
                         <ListItemText
-                          primary={`${adoption.pet?.name || 'Unknown Pet'} adopted by ${adoption.user?.Uname || 'Unknown'}''}`}
-                          secondary={new Date(adoption.approvedAt).toLocaleString()}
+                          primary={`${adoption.animal.name} adopted by ${adoption.adopter.uname}`}
+                          secondary={`Approved on ${new Date(adoption.approved_At).toLocaleString()}`}
                         />
                       </ListItem>
                       <Divider />
                     </React.Fragment>
                   ))}
-                </List>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  New Shelters
-                </Typography>
-                <List>
-                  {/* Add shelter list items here */}
                 </List>
               </Paper>
             </Grid>

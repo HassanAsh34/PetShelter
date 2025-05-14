@@ -34,6 +34,9 @@ interface AdoptionRequest {
   shelter?: {
     shelterName: string;
   };
+  interviewDto?: {
+    interviewDate: string;
+  };
 }
 
 const AdoptionHistory = () => {
@@ -139,32 +142,56 @@ const AdoptionHistory = () => {
               <TableRow>
                 <TableCell>Pet Name</TableCell>
                 <TableCell>Shelter</TableCell>
-                <TableCell>Status</TableCell>
                 <TableCell>Request Date</TableCell>
-                <TableCell>Approved Date</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Interview Date</TableCell>
+                <TableCell>Approved At</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {history.map((adoption: AdoptionRequest) => (
-                <TableRow key={adoption.requestId}>
-                  <TableCell>{adoption.animal?.name || 'N/A'}</TableCell>
-                  <TableCell>{adoption.shelter?.shelterName || 'N/A'}</TableCell>
-                  <TableCell>{getStatusChip(adoption.status)}</TableCell>
-                  <TableCell>{new Date(adoption.requestDate).toLocaleDateString()}</TableCell>
+              {history.map((request) => (
+                <TableRow key={request.requestId}>
+                  <TableCell>{request.animal.name}</TableCell>
+                  <TableCell>{request.shelter?.shelterName || 'N/A'}</TableCell>
                   <TableCell>
-                    {adoption.approved_At 
-                      ? new Date(adoption.approved_At).toLocaleDateString()
-                      : '-'
-                    }
+                    {new Date(request.requestDate).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    {adoption.status.toLowerCase() === 'pending' && (
+                    <Chip
+                      label={request.status}
+                      color={
+                        request.status === 'Approved'
+                          ? 'success'
+                          : request.status === 'Rejected'
+                          ? 'error'
+                          : 'warning'
+                      }
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {request.status.toLowerCase() === 'pending' ? (
+                      <Chip label="Not Scheduled" color="default" />
+                    ) : request.status.toLowerCase() === 'rejected' ? (
+                      '-'
+                    ) : request.interviewDto ? (
+                      new Date(request.interviewDto.interviewDate).toLocaleDateString()
+                    ) : (
+                      '-'
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {request.approved_At
+                      ? new Date(request.approved_At).toLocaleDateString()
+                      : '-'}
+                  </TableCell>
+                  <TableCell>
+                    {request.status.toLowerCase() === 'pending' && (
                       <Button
                         variant="outlined"
                         color="error"
                         size="small"
-                        onClick={() => handleCancelClick(adoption)}
+                        onClick={() => handleCancelClick(request)}
                       >
                         Cancel
                       </Button>
