@@ -152,7 +152,7 @@ export interface Animal {
   name: string;
   age: number;
   breed: string;
-  adoption_State: number;
+  adoption_State: number | string;
   category_FK: number;
   shelter_FK: number;
   medication_history: string;

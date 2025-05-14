@@ -38,8 +38,15 @@ const StaffPetsList = () => {
   React.useEffect(() => {
     if (pets) {
       console.log('Pets data from backend:', pets);
-      console.log('First pet adoption state:', pets[0]?.adoption_State);
-      console.log('First pet complete data:', pets[0]);
+      pets.forEach((pet, index) => {
+        console.log(`Pet ${index + 1}:`, {
+          id: pet.id,
+          name: pet.name,
+          adoption_State: pet.adoption_State,
+          adoption_State_type: typeof pet.adoption_State,
+          canEdit: canEditOrDelete(pet)
+        });
+      });
     }
     if (error) {
       console.error('Error fetching pets:', error);
@@ -67,25 +74,46 @@ const StaffPetsList = () => {
     }
   };
 
-  const getAdoptionStateString = (state: number): string => {
+  const getAdoptionStateString = (state: string | number): string => {
+    console.log('Getting adoption state string for:', state, 'type:', typeof state);
+    if (typeof state === 'string') {
+      return state; // If it's already a string, return it as is
+    }
     switch (state) {
-      case 0: return 'Available';
+      case 2: return 'Available';
       case 1: return 'Pending';
-      case 2: return 'Adopted';
+      case 0: return 'Adopted';
       default: return 'Unknown';
     }
   };
 
   const canEditOrDelete = (pet: AnimalDto) => {
-    // Check if status is pending (1) or adopted (2)
-    return pet.adoption_State === 0; // Only allow edit/delete if available (0)
+    console.log('Checking canEditOrDelete for pet:', {
+      id: pet.id,
+      name: pet.name,
+      adoption_State: pet.adoption_State,
+      adoption_State_type: typeof pet.adoption_State
+    });
+    // Check if status is Available (either as number 2 or string 'Available')
+    if (typeof pet.adoption_State === 'string') {
+      return pet.adoption_State === 'Available';
+    }
+    return pet.adoption_State === 2;
   };
 
-  const getStatusColor = (state: number) => {
+  const getStatusColor = (state: string | number) => {
+    if (typeof state === 'string') {
+      switch (state) {
+        case 'Available': return 'success';
+        case 'Pending': return 'warning';
+        case 'Adopted': return 'error';
+        default: return 'default';
+      }
+    }
     switch (state) {
-      case 0: return 'success';  // Available
+      case 2: return 'success';  // Available
       case 1: return 'warning';  // Pending
-      case 2: return 'error';    // Adopted
+      case 0: return 'error';    // Adopted
       default: return 'default';
     }
   };
